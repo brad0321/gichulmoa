@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>문제 상세</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5" style="max-width: 800px;">
+    <h1 class="mb-4">문제 상세</h1>
+
+    <div class="mb-3">
+        <h4>문제 내용</h4>
+        <p th:text="${problem.title}"></p>
+    </div>
+
+    <div class="mb-3">
+        <h4>보기 항목 (텍스트)</h4>
+        <div th:utext="${problem.viewContent}"></div>
+    </div>
+
+    <div class="mb-3" th:if="${problem.viewImagePath}">
+        <h4>보기 항목 이미지</h4>
+        <img th:src="@{'/uploads/' + ${problem.viewImagePath}}" class="img-fluid" style="max-height: 300px;">
+    </div>
+
+    <div class="mb-3">
+        <h4>선택 문항</h4>
+        <ul class="list-group">
+            <li class="list-group-item" th:text="'선택문항 1: ' + ${problem.choice1}"></li>
+            <li class="list-group-item" th:text="'선택문항 2: ' + ${problem.choice2}"></li>
+            <li class="list-group-item" th:text="'선택문항 3: ' + ${problem.choice3}"></li>
+            <li class="list-group-item" th:text="'선택문항 4: ' + ${problem.choice4}"></li>
+            <li class="list-group-item" th:text="'선택문항 5: ' + ${problem.choice5}"></li>
+        </ul>
+    </div>
+
+    <div class="d-flex justify-content-center gap-2 mt-4">
+        <a th:href="@{/problems}" class="btn btn-secondary btn-action">목록으로</a>
+        <a th:href="@{'/problems/' + ${problem.id} + '/edit'}" class="btn btn-warning btn-action">수정하기</a>
+        <a th:href="@{'/problems/' + ${problem.id}}" class="btn btn-primary btn-action">상세보기</a>
+        <form th:action="@{'/problems/' + ${problem.id} + '/delete'}" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-danger btn-action"
+                    onclick="return confirm('정말 삭제하시겠습니까?');">
+                삭제하기
+            </button>
+        </form>
+    </div>
+
+</body>
+</html>

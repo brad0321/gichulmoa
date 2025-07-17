@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:mysql://brad0321.c9y26kamyq64.ap-southeast-2.rds.amazonaws.com:3306/brad
+    username: brad0321
+    password: totty8302##
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080

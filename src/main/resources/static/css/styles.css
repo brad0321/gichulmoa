@@ -1,0 +1,76 @@
+/* ---------- 공통 스타일 ---------- */
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+h1 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* ---------- 테이블 ---------- */
+
+table,
+.table-custom {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+
+th, td,
+.table-custom th, .table-custom td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+}
+
+th,
+.table-custom th {
+    background-color: #f0f0f0;
+}
+
+/* ---------- 링크 ---------- */
+
+a {
+    color: #3498db;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ---------- 로그인 & 회원가입 ---------- */
+
+.login-container,
+.signup-container {
+    max-width: 500px;
+    margin: 80px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.back-link {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    color: #6c757d;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* ---------- 버튼 ---------- */
+
+.btn-action {
+    width: 80px;
+    text-align: center;
+}
