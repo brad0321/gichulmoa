@@ -6,9 +6,9 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Problem {
 
     @Id
@@ -17,23 +17,16 @@ public class Problem {
 
     private String title;
 
+    // ✅ 수정: TEXT로 처리 (HTML 가능)
     @Lob
-    private String viewContent;  // 보기 항목 텍스트 (HTML)
+    @Column(name = "view_content", columnDefinition = "TEXT")
+    private String viewContent;
 
-    private String viewImagePath; // 업로드 이미지 파일 경로
+    private String viewImagePath;
 
-    @Column(name = "choice_1")
     private String choice1;
-
-    @Column(name = "choice_2")
     private String choice2;
-
-    @Column(name = "choice_3")
     private String choice3;
-
-    @Column(name = "choice_4")
     private String choice4;
-
-    @Column(name = "choice_5")
     private String choice5;
 }

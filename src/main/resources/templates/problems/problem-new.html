@@ -1,3 +1,5 @@
+<!-- 📁 src/main/resources/templates/problems/problem-new.html -->
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -12,37 +14,31 @@
     <h1 class="mb-4">문제등록</h1>
     <form th:action="@{/problems/new}" method="post" enctype="multipart/form-data">
         <div class="mb-3">
-            <label class="form-label">문제 내용</label>
+            <label class="form-label">문제 제목</label>
             <input type="text" name="title" class="form-control" required>
         </div>
+
+        <!-- ✅ 수정: id="viewContent" 추가 -->
         <div class="mb-3">
             <label class="form-label">보기 항목 (텍스트)</label>
-            <textarea id="viewContent" name="viewContent" class="form-control"></textarea>
+            <textarea id="viewContent" name="viewContent" class="form-control" rows="4"></textarea>
         </div>
+
+        <!-- 선택지 -->
         <div class="mb-3">
-            <label class="form-label">보기 항목 이미지 (jpg, png, gif)</label>
+            <label class="form-label">선택 문항들</label>
+            <textarea name="choice1" class="form-control" rows="2" required></textarea>
+            <textarea name="choice2" class="form-control" rows="2" required></textarea>
+            <textarea name="choice3" class="form-control" rows="2" required></textarea>
+            <textarea name="choice4" class="form-control" rows="2" required></textarea>
+            <textarea name="choice5" class="form-control" rows="2" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">보기 이미지</label>
             <input type="file" name="viewImage" class="form-control">
         </div>
-        <div class="mb-3">
-            <label class="form-label">선택문항 1</label>
-            <input type="text" name="choice1" class="form-control">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">선택문항 2</label>
-            <input type="text" name="choice2" class="form-control">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">선택문항 3</label>
-            <input type="text" name="choice3" class="form-control">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">선택문항 4</label>
-            <input type="text" name="choice4" class="form-control">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">선택문항 5</label>
-            <input type="text" name="choice5" class="form-control">
-        </div>
+
         <button type="submit" class="btn btn-success">등록하기</button>
     </form>
 

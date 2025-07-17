@@ -3,6 +3,7 @@ package com.pro.project01.controller;
 import com.pro.project01.entity.Problem;
 import com.pro.project01.repository.ProblemRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -42,7 +43,6 @@ public class ProblemController {
         if (viewImage != null && !viewImage.isEmpty()) {
             fileName = UUID.randomUUID() + "_" + viewImage.getOriginalFilename();
 
-            // ✅ 경로 수정 (추천)
             String uploadDir = new File("src/main/resources/static/uploads").getAbsolutePath();
             File dir = new File(uploadDir);
             if (!dir.exists()) {
@@ -66,14 +66,12 @@ public class ProblemController {
 
         Problem savedProblem = problemRepository.save(problem);
 
-        // ✅ guard 추가 (선택)
         if (savedProblem == null || savedProblem.getId() == null) {
             return "redirect:/problems";
         }
 
         return "redirect:/problems/" + savedProblem.getId();
     }
-
 
     @GetMapping("/problems")
     public String listProblems(Model model) {
@@ -83,10 +81,14 @@ public class ProblemController {
     }
 
     @GetMapping("/problems/{id}")
-    public String detailProblem(@PathVariable Long id, Model model) {
+    public String detailProblem(@PathVariable Long id, Model model, HttpSession session) {
         Problem problem = problemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("문제를 찾을 수 없습니다."));
         model.addAttribute("problem", problem);
+
+        // ✅ 관리자 버튼용 loginUser 전달
+        model.addAttribute("loginUser", session.getAttribute("loginUser"));
+
         return "problems/detail";
     }
 
@@ -139,7 +141,6 @@ public class ProblemController {
         }
 
         problemRepository.save(problem);
-
         return "redirect:/problems/" + problem.getId();
     }
 
@@ -149,5 +150,10 @@ public class ProblemController {
         return "redirect:/problems";
     }
 
-
+    @GetMapping("/solve")
+    public String solveProblems(Model model) {
+        List<Problem> problems = problemRepository.findAll();
+        model.addAttribute("problems", problems);
+        return "problems/solve";
+    }
 }

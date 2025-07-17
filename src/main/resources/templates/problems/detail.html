@@ -34,17 +34,23 @@
         </ul>
     </div>
 
+    <!-- 📁 detail.html - 문제 상세 화면 하단 버튼 영역 -->
     <div class="d-flex justify-content-center gap-2 mt-4">
         <a th:href="@{/problems}" class="btn btn-secondary btn-action">목록으로</a>
         <a th:href="@{'/problems/' + ${problem.id} + '/edit'}" class="btn btn-warning btn-action">수정하기</a>
         <a th:href="@{'/problems/' + ${problem.id}}" class="btn btn-primary btn-action">상세보기</a>
+
         <form th:action="@{'/problems/' + ${problem.id} + '/delete'}" method="post" style="display:inline;">
             <button type="submit" class="btn btn-danger btn-action"
                     onclick="return confirm('정말 삭제하시겠습니까?');">
                 삭제하기
             </button>
         </form>
-    </div>
 
+        <!-- ✅ 관리자만 문제등록 버튼 보이게 -->
+        <a th:if="${loginUser != null and loginUser.role.name() == 'ADMIN'}"
+           th:href="@{/problems/new}" class="btn btn-success btn-action">문제등록</a>
+    </div>
+</div>
 </body>
 </html>
