@@ -17,7 +17,6 @@ public class Problem {
 
     private String title;
 
-    // ✅ 수정: TEXT로 처리 (HTML 가능)
     @Lob
     @Column(name = "view_content", columnDefinition = "TEXT")
     private String viewContent;
@@ -29,4 +28,17 @@ public class Problem {
     private String choice3;
     private String choice4;
     private String choice5;
+
+    // Problem.java
+    @ManyToOne
+    @JoinColumn(name = "subject_id")
+    private Subject subject;
+
+    @ManyToOne
+    @JoinColumn(name = "round_id")
+    private Round round;
+
+    @ManyToOne
+    @JoinColumn(name = "unit_id")
+    private Unit unit;
 }

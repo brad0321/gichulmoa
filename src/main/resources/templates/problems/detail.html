@@ -8,6 +8,19 @@
 <div class="container mt-5" style="max-width: 800px;">
     <h1 class="mb-4">문제 상세</h1>
 
+    <!-- ✅ 분류 정보 영역 추가 -->
+    <div class="mb-4 row">
+        <div class="col-md-4">
+            <strong>과목:</strong> <span th:text="${problem.subject}">과목명</span>
+        </div>
+        <div class="col-md-4">
+            <strong>회차:</strong> <span th:text="${problem.round}">회차번호</span>
+        </div>
+        <div class="col-md-4">
+            <strong>목차:</strong> <span th:text="${problem.unit}">목차이름</span>
+        </div>
+    </div>
+
     <div class="mb-3">
         <h4>문제 내용</h4>
         <p th:text="${problem.title}"></p>
@@ -34,22 +47,17 @@
         </ul>
     </div>
 
-    <!-- 📁 detail.html - 문제 상세 화면 하단 버튼 영역 -->
     <div class="d-flex justify-content-center gap-2 mt-4">
-        <a th:href="@{/problems}" class="btn btn-secondary btn-action">목록으로</a>
-        <a th:href="@{'/problems/' + ${problem.id} + '/edit'}" class="btn btn-warning btn-action">수정하기</a>
-        <a th:href="@{'/problems/' + ${problem.id}}" class="btn btn-primary btn-action">상세보기</a>
+        <a th:href="@{/problems}" class="btn btn-secondary">목록으로</a>
+        <a th:href="@{'/problems/' + ${problem.id} + '/edit'}" class="btn btn-warning">수정하기</a>
 
         <form th:action="@{'/problems/' + ${problem.id} + '/delete'}" method="post" style="display:inline;">
-            <button type="submit" class="btn btn-danger btn-action"
-                    onclick="return confirm('정말 삭제하시겠습니까?');">
-                삭제하기
-            </button>
+            <button type="submit" class="btn btn-danger"
+                    onclick="return confirm('정말 삭제하시겠습니까?');">삭제하기</button>
         </form>
 
-        <!-- ✅ 관리자만 문제등록 버튼 보이게 -->
         <a th:if="${loginUser != null and loginUser.role.name() == 'ADMIN'}"
-           th:href="@{/problems/new}" class="btn btn-success btn-action">문제등록</a>
+           th:href="@{/problems/new}" class="btn btn-success">문제등록</a>
     </div>
 </div>
 </body>

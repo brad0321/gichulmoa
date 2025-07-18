@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none   # ← 중요: 테이블 구조 자동 변경 금지
+      ddl-auto: update   # ← 중요: 테이블 구조 자동 변경 금지
     show-sql: true
     properties:
       hibernate:
