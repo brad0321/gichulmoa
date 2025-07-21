@@ -8,7 +8,7 @@
 <div class="container mt-5" style="max-width: 800px;">
     <h1 class="mb-4">문제 상세</h1>
 
-    <!-- ✅ 분류 정보 영역 -->
+    <!-- 분류 정보 -->
     <div class="mb-4 row">
         <div class="col-md-4">
             <strong>과목:</strong> <span th:text="${problem.subject.name}">과목명</span>
@@ -56,6 +56,7 @@
                     onclick="return confirm('정말 삭제하시겠습니까?');">삭제하기</button>
         </form>
 
+        <!-- ✅ 문제등록 버튼 (관리자만) -->
         <a th:if="${loginUser != null and loginUser.role.name() == 'ADMIN'}"
            th:href="@{/problems/new}" class="btn btn-success">문제등록</a>
     </div>

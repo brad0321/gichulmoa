@@ -3,22 +3,57 @@
 <head>
     <title>문제 수정</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="container mt-5" style="max-width: 600px;">
     <h1 class="mb-4">문제 수정</h1>
+
+    <!-- ✅ 반드시 multipart/form-data 설정 -->
     <form th:action="@{'/problems/' + ${problem.id} + '/edit'}" method="post" enctype="multipart/form-data">
+
+        <!-- 제목 -->
         <div class="mb-3">
             <label class="form-label">문제 내용</label>
             <input type="text" name="title" class="form-control" th:value="${problem.title}" required>
         </div>
+
+        <!-- 드롭다운: 과목 -->
+        <div class="mb-3">
+            <label class="form-label">과목</label>
+            <select name="subjectId" class="form-select" required>
+                <option value="">과목 선택</option>
+                <option th:each="s : ${subjects}" th:value="${s.id}"
+                        th:text="${s.name}" th:selected="${s.id} == ${problem.subject.id}"></option>
+            </select>
+        </div>
+
+        <!-- 드롭다운: 회차 -->
+        <div class="mb-3">
+            <label class="form-label">회차</label>
+            <select name="roundId" class="form-select" required>
+                <option value="">회차 선택</option>
+                <option th:each="r : ${rounds}" th:value="${r.id}"
+                        th:text="${r.name}" th:selected="${r.id} == ${problem.round.id}"></option>
+            </select>
+        </div>
+
+        <!-- 드롭다운: 목차 -->
+        <div class="mb-3">
+            <label class="form-label">목차</label>
+            <select name="unitId" class="form-select" required>
+                <option value="">목차 선택</option>
+                <option th:each="u : ${units}" th:value="${u.id}"
+                        th:text="${u.name}" th:selected="${u.id} == ${problem.unit.id}"></option>
+            </select>
+        </div>
+
+        <!-- 보기 텍스트 -->
         <div class="mb-3">
             <label class="form-label">보기 항목 (텍스트)</label>
-            <textarea id="viewContent" name="viewContent" class="form-control" th:utext="${problem.viewContent}"></textarea>
+            <textarea name="viewContent" class="form-control" rows="4" th:text="${problem.viewContent}"></textarea>
         </div>
+
+        <!-- 이미지 업로드 -->
         <div class="mb-3">
             <label class="form-label">보기 항목 이미지 변경</label>
             <input type="file" name="viewImage" class="form-control">
@@ -26,6 +61,8 @@
                 <img th:src="@{'/uploads/' + ${problem.viewImagePath}}" class="img-fluid" style="max-height: 200px;">
             </div>
         </div>
+
+        <!-- 선택 문항 -->
         <div class="mb-3">
             <label class="form-label">선택문항 1</label>
             <input type="text" name="choice1" class="form-control" th:value="${problem.choice1}">
@@ -46,17 +83,11 @@
             <label class="form-label">선택문항 5</label>
             <input type="text" name="choice5" class="form-control" th:value="${problem.choice5}">
         </div>
+
         <button type="submit" class="btn btn-success">수정하기</button>
     </form>
+
     <a th:href="@{'/problems/' + ${problem.id}}" class="btn btn-secondary mt-3">취소</a>
 </div>
-
-<script>
-    $(document).ready(function() {
-        $('#viewContent').summernote({
-            height: 200
-        });
-    });
-</script>
 </body>
 </html>
