@@ -1,6 +1,7 @@
 package com.pro.project01.service;
 
 import com.pro.project01.entity.Member;
+import com.pro.project01.entity.Role;
 import com.pro.project01.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,16 +15,15 @@ public class MemberService {
     private final MemberRepository memberRepository;
 
     public Member save(Member member) {
+        if (member.getRole() == null) {
+            member.setRole(Role.USER); // 기본 권한 설정
+        }
         return memberRepository.save(member);
-    }
-
-    public List<Member> findAll() {
-        return memberRepository.findAll();
     }
 
     public Member findById(Long id) {
         return memberRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Not found"));
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
     }
 
     public Member update(Long id, Member updateData) {
@@ -43,8 +43,6 @@ public class MemberService {
     }
 
     public Member findByUsernameAndEmail(String username, String email) {
-        return memberRepository.findByUsernameAndEmail(username, email)
-                .orElse(null);
+        return memberRepository.findByUsernameAndEmail(username, email).orElse(null);
     }
-
 }
