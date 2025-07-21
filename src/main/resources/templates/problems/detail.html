@@ -8,16 +8,16 @@
 <div class="container mt-5" style="max-width: 800px;">
     <h1 class="mb-4">문제 상세</h1>
 
-    <!-- ✅ 분류 정보 영역 추가 -->
+    <!-- ✅ 분류 정보 영역 -->
     <div class="mb-4 row">
         <div class="col-md-4">
-            <strong>과목:</strong> <span th:text="${problem.subject}">과목명</span>
+            <strong>과목:</strong> <span th:text="${problem.subject.name}">과목명</span>
         </div>
         <div class="col-md-4">
-            <strong>회차:</strong> <span th:text="${problem.round}">회차번호</span>
+            <strong>회차:</strong> <span th:text="${problem.round.name}">회차번호</span>
         </div>
         <div class="col-md-4">
-            <strong>목차:</strong> <span th:text="${problem.unit}">목차이름</span>
+            <strong>목차:</strong> <span th:text="${problem.unit.name}">목차이름</span>
         </div>
     </div>
 
