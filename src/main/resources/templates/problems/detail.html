@@ -33,7 +33,7 @@
 
     <div class="mb-3" th:if="${problem.viewImagePath}">
         <h4>보기 항목 이미지</h4>
-        <img th:src="@{'/uploads/' + ${problem.viewImagePath}}" class="img-fluid" style="max-height: 300px;">
+        <img th:src="${problem.imageUrl}" class="img-fluid" style="max-height: 300px;">
     </div>
 
     <div class="mb-3">
