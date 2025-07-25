@@ -5,13 +5,10 @@ import com.pro.project01.v2.domain.problem.entity.Round;
 import com.pro.project01.v2.domain.problem.entity.Subject;
 import com.pro.project01.v2.domain.problem.entity.Unit;
 
-import java.time.LocalDateTime;
-
 public record ProblemResponse(
         Long id,
         String title,
-        String content,
-        String imageUrl,
+        String viewImagePath, // ✅ 이미지 경로
         String viewContent,
         String choice1,
         String choice2,
@@ -20,16 +17,13 @@ public record ProblemResponse(
         String choice5,
         Subject subject,
         Round round,
-        Unit unit,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        Unit unit
 ) {
     public static ProblemResponse from(Problem problem) {
         return new ProblemResponse(
                 problem.getId(),
                 problem.getTitle(),
-                problem.getContent(),
-                problem.getImageUrl(),
+                problem.getViewImagePath(), // ✅ 이미지 파일명
                 problem.getViewContent(),
                 problem.getChoice1(),
                 problem.getChoice2(),
@@ -38,14 +32,12 @@ public record ProblemResponse(
                 problem.getChoice5(),
                 problem.getSubject(),
                 problem.getRound(),
-                problem.getUnit(),
-                problem.getCreatedAt(),
-                problem.getUpdatedAt()
+                problem.getUnit()
         );
     }
 
-    // ✅ 추가: Thymeleaf에서 사용할 viewImagePath 프로퍼티
-    public String getViewImagePath() {
-        return imageUrl != null ? imageUrl : null;
+    // ✅ Thymeleaf에서 이미지 경로 접근용
+    public String getImageUrl() {
+        return viewImagePath != null ? "/uploads/" + viewImagePath : null;
     }
 }

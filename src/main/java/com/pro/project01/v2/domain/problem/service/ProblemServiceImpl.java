@@ -3,21 +3,29 @@ package com.pro.project01.v2.domain.problem.service;
 import com.pro.project01.v2.domain.problem.dto.ProblemCreateRequest;
 import com.pro.project01.v2.domain.problem.dto.ProblemResponse;
 import com.pro.project01.v2.domain.problem.dto.ProblemUpdateRequest;
-import com.pro.project01.v2.domain.problem.entity.*;
-import com.pro.project01.v2.domain.problem.repository.*;
-
+import com.pro.project01.v2.domain.problem.entity.Problem;
+import com.pro.project01.v2.domain.problem.entity.Round;
+import com.pro.project01.v2.domain.problem.entity.Subject;
+import com.pro.project01.v2.domain.problem.entity.Unit;
+import com.pro.project01.v2.domain.problem.repository.ProblemRepository;
+import com.pro.project01.v2.domain.problem.repository.RoundRepository;
+import com.pro.project01.v2.domain.problem.repository.SubjectRepository;
+import com.pro.project01.v2.domain.problem.repository.UnitRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProblemServiceImpl implements ProblemService {
 
     private final ProblemRepository problemRepository;
@@ -25,33 +33,23 @@ public class ProblemServiceImpl implements ProblemService {
     private final RoundRepository roundRepository;
     private final UnitRepository unitRepository;
 
-    private final String uploadDir = "src/main/resources/static/uploads";
-
     @Override
     public Long create(ProblemCreateRequest request) {
-        Subject subject = subjectRepository.findById(request.getSubjectId())
-                .orElseThrow(() -> new IllegalArgumentException("과목이 존재하지 않습니다."));
-        Round round = roundRepository.findById(request.getRoundId())
-                .orElseThrow(() -> new IllegalArgumentException("회차가 존재하지 않습니다."));
-        Unit unit = unitRepository.findById(request.getUnitId())
-                .orElseThrow(() -> new IllegalArgumentException("목차가 존재하지 않습니다."));
-
-        String imageUrl = null;
-        MultipartFile imageFile = request.getImageFile();
-        if (imageFile != null && !imageFile.isEmpty()) {
-            imageUrl = trySaveFile(imageFile);
-        }
+        Subject subject = subjectRepository.findById(request.subjectId())
+                .orElseThrow(() -> new IllegalArgumentException("과목 없음"));
+        Round round = roundRepository.findById(request.roundId())
+                .orElseThrow(() -> new IllegalArgumentException("회차 없음"));
+        Unit unit = unitRepository.findById(request.unitId())
+                .orElseThrow(() -> new IllegalArgumentException("목차 없음"));
 
         Problem problem = Problem.builder()
-                .title(request.getTitle())
-                .content(request.getContent())
-                .imageUrl(imageUrl)
-                .viewContent(request.getViewContent())
-                .choice1(request.getChoice1())
-                .choice2(request.getChoice2())
-                .choice3(request.getChoice3())
-                .choice4(request.getChoice4())
-                .choice5(request.getChoice5())
+                .title(request.title())
+                .viewContent(request.viewContent())
+                .choice1(request.choice1())
+                .choice2(request.choice2())
+                .choice3(request.choice3())
+                .choice4(request.choice4())
+                .choice5(request.choice5())
                 .subject(subject)
                 .round(round)
                 .unit(unit)
@@ -62,85 +60,61 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public void update(Long id, ProblemUpdateRequest request) {
-        Problem problem = problemRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("문제를 찾을 수 없습니다."));
-
-        Subject subject = subjectRepository.findById(request.getSubjectId())
-                .orElseThrow(() -> new IllegalArgumentException("과목이 존재하지 않습니다."));
-        Round round = roundRepository.findById(request.getRoundId())
-                .orElseThrow(() -> new IllegalArgumentException("회차가 존재하지 않습니다."));
-        Unit unit = unitRepository.findById(request.getUnitId())
-                .orElseThrow(() -> new IllegalArgumentException("목차가 존재하지 않습니다."));
-
-        String imageUrl = problem.getImageUrl();
-        MultipartFile imageFile = request.getImageFile();
-        if (imageFile != null && !imageFile.isEmpty()) {
-            imageUrl = trySaveFile(imageFile);
-        }
-
-        problem.update(
-                request.getTitle(),
-                request.getContent(),
-                imageUrl,
-                request.getViewContent(),
-                request.getChoice1(),
-                request.getChoice2(),
-                request.getChoice3(),
-                request.getChoice4(),
-                request.getChoice5(),
-                subject,
-                round,
-                unit
-        );
+    public List<ProblemResponse> findAll() {
+        return problemRepository.findAll().stream()
+                .map(ProblemResponse::from)
+                .toList();
     }
 
     @Override
     public ProblemResponse findById(Long id) {
-        Problem problem = problemRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("문제가 없습니다."));
-        return ProblemResponse.from(problem);
+        return ProblemResponse.from(problemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("문제 없음")));
     }
 
     @Override
-    public List<ProblemResponse> findAll() {
-        return problemRepository.findAll().stream()
-                .map(ProblemResponse::from)
-                .collect(Collectors.toList());
+    public void update(Long id, ProblemUpdateRequest request, MultipartFile viewImage) {
+        Problem problem = problemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("문제를 찾을 수 없습니다."));
+
+        Subject subject = subjectRepository.findById(request.subjectId())
+                .orElseThrow(() -> new IllegalArgumentException("과목 없음"));
+        Round round = roundRepository.findById(request.roundId())
+                .orElseThrow(() -> new IllegalArgumentException("회차 없음"));
+        Unit unit = unitRepository.findById(request.unitId())
+                .orElseThrow(() -> new IllegalArgumentException("목차 없음"));
+
+        // ✅ 엔티티 업데이트
+        problem.update(
+                request.title(),
+                request.viewContent(),
+                request.choice1(),
+                request.choice2(),
+                request.choice3(),
+                request.choice4(),
+                request.choice5(),
+                subject, round, unit
+        );
+
+        // ✅ 이미지 업로드 처리
+        if (viewImage != null && !viewImage.isEmpty()) {
+            String fileName = UUID.randomUUID() + "_" + viewImage.getOriginalFilename();
+            Path filePath = Paths.get("src/main/resources/static/uploads/" + fileName);
+
+            try {
+                Files.createDirectories(filePath.getParent());
+                viewImage.transferTo(filePath.toFile());
+                problem.updateImagePath(fileName);
+            } catch (IOException e) {
+                throw new RuntimeException("이미지 업로드 실패", e);
+            }
+        }
+
+        problemRepository.save(problem);
     }
 
     @Override
     public void delete(Long id) {
         problemRepository.deleteById(id);
-    }
-
-    private String trySaveFile(MultipartFile file) {
-        try {
-            return saveFile(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private String saveFile(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) {
-            return null;
-        }
-
-        String originalFilename = file.getOriginalFilename();
-        String uuid = UUID.randomUUID().toString();
-        String newFilename = uuid + "_" + originalFilename;
-
-        String uploadPath = new File(uploadDir).getAbsolutePath();
-        File dir = new File(uploadPath);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
-        File dest = new File(uploadPath, newFilename);
-        file.transferTo(dest);
-
-        return "/uploads/" + newFilename;
     }
 }
