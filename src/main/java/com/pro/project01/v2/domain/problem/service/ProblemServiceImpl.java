@@ -1,31 +1,22 @@
 package com.pro.project01.v2.domain.problem.service;
 
-import com.pro.project01.v2.domain.problem.dto.ProblemCreateRequest;
+import com.pro.project01.v2.domain.problem.dto.ProblemRequest;
 import com.pro.project01.v2.domain.problem.dto.ProblemResponse;
-import com.pro.project01.v2.domain.problem.dto.ProblemUpdateRequest;
 import com.pro.project01.v2.domain.problem.entity.Problem;
-import com.pro.project01.v2.domain.problem.entity.Round;
-import com.pro.project01.v2.domain.problem.entity.Subject;
-import com.pro.project01.v2.domain.problem.entity.Unit;
 import com.pro.project01.v2.domain.problem.repository.ProblemRepository;
-import com.pro.project01.v2.domain.problem.repository.RoundRepository;
-import com.pro.project01.v2.domain.problem.repository.SubjectRepository;
-import com.pro.project01.v2.domain.problem.repository.UnitRepository;
+import com.pro.project01.v2.domain.subject.entity.Subject;
+import com.pro.project01.v2.domain.subject.repository.SubjectRepository;
+import com.pro.project01.v2.domain.round.entity.Round;
+import com.pro.project01.v2.domain.round.repository.RoundRepository;
+import com.pro.project01.v2.domain.unit.entity.Unit;
+import com.pro.project01.v2.domain.unit.repository.UnitRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ProblemServiceImpl implements ProblemService {
 
     private final ProblemRepository problemRepository;
@@ -34,83 +25,45 @@ public class ProblemServiceImpl implements ProblemService {
     private final UnitRepository unitRepository;
 
     @Override
-    public Long create(ProblemCreateRequest request) {
+    public ProblemResponse create(ProblemRequest request, String imagePath) {
         Subject subject = subjectRepository.findById(request.subjectId())
-                .orElseThrow(() -> new IllegalArgumentException("과목 없음"));
+                .orElseThrow(() -> new RuntimeException("Subject not found"));
         Round round = roundRepository.findById(request.roundId())
-                .orElseThrow(() -> new IllegalArgumentException("회차 없음"));
+                .orElseThrow(() -> new RuntimeException("Round not found"));
         Unit unit = unitRepository.findById(request.unitId())
-                .orElseThrow(() -> new IllegalArgumentException("목차 없음"));
+                .orElseThrow(() -> new RuntimeException("Unit not found"));
 
+        // ✅ Builder 사용
         Problem problem = Problem.builder()
                 .title(request.title())
                 .viewContent(request.viewContent())
+                .imageUrl(imagePath)
                 .choice1(request.choice1())
                 .choice2(request.choice2())
                 .choice3(request.choice3())
                 .choice4(request.choice4())
                 .choice5(request.choice5())
+                .answer(request.answer())
                 .subject(subject)
                 .round(round)
                 .unit(unit)
                 .build();
 
-        problemRepository.save(problem);
-        return problem.getId();
+        return ProblemResponse.fromEntity(problemRepository.save(problem));
     }
 
     @Override
     public List<ProblemResponse> findAll() {
         return problemRepository.findAll().stream()
-                .map(ProblemResponse::from)
+                .map(ProblemResponse::fromEntity)
                 .toList();
     }
 
     @Override
     public ProblemResponse findById(Long id) {
-        return ProblemResponse.from(problemRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("문제 없음")));
-    }
-
-    @Override
-    public void update(Long id, ProblemUpdateRequest request, MultipartFile viewImage) {
         Problem problem = problemRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("문제를 찾을 수 없습니다."));
-
-        Subject subject = subjectRepository.findById(request.subjectId())
-                .orElseThrow(() -> new IllegalArgumentException("과목 없음"));
-        Round round = roundRepository.findById(request.roundId())
-                .orElseThrow(() -> new IllegalArgumentException("회차 없음"));
-        Unit unit = unitRepository.findById(request.unitId())
-                .orElseThrow(() -> new IllegalArgumentException("목차 없음"));
-
-        // ✅ 엔티티 업데이트
-        problem.update(
-                request.title(),
-                request.viewContent(),
-                request.choice1(),
-                request.choice2(),
-                request.choice3(),
-                request.choice4(),
-                request.choice5(),
-                subject, round, unit
-        );
-
-        // ✅ 이미지 업로드 처리
-        if (viewImage != null && !viewImage.isEmpty()) {
-            String fileName = UUID.randomUUID() + "_" + viewImage.getOriginalFilename();
-            Path filePath = Paths.get("src/main/resources/static/uploads/" + fileName);
-
-            try {
-                Files.createDirectories(filePath.getParent());
-                viewImage.transferTo(filePath.toFile());
-                problem.updateImagePath(fileName);
-            } catch (IOException e) {
-                throw new RuntimeException("이미지 업로드 실패", e);
-            }
-        }
-
-        problemRepository.save(problem);
+                .orElseThrow(() -> new RuntimeException("Problem not found"));
+        return ProblemResponse.fromEntity(problem);
     }
 
     @Override

@@ -1,74 +1,101 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>문제등록</title>
     <meta charset="UTF-8">
+    <title>문제 등록</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<div class="container mt-5" style="max-width: 600px;">
-    <h1 class="mb-4">문제등록</h1>
+<div class="container mt-5" style="max-width: 900px;">
+    <h1 class="mb-4">문제 등록</h1>
 
     <form th:action="@{/problems/new}" method="post" enctype="multipart/form-data">
+
+        <!-- ✅ 제목 -->
         <div class="mb-3">
             <label class="form-label">문제 제목</label>
-            <input type="text" name="title" class="form-control" required>
+            <input type="text" class="form-control" name="title" placeholder="문제 제목 입력" required>
         </div>
 
-        <!-- ✅ 드롭다운: 과목 -->
+        <!-- ✅ 내용 -->
+        <div class="mb-3">
+            <label class="form-label">문제 본문</label>
+            <textarea class="form-control" name="viewContent" rows="3" placeholder="문제 내용을 입력하세요."></textarea>
+        </div>
+
+        <!-- ✅ 이미지 업로드 -->
+        <div class="mb-3">
+            <label class="form-label">이미지 업로드</label>
+            <input type="file" class="form-control" name="imageFile">
+        </div>
+
+        <!-- ✅ 보기 입력 -->
+        <div class="mb-3">
+            <label class="form-label">보기 1</label>
+            <input type="text" class="form-control" name="choice1">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">보기 2</label>
+            <input type="text" class="form-control" name="choice2">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">보기 3</label>
+            <input type="text" class="form-control" name="choice3">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">보기 4</label>
+            <input type="text" class="form-control" name="choice4">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">보기 5</label>
+            <input type="text" class="form-control" name="choice5">
+        </div>
+
+        <!-- ✅ 정답 -->
+        <div class="mb-3">
+            <label class="form-label">정답</label>
+            <select class="form-select" name="answer" required>
+                <option value="">정답 선택</option>
+                <option value="1">1번</option>
+                <option value="2">2번</option>
+                <option value="3">3번</option>
+                <option value="4">4번</option>
+                <option value="5">5번</option>
+            </select>
+        </div>
+
+        <!-- ✅ 과목 -->
         <div class="mb-3">
             <label class="form-label">과목</label>
-            <select name="subjectId" class="form-select" required>
+            <select class="form-select" name="subjectId" required>
                 <option value="">과목 선택</option>
-                <option th:each="s : ${subjects}" th:value="${s.id}" th:text="${s.name}"></option>
+                <option th:each="subject : ${subjects}" th:value="${subject.id}" th:text="${subject.name}"></option>
             </select>
         </div>
 
-        <!-- ✅ 드롭다운: 회차 -->
+        <!-- ✅ 회차 -->
         <div class="mb-3">
             <label class="form-label">회차</label>
-            <select name="roundId" class="form-select" required>
+            <select class="form-select" name="roundId" required>
                 <option value="">회차 선택</option>
-                <option th:each="r : ${rounds}" th:value="${r.id}" th:text="${r.name}"></option>
+                <option th:each="round : ${rounds}" th:value="${round.id}" th:text="${round.roundNumber}"></option>
             </select>
         </div>
 
-        <!-- ✅ 드롭다운: 목차 -->
+        <!-- ✅ 목차 -->
         <div class="mb-3">
             <label class="form-label">목차</label>
-            <select name="unitId" class="form-select" required>
+            <select class="form-select" name="unitId" required>
                 <option value="">목차 선택</option>
-                <option th:each="u : ${units}" th:value="${u.id}" th:text="${u.name}"></option>
+                <option th:each="unit : ${units}" th:value="${unit.id}" th:text="${unit.name}"></option>
             </select>
         </div>
 
-        <!-- 보기 지문 텍스트 -->
-        <div class="mb-3">
-            <label class="form-label">보기 항목1 (텍스트)</label>
-            <textarea name="viewContent" class="form-control" rows="4"></textarea>
-        </div>
-
-        <!-- 객관식 선택지 -->
-        <div class="mb-3">
-            <label class="form-label">선택 문항들</label>
-            <textarea name="choice1" class="form-control" rows="1" required></textarea>
-            <textarea name="choice2" class="form-control" rows="1" required></textarea>
-            <textarea name="choice3" class="form-control" rows="1" required></textarea>
-            <textarea name="choice4" class="form-control" rows="1" required></textarea>
-            <textarea name="choice5" class="form-control" rows="1" required></textarea>
-        </div>
-
-        <!-- 이미지 업로드 -->
-        <div class="mb-3">
-            <label class="form-label">보기 이미지</label>
-            <input type="file" name="imageFile" class="form-control"> <!-- ✅ 수정된 name -->
-        </div>
-
-        <!-- 버튼들 -->
-        <div class="d-flex gap-2 mt-4">
-            <button type="submit" class="btn btn-success">등록하기</button>
+        <!-- ✅ 버튼 -->
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">등록하기</button>
             <a th:href="@{/dashboard}" class="btn btn-secondary">대시보드</a>
-            <a th:href="@{/problems}" class="btn btn-primary">문제목록</a>
+            <a th:href="@{/problems}" class="btn btn-outline-success">문제 목록</a>
         </div>
     </form>
 </div>

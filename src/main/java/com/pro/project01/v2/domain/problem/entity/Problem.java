@@ -1,10 +1,14 @@
 package com.pro.project01.v2.domain.problem.entity;
 
+import com.pro.project01.v2.domain.subject.entity.Subject;
+import com.pro.project01.v2.domain.round.entity.Round;
+import com.pro.project01.v2.domain.unit.entity.Unit;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "problems")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -16,25 +20,21 @@ public class Problem {
     private Long id;
 
     @Column(nullable = false)
-    private String title;
+    private String title; // 문제 제목
 
-    @Column(columnDefinition = "TEXT")
-    private String viewContent;
+    @Lob
+    private String viewContent; // 보기 지문 (텍스트)
 
-    @Column(columnDefinition = "TEXT")
+    private String imageUrl; // 이미지 경로
+
     private String choice1;
-
-    @Column(columnDefinition = "TEXT")
     private String choice2;
-
-    @Column(columnDefinition = "TEXT")
     private String choice3;
-
-    @Column(columnDefinition = "TEXT")
     private String choice4;
-
-    @Column(columnDefinition = "TEXT")
     private String choice5;
+
+    @Column(nullable = false)
+    private Integer answer; // 정답 (1~5)
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id", nullable = false)
@@ -48,25 +48,17 @@ public class Problem {
     @JoinColumn(name = "unit_id", nullable = false)
     private Unit unit;
 
-    private String viewImagePath;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    // ✅ 엔티티 수정 메서드
-    public void update(String title, String viewContent, String choice1, String choice2,
-                       String choice3, String choice4, String choice5,
-                       Subject subject, Round round, Unit unit) {
-        this.title = title;
-        this.viewContent = viewContent;
-        this.choice1 = choice1;
-        this.choice2 = choice2;
-        this.choice3 = choice3;
-        this.choice4 = choice4;
-        this.choice5 = choice5;
-        this.subject = subject;
-        this.round = round;
-        this.unit = unit;
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public void updateImagePath(String imagePath) {
-        this.viewImagePath = imagePath;
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }

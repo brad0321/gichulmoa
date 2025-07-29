@@ -1,4 +1,4 @@
-package com.pro.project01.v2.domain.problem.entity;
+package com.pro.project01.v2.domain.unit.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,13 +8,12 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(name = "units")
 public class Unit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 200)
-    private String name; // 예: 부동산의 개념과 분류
+    @Column(nullable = false)
+    private String name; // 예: 01. 부동산의 개념과 분류
 }
