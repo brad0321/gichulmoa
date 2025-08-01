@@ -1,6 +1,7 @@
 package com.pro.project01.v2.domain.problem.dto;
 
 import com.pro.project01.v2.domain.problem.entity.Problem;
+import com.pro.project01.v2.domain.problem.entity.ProblemType;
 
 import java.time.LocalDateTime;
 
@@ -16,8 +17,9 @@ public record ProblemResponse(
         String choice5,
         Integer answer,
         String subjectName,
-        Integer roundNumber, // ✅ 변경됨
+        Integer roundNumber, // ✅ Round -> roundNumber
         String unitName,
+        ProblemType type, // ✅ 새로 추가된 필드
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -34,8 +36,9 @@ public record ProblemResponse(
                 problem.getChoice5(),
                 problem.getAnswer(),
                 problem.getSubject() != null ? problem.getSubject().getName() : null,
-                problem.getRound() != null ? problem.getRound().getRoundNumber() : null, // ✅ 변경
+                problem.getRound() != null ? problem.getRound().getRoundNumber() : null,
                 problem.getUnit() != null ? problem.getUnit().getName() : null,
+                problem.getType(), // ✅ enum 값 그대로 전달
                 problem.getCreatedAt(),
                 problem.getUpdatedAt()
         );

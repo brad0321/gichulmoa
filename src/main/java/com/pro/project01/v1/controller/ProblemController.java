@@ -24,7 +24,7 @@ public class ProblemController {
         model.addAttribute("subjects", problemService.getSubjects());
         model.addAttribute("rounds", problemService.getRounds());
         model.addAttribute("units", problemService.getUnits());
-        return "problems/problem-new";
+        return "problems-new";
     }
 
     // 문제 저장 처리

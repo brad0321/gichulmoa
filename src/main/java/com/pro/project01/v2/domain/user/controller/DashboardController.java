@@ -6,20 +6,32 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/dashboard")
-public class DashboardController
-{
-    @GetMapping
-    public String dashboard(HttpSession session, Model model)
-    {
-        UserResponse loginUser = (UserResponse)session.getAttribute("loginUser");
-        if(loginUser == null) return "redirect:/login";
+public class DashboardController {
+
+    @GetMapping("/dashboard")
+    public String dashboard(HttpSession session, Model model) {
+        UserResponse loginUser = (UserResponse) session.getAttribute("loginUser");
+        if (loginUser == null) return "redirect:/login";
+
+        // ✅ 시험일: 2025년 10월 25일 09:00
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime examDate = LocalDateTime.of(2025, 10, 25, 9, 0);
+
+        Duration duration = Duration.between(now, examDate);
+        long totalHours = duration.toHours();
+        long daysLeft = duration.toDays();
+        long hoursLeft = totalHours % 24;
 
         model.addAttribute("loginUser", loginUser);
+        model.addAttribute("daysLeft", daysLeft);
+        model.addAttribute("hoursLeft", hoursLeft);
+
         return "dashboard";
     }
 }

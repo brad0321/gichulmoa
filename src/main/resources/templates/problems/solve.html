@@ -1,39 +1,206 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-    <title>문제풀이</title>
     <meta charset="UTF-8">
+    <title>문제풀이</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <style>
+        .clickable-word {
+            position: relative;
+            color: #1e3932;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .clickable-word.marked::after {
+            content: "X";
+            color: red;
+            font-size: 18px;
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #choices li {
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        #choices li.disabled-choice {
+            color: #999;
+        }
+        .mark-o {
+            color: green;
+            font-weight: bold;
+            margin-left: 6px;
+        }
+    </style>
 </head>
 <body>
-<div class="container mt-5">
-    <h1 class="mb-4 text-center">문제풀이</h1>
 
-    <!-- 문제 없을 때 -->
-    <div th:if="${errorMessage}" class="alert alert-warning text-center">
-        <p th:text="${errorMessage}"></p>
-        <!-- ✅ 관리자만 문제등록 버튼 보임 -->
-        <a th:if="${loginUser != null and loginUser.role.name() == 'ADMIN'}"
-           th:href="@{/problems/new}" class="btn btn-primary mt-3">문제 등록하기</a>
-    </div>
-
-    <!-- 문제 리스트 -->
-    <div th:if="${problems}" class="mt-4">
-        <div th:each="problem : ${problems}" class="mb-4 p-3 border rounded">
-            <h5 th:text="${problem.title}">문제 제목</h5>
-            <p th:text="${problem.viewContent}">보기 항목</p>
-
-            <ul class="list-group">
-                <li class="list-group-item" th:text="${problem.choice1}"></li>
-                <li class="list-group-item" th:text="${problem.choice2}"></li>
-                <li class="list-group-item" th:text="${problem.choice3}"></li>
-                <li class="list-group-item" th:text="${problem.choice4}"></li>
-                <li class="list-group-item" th:text="${problem.choice5}"></li>
-            </ul>
+<!-- ✅ 상단바 -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">문제풀이</a>
+        <div class="d-flex gap-2">
+            <!-- 과목 -->
+            <select id="subject-select" class="form-select">
+                <option value="">과목 선택</option>
+                <option value="민법">민법</option>
+                <option value="부동산학개론">부동산학개론</option>
+            </select>
+            <!-- 유형 -->
+            <select id="type-select" class="form-select">
+                <option value="">유형 선택</option>
+                <option value="기출문제풀이">기출문제풀이</option>
+                <option value="OX퀴즈">OX퀴즈</option>
+            </select>
+            <!-- 회차 -->
+            <select id="round-select" class="form-select">
+                <option value="">회차 선택</option>
+                <option value="36">36회차</option>
+                <option value="35">35회차</option>
+                <option value="34">34회차</option>
+            </select>
+            <!-- 목차 -->
+            <select id="unit-select" class="form-select">
+                <option value="">목차 선택</option>
+                <option value="01. 부동산의 개념">01. 부동산의 개념</option>
+            </select>
+            <button id="start-btn" class="btn btn-primary">문제풀기 ▷▷</button>
         </div>
     </div>
+</nav>
 
-    <a th:href="@{/dashboard}" class="btn btn-secondary mt-3">대시보드로</a>
+<!-- ✅ 문제 리스트 -->
+<div class="container my-4" id="main">
+    <h3 class="mb-3 text-success">진행중인 문제풀이</h3>
+    <div class="list-group">
+        <a href="#" class="list-group-item list-group-item-action">[부동산학개론] [기출문제] [35회차] [전체] [6/40]</a>
+        <a href="#" class="list-group-item list-group-item-action">[민법] [기출문제] [다중선택] [17/42]</a>
+    </div>
 </div>
+
+<!-- ✅ 문제 풀이 영역 -->
+<div class="container my-4" id="question-area" style="display:none;">
+    <h4 class="text-primary mb-3">문제</h4>
+    <p id="question-text" class="mb-3"></p>
+    <ul id="choices" class="list-group mb-3"></ul>
+    <div class="d-flex justify-content-between">
+        <button id="prev-btn" class="btn btn-outline-secondary">◀ 이전</button>
+        <button id="next-btn" class="btn btn-outline-secondary">다음 ▶</button>
+    </div>
+</div>
+
+<!-- ✅ 하단바 -->
+<nav class="navbar fixed-bottom navbar-light bg-white border-top p-2">
+    <div class="container-fluid d-flex justify-content-between">
+        <div>
+            <button class="btn btn-sm btn-outline-dark">+</button>
+            <button class="btn btn-sm btn-outline-dark">-</button>
+            <button class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-gear"></i></button>
+        </div>
+        <div>
+            <label><input type="checkbox" id="wrong-checkbox"> 오답</label>
+        </div>
+        <div>
+            <button id="stop-btn" class="btn btn-danger btn-sm">풀이멈춤</button>
+        </div>
+    </div>
+</nav>
+
+<!-- ✅ JS -->
+<script src="https://kit.fontawesome.com/258cb932bc.js" crossorigin="anonymous"></script>
+<script>
+    let questions = []; // API로 불러올 예정
+    let currentIndex = 0;
+    let allowChoiceClick = false;
+
+    // ✅ API 호출로 문제 가져오기
+    async function loadQuestions() {
+        const response = await fetch('/api/problems'); // Spring Boot API 연동
+        questions = await response.json();
+        showQuestion(0);
+    }
+
+    // ✅ 문제 표시
+    function showQuestion(index) {
+        const question = questions[index];
+
+        // ✅ API 데이터 구조에 맞게 title로 출력
+        document.getElementById('question-text').innerHTML = question.title;
+
+        const choicesList = document.getElementById('choices');
+        choicesList.innerHTML = '';
+
+        // ✅ choices 배열이 [{content:"보기1", isCorrect:false}, ...] 구조라면:
+        question.choices.forEach(choiceObj => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.textContent = choiceObj.content; // ✅ content 속성 사용
+            choicesList.appendChild(li);
+        });
+
+        bindChoiceEvents();
+    }
+
+    // ✅ 보기 클릭 기능
+    function bindChoiceEvents() {
+        allowChoiceClick = false;
+        const clickableWord = document.querySelector('.clickable-word');
+        if (clickableWord) {
+            clickableWord.addEventListener('click', () => {
+                clickableWord.classList.toggle('marked');
+                allowChoiceClick = clickableWord.classList.contains('marked');
+            });
+        }
+
+        document.querySelectorAll('#choices li').forEach(item => {
+            item.addEventListener('click', function() {
+                if (!allowChoiceClick) return;
+                if (this.classList.contains('disabled-choice')) {
+                    this.classList.remove('disabled-choice');
+                    this.querySelector('.mark-o')?.remove();
+                } else {
+                    this.classList.add('disabled-choice');
+                    const mark = document.createElement('span');
+                    mark.textContent = ' O';
+                    mark.classList.add('mark-o');
+                    this.appendChild(mark);
+                }
+            });
+        });
+    }
+
+    // ✅ 버튼 기능
+    document.getElementById('start-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('main').style.display = 'none';
+        document.getElementById('question-area').style.display = 'block';
+        loadQuestions();
+    });
+
+    document.getElementById('next-btn').addEventListener('click', () => {
+        if (currentIndex < questions.length - 1) {
+            currentIndex++;
+            showQuestion(currentIndex);
+        }
+    });
+
+    document.getElementById('prev-btn').addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            showQuestion(currentIndex);
+        }
+    });
+
+    document.getElementById('stop-btn').addEventListener('click', () => {
+        document.getElementById('main').style.display = 'block';
+        document.getElementById('question-area').style.display = 'none';
+    });
+</script>
 </body>
 </html>

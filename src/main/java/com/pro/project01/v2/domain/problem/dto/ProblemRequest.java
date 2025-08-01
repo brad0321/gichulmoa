@@ -11,5 +11,6 @@ public record ProblemRequest(
         Integer answer,
         Long subjectId,
         Long roundId,
-        Long unitId
+        Long unitId,
+        String type // ✅ 새로 추가 (enum 이름을 문자열로 받음)
 ) {}

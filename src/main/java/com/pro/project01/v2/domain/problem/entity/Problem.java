@@ -1,7 +1,7 @@
 package com.pro.project01.v2.domain.problem.entity;
 
-import com.pro.project01.v2.domain.subject.entity.Subject;
 import com.pro.project01.v2.domain.round.entity.Round;
+import com.pro.project01.v2.domain.subject.entity.Subject;
 import com.pro.project01.v2.domain.unit.entity.Unit;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,6 +21,10 @@ public class Problem {
 
     @Column(nullable = false)
     private String title; // 문제 제목
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProblemType type; // ✅ 문제 유형 (기출문제 / OX퀴즈)
 
     @Lob
     private String viewContent; // 보기 지문 (텍스트)
@@ -60,5 +64,25 @@ public class Problem {
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    // ✅ update() 메서드 추가
+    public void update(String title, String viewContent, String imageUrl,
+                       String choice1, String choice2, String choice3,
+                       String choice4, String choice5, Integer answer,
+                       Subject subject, Round round, Unit unit, ProblemType type) {
+        this.title = title;
+        this.viewContent = viewContent;
+        this.imageUrl = imageUrl;
+        this.choice1 = choice1;
+        this.choice2 = choice2;
+        this.choice3 = choice3;
+        this.choice4 = choice4;
+        this.choice5 = choice5;
+        this.answer = answer;
+        this.subject = subject;
+        this.round = round;
+        this.unit = unit;
+        this.type = type;
     }
 }
