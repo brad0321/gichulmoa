@@ -2,6 +2,7 @@ package com.pro.project01.v2.domain.problem.controller;
 
 import com.pro.project01.v2.domain.problem.dto.ProblemRequest;
 import com.pro.project01.v2.domain.problem.dto.ProblemResponse;
+import com.pro.project01.v2.domain.problem.dto.ProblemResponseForSolve;
 import com.pro.project01.v2.domain.problem.entity.ProblemType;
 import com.pro.project01.v2.domain.problem.repository.ProblemRepository;
 import com.pro.project01.v2.domain.problem.service.ProblemService;
@@ -206,7 +207,7 @@ public class ProblemController {
     // ✅ 문제 리스트 API
     @ResponseBody
     @GetMapping("/api/problems")
-    public Object getProblems(
+    public List<ProblemResponseForSolve> getProblems(
             @RequestParam Long subjectId,
             @RequestParam(required = false) Long roundId,
             @RequestParam(required = false) Long unitId,
@@ -214,6 +215,23 @@ public class ProblemController {
     ) {
         log.info("[API] 문제 리스트 요청: subjectId={}, roundId={}, unitId={}, type={}",
                 subjectId, roundId, unitId, type);
-        return problemRepository.findByFilters(subjectId, unitId, roundId, type);
+
+        return problemRepository.findByFilters(subjectId, unitId, roundId, type)
+                .stream()
+                .map(problem -> new ProblemResponseForSolve(
+                        problem.getId(),
+                        problem.getTitle(),
+                        problem.getViewContent(),
+                        problem.getImageUrl(),
+                        List.of(
+                                new ProblemResponseForSolve.ChoiceDto(problem.getChoice1()),
+                                new ProblemResponseForSolve.ChoiceDto(problem.getChoice2()),
+                                new ProblemResponseForSolve.ChoiceDto(problem.getChoice3()),
+                                new ProblemResponseForSolve.ChoiceDto(problem.getChoice4()),
+                                new ProblemResponseForSolve.ChoiceDto(problem.getChoice5())
+                        )
+                ))
+                .toList();
     }
+
 }

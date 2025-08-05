@@ -187,7 +187,11 @@
     // ✅ 문제 출력
     function showQuestion(index) {
         const q = questions[index];
-        document.getElementById('question-text').textContent = q.title;
+        document.getElementById('question-text').innerHTML = `
+        <strong>${q.title}</strong><br>
+        <div>${q.viewContent ? q.viewContent : ''}</div>
+        ${q.imageUrl ? `<img src="${q.imageUrl}" style="max-width:100%; margin-top:10px;">` : ''}
+    `;
 
         const choicesList = document.getElementById('choices');
         choicesList.innerHTML = '';
@@ -200,6 +204,7 @@
 
         bindChoiceEvents();
     }
+
 
     // ✅ 보기 클릭 이벤트
     function bindChoiceEvents() {
