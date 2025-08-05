@@ -8,7 +8,6 @@
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Custom CSS -->
     <style>
         .clickable-word {
             position: relative;
@@ -49,26 +48,18 @@
             <!-- 과목 -->
             <select id="subject-select" class="form-select">
                 <option value="">과목 선택</option>
-                <option value="민법">민법</option>
-                <option value="부동산학개론">부동산학개론</option>
             </select>
             <!-- 유형 -->
             <select id="type-select" class="form-select">
                 <option value="">유형 선택</option>
-                <option value="기출문제풀이">기출문제풀이</option>
-                <option value="OX퀴즈">OX퀴즈</option>
             </select>
             <!-- 회차 -->
             <select id="round-select" class="form-select">
                 <option value="">회차 선택</option>
-                <option value="36">36회차</option>
-                <option value="35">35회차</option>
-                <option value="34">34회차</option>
             </select>
             <!-- 목차 -->
             <select id="unit-select" class="form-select">
                 <option value="">목차 선택</option>
-                <option value="01. 부동산의 개념">01. 부동산의 개념</option>
             </select>
             <button id="start-btn" class="btn btn-primary">문제풀기 ▷▷</button>
         </div>
@@ -78,9 +69,8 @@
 <!-- ✅ 문제 리스트 -->
 <div class="container my-4" id="main">
     <h3 class="mb-3 text-success">진행중인 문제풀이</h3>
-    <div class="list-group">
-        <a href="#" class="list-group-item list-group-item-action">[부동산학개론] [기출문제] [35회차] [전체] [6/40]</a>
-        <a href="#" class="list-group-item list-group-item-action">[민법] [기출문제] [다중선택] [17/42]</a>
+    <div class="list-group" id="session-list">
+        <!-- 세션 목록 표시 (옵션) -->
     </div>
 </div>
 
@@ -112,44 +102,110 @@
     </div>
 </nav>
 
-<!-- ✅ JS -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://kit.fontawesome.com/258cb932bc.js" crossorigin="anonymous"></script>
 <script>
-    let questions = []; // API로 불러올 예정
+    let questions = [];
     let currentIndex = 0;
-    let allowChoiceClick = false;
 
-    // ✅ API 호출로 문제 가져오기
-    async function loadQuestions() {
-        const response = await fetch('/api/problems'); // Spring Boot API 연동
-        questions = await response.json();
-        showQuestion(0);
+    // ✅ 초기 로딩 시 데이터 불러오기
+    document.addEventListener("DOMContentLoaded", () => {
+        loadSubjects();
+        loadTypes();
+    });
+
+    // ✅ 과목 불러오기
+    async function loadSubjects() {
+        const res = await axios.get('/problems/api/subjects');
+        const select = document.getElementById('subject-select');
+        res.data.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item.id;
+            opt.textContent = item.name;
+            select.appendChild(opt);
+        });
     }
 
-    // ✅ 문제 표시
-    function showQuestion(index) {
-        const question = questions[index];
+    // ✅ 문제 유형 불러오기 (Enum)
+    async function loadTypes() {
+        const res = await axios.get('/problems/api/types');
+        const select = document.getElementById('type-select');
+        res.data.forEach(type => {
+            const opt = document.createElement('option');
+            opt.value = type;
+            opt.textContent = type; // 필요시 description
+            select.appendChild(opt);
+        });
+    }
 
-        // ✅ API 데이터 구조에 맞게 title로 출력
-        document.getElementById('question-text').innerHTML = question.title;
+    // ✅ 과목 선택 시 회차 & 목차 불러오기
+    document.getElementById('subject-select').addEventListener('change', async (e) => {
+        const subjectId = e.target.value;
+
+        // 회차
+        const roundRes = await axios.get(`/problems/api/rounds?subjectId=${subjectId}`);
+        const roundSelect = document.getElementById('round-select');
+        roundSelect.innerHTML = '<option value="">회차 선택</option>';
+        roundRes.data.forEach(round => {
+            const opt = document.createElement('option');
+            opt.value = round.id;
+            opt.textContent = round.name && round.name.trim() !== '' ? round.name : `${round.roundNumber}회차`;
+            roundSelect.appendChild(opt);
+        });
+
+        // 목차
+        const unitRes = await axios.get(`/problems/api/units?subjectId=${subjectId}`);
+        const unitSelect = document.getElementById('unit-select');
+        unitSelect.innerHTML = '<option value="">목차 선택</option>';
+        unitRes.data.forEach(unit => {
+            const opt = document.createElement('option');
+            opt.value = unit.id;
+            opt.textContent = unit.name;
+            unitSelect.appendChild(opt);
+        });
+    });
+
+    // ✅ 문제 데이터 불러오기
+    async function loadQuestions() {
+        const subjectId = document.getElementById('subject-select').value;
+        const type = document.getElementById('type-select').value;
+        const roundId = document.getElementById('round-select').value;
+        const unitId = document.getElementById('unit-select').value;
+
+        const params = { subjectId, type, roundId, unitId };
+        const res = await axios.get('/problems/api/problems', { params });
+        questions = res.data;
+
+        if (questions.length > 0) {
+            currentIndex = 0;
+            showQuestion(currentIndex);
+        } else {
+            alert('해당 조건에 맞는 문제가 없습니다.');
+        }
+    }
+
+    // ✅ 문제 출력
+    function showQuestion(index) {
+        const q = questions[index];
+        document.getElementById('question-text').textContent = q.title;
 
         const choicesList = document.getElementById('choices');
         choicesList.innerHTML = '';
-
-        // ✅ choices 배열이 [{content:"보기1", isCorrect:false}, ...] 구조라면:
-        question.choices.forEach(choiceObj => {
+        q.choices.forEach(choice => {
             const li = document.createElement('li');
             li.className = 'list-group-item';
-            li.textContent = choiceObj.content; // ✅ content 속성 사용
+            li.textContent = choice.content;
             choicesList.appendChild(li);
         });
 
         bindChoiceEvents();
     }
 
-    // ✅ 보기 클릭 기능
+    // ✅ 보기 클릭 이벤트
     function bindChoiceEvents() {
-        allowChoiceClick = false;
+        let allowChoiceClick = false;
+
+        // "틀린" 글자 X 표시 기능 (문제 본문에서 적용)
         const clickableWord = document.querySelector('.clickable-word');
         if (clickableWord) {
             clickableWord.addEventListener('click', () => {
@@ -158,8 +214,9 @@
             });
         }
 
+        // 보기 소거 기능
         document.querySelectorAll('#choices li').forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function () {
                 if (!allowChoiceClick) return;
                 if (this.classList.contains('disabled-choice')) {
                     this.classList.remove('disabled-choice');
@@ -175,9 +232,8 @@
         });
     }
 
-    // ✅ 버튼 기능
-    document.getElementById('start-btn').addEventListener('click', (e) => {
-        e.preventDefault();
+    // ✅ 버튼 이벤트
+    document.getElementById('start-btn').addEventListener('click', () => {
         document.getElementById('main').style.display = 'none';
         document.getElementById('question-area').style.display = 'block';
         loadQuestions();

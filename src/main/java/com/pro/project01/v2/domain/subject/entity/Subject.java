@@ -15,5 +15,5 @@ public class Subject {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String name; // 예: 민법, 부동산학개론
+    private String name; // 과목명 예: 부동산학개론, 민법
 }

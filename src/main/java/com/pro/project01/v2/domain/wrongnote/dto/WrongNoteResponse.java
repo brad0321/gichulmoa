@@ -10,4 +10,3 @@ public record WrongNoteResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}
-

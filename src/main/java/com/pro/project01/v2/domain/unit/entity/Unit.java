@@ -16,9 +16,9 @@ public class Unit {
     private Long id;
 
     @Column(nullable = false)
-    private String name; // 예: 01. 부동산의 개념과 분류
+    private String name; // 목차명 예: 부동산의 개념과 분류
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id", nullable = false)
-    private Subject subject; // 과목 (민법, 부동산학개론)
+    private Subject subject;
 }

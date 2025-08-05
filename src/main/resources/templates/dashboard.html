@@ -27,7 +27,10 @@
     <div class="d-grid gap-2 d-md-flex justify-content-center mt-4">
         <a th:if="${loginUser.grade.name() != 'GUEST'}"
            th:href="@{/members/mypage}" class="btn btn-outline-warning">마이페이지</a>
-        <a th:href="@{/problems/solve}" class="btn btn-outline-success">문제풀기</a>
+        <a th:if="${loginUser.role.name() == 'ADMIN'}"
+           th:href="@{/problems/new}" class="btn btn-outline-success">문제등록</a>
+        <a th:if="${loginUser.role.name() == 'USER'}"
+           th:href="@{/problems/solve}" class="btn btn-outline-success">문제풀기</a>
         <a th:href="@{/logout}" class="btn btn-outline-danger">로그아웃</a>
     </div>
 </div>

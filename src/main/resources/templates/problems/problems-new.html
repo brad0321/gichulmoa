@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>문제 등록</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
 <div class="container mt-5" style="max-width: 900px;">
@@ -67,7 +68,7 @@
         <!-- ✅ 과목 -->
         <div class="mb-3">
             <label class="form-label">과목</label>
-            <select class="form-select" name="subjectId" required>
+            <select class="form-select" name="subjectId" id="subject-select" required>
                 <option value="">과목 선택</option>
                 <option th:each="subject : ${subjects}" th:value="${subject.id}" th:text="${subject.name}"></option>
             </select>
@@ -86,18 +87,16 @@
         <!-- ✅ 회차 -->
         <div class="mb-3">
             <label class="form-label">회차</label>
-            <select class="form-select" name="roundId" required>
+            <select class="form-select" name="roundId" id="round-select" required>
                 <option value="">회차 선택</option>
-                <option th:each="round : ${rounds}" th:value="${round.id}" th:text="${round.roundNumber}"></option>
             </select>
         </div>
 
         <!-- ✅ 목차 -->
         <div class="mb-3">
             <label class="form-label">목차</label>
-            <select class="form-select" name="unitId" required>
+            <select class="form-select" name="unitId" id="unit-select" required>
                 <option value="">목차 선택</option>
-                <option th:each="unit : ${units}" th:value="${unit.id}" th:text="${unit.name}"></option>
             </select>
         </div>
 
@@ -109,5 +108,44 @@
         </div>
     </form>
 </div>
+
+<!-- ✅ Axios로 동적 로딩 -->
+<script>
+    document.getElementById('subject-select').addEventListener('change', function() {
+        const subjectId = this.value;
+
+        // 회차 & 목차 초기화
+        const roundSelect = document.getElementById('round-select');
+        const unitSelect = document.getElementById('unit-select');
+        roundSelect.innerHTML = '<option value="">회차 선택</option>';
+        unitSelect.innerHTML = '<option value="">목차 선택</option>';
+
+        if (!subjectId) return;
+
+        // ✅ 회차 불러오기
+        axios.get(`/problems/api/rounds?subjectId=${subjectId}`)
+            .then(response => {
+                const rounds = response.data;
+                const roundSelect = document.getElementById('round-select');
+                roundSelect.innerHTML = '<option value="">회차 선택</option>';
+                rounds.forEach(round => {
+                    roundSelect.innerHTML += `<option value="${round.id}">${round.roundNumber}</option>`;
+                });
+            })
+            .catch(error => console.error('회차 로드 실패:', error.message));
+
+// ✅ 목차 불러오기
+        axios.get(`/problems/api/units?subjectId=${subjectId}`)
+            .then(response => {
+                const units = response.data;
+                const unitSelect = document.getElementById('unit-select');
+                unitSelect.innerHTML = '<option value="">목차 선택</option>';
+                units.forEach(unit => {
+                    unitSelect.innerHTML += `<option value="${unit.id}">${unit.name}</option>`;
+                });
+            })
+            .catch(error => console.error('목차 로드 실패:', error.message));
+    });
+</script>
 </body>
 </html>

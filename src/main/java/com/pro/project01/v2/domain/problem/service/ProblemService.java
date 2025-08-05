@@ -9,7 +9,7 @@ import java.util.List;
 public interface ProblemService {
     List<ProblemResponse> findAll();
     ProblemResponse findById(Long id);
-    void create(ProblemRequest request, String imagePath, ProblemType type); // ✅ 수정
+    Long create(ProblemRequest request, String imagePath, ProblemType type); // ✅ 수정
     void update(Long id, ProblemRequest request, String imagePath, ProblemType type); // ✅ 수정
     void delete(Long id);
 }

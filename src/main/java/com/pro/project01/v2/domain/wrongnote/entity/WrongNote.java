@@ -19,17 +19,21 @@ public class WrongNote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ✅ 사용자 (ManyToOne)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    // ✅ 문제 (ManyToOne)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_id", nullable = false)
     private Problem problem;
 
+    // ✅ 메모
     @Column(columnDefinition = "TEXT")
     private String memo;
 
+    // ✅ 생성일, 수정일
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -44,6 +48,7 @@ public class WrongNote {
         this.updatedAt = LocalDateTime.now();
     }
 
+    // ✅ 메모 수정
     public void updateMemo(String memo) {
         this.memo = memo;
     }

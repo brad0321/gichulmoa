@@ -11,6 +11,9 @@ import com.pro.project01.v2.domain.unit.repository.UnitRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.pro.project01.v2.domain.calculation.entity.CalculationProblem;             // ★추가
+import com.pro.project01.v2.domain.calculation.repository.CalculationProblemRepository; // ★추가
+
 
 import java.util.List;
 
@@ -23,6 +26,8 @@ public class ProblemServiceImpl implements ProblemService {
     private final SubjectRepository subjectRepository;
     private final RoundRepository roundRepository;
     private final UnitRepository unitRepository;
+    private final CalculationProblemRepository calculationProblemRepository;  // ★추가
+
 
     @Override
     public List<ProblemResponse> findAll() {
@@ -39,7 +44,7 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public void create(ProblemRequest request, String imagePath, ProblemType type) {
+    public Long create(ProblemRequest request, String imagePath, ProblemType type) {
         Problem problem = Problem.builder()
                 .title(request.title())
                 .viewContent(request.viewContent())
@@ -60,7 +65,10 @@ public class ProblemServiceImpl implements ProblemService {
                 .build();
 
         problemRepository.save(problem);
+
+        return problem.getId();
     }
+
 
     @Override
     public void update(Long id, ProblemRequest request, String imagePath, ProblemType type) {

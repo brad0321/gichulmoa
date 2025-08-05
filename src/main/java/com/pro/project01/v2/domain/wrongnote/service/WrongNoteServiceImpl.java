@@ -11,6 +11,7 @@ import com.pro.project01.v2.domain.wrongnote.entity.WrongNote;
 import com.pro.project01.v2.domain.wrongnote.repository.WrongNoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class WrongNoteServiceImpl implements WrongNoteService {
     private final ProblemRepository problemRepository;
 
     @Override
+    @Transactional
     public Long create(WrongNoteCreateRequest request) {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new IllegalArgumentException("회원 없음"));
@@ -54,6 +56,7 @@ public class WrongNoteServiceImpl implements WrongNoteService {
     }
 
     @Override
+    @Transactional
     public void update(Long id, WrongNoteUpdateRequest request) {
         WrongNote wn = wrongNoteRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("오답노트 없음"));

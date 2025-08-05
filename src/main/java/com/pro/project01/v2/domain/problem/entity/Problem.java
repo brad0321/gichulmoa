@@ -26,7 +26,7 @@ public class Problem {
     @Column(nullable = false)
     private ProblemType type; // ✅ 문제 유형 (기출문제 / OX퀴즈)
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String viewContent; // 보기 지문 (텍스트)
 
     private String imageUrl; // 이미지 경로
