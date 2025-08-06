@@ -9,6 +9,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
+        body {
+            padding-bottom: 80px;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
         .clickable-word {
             position: relative;
             color: #1e3932;
@@ -36,8 +40,37 @@
             font-weight: bold;
             margin-left: 6px;
         }
-        body {
-            padding-bottom: 80px;
+        /* ✅ 공통 패널 */
+        .panel-box {
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 250px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .panel-box label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        .panel-box .btn {
+            font-size: 14px;
+            padding: 4px 12px;
+        }
+        @media (max-width: 768px) {
+            .d-flex.gap-2 {
+                flex-wrap: wrap;
+                gap: 8px !important;
+            }
+            .panel-box {
+                width: 90%;
+            }
         }
     </style>
 </head>
@@ -47,47 +80,43 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="#">문제풀이</a>
-        <div class="d-flex gap-2 position-relative">
+        <div class="d-flex gap-2 position-relative flex-wrap">
 
-            <!-- 과목 -->
-            <select id="subject-select" class="form-select">
-                <option value="">과목 선택</option>
-            </select>
-
-            <!-- 회차 -->
+            <!-- ✅ 과목 선택 -->
             <div class="dropdown">
-                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="roundDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    회차 선택
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="subjectDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    과목 선택
                 </button>
-                <ul class="dropdown-menu" aria-labelledby="roundDropdown" style="max-height: 300px; overflow-y: auto;">
-                    <li><a class="dropdown-item" href="#" data-value="all">전체 (역순)</a></li>
-                    <li><a class="dropdown-item" href="#" data-value="35">35회차 (2024년)</a></li>
-                    <li><a class="dropdown-item" href="#" data-value="34">34회차 (2023년)</a></li>
-                    <li><a class="dropdown-item" href="#" data-value="33">33회차 (2022년)</a></li>
-                    <li><a class="dropdown-item" href="#" data-value="32">32회차 (2021년)</a></li>
-                    <li><a class="dropdown-item" href="#" data-value="31">31회차 (2020년)</a></li>
-                    <li><a class="dropdown-item" href="#" data-value="30">30회차 (2019년)</a></li>
-                    <li><a class="dropdown-item" href="#" data-value="29">29회차 (2018년)</a></li>
-                    <li><a class="dropdown-item" href="#" data-value="28">28회차 (2017년)</a></li>
-                    <li><a class="dropdown-item" href="#" data-value="27">27회차 (2016년)</a></li>
-                    <li><a class="dropdown-item" href="#" data-value="26">26회차 (2015년)</a></li>
+                <ul class="dropdown-menu" id="subject-menu" style="max-height: 250px; overflow-y: auto;">
+                    <!-- 동적 로딩 -->
                 </ul>
             </div>
 
-
-            <!-- 목차 -->
-            <select id="unit-select" class="form-select">
-                <option value="">목차 선택</option>
-            </select>
-
-            <!-- ✅ 회차 체크박스 패널 -->
-            <div id="round-panel" class="bg-white border p-3" style="display:none; position:absolute; top:100%; left:0; z-index:1000;">
-                <div id="round-checkboxes" class="mb-2"></div>
-                <div class="text-end mt-2">
-                    <button id="round-confirm" class="btn btn-sm btn-primary me-2">확인</button>
-                    <button id="round-reset" class="btn btn-sm btn-secondary">초기화</button>
+            <!-- ✅ 회차 선택 -->
+            <div class="position-relative">
+                <button class="btn btn-outline-primary" id="round-selector">회차 선택</button>
+                <div id="round-panel" class="panel-box">
+                    <div id="round-checkboxes" class="mb-2"></div>
+                    <div class="d-flex justify-content-between">
+                        <button id="round-confirm" class="btn btn-sm btn-primary">확인</button>
+                        <button id="round-reset" class="btn btn-sm btn-secondary">초기화</button>
+                    </div>
                 </div>
             </div>
+
+            <!-- ✅ 목차 선택 -->
+            <div class="position-relative">
+                <button class="btn btn-outline-primary" id="unit-selector">목차 선택</button>
+                <div id="unit-panel" class="panel-box">
+                    <div id="unit-checkboxes" class="mb-2"></div>
+                    <div class="d-flex justify-content-between">
+                        <button id="unit-confirm" class="btn btn-sm btn-primary">확인</button>
+                        <button id="unit-reset" class="btn btn-sm btn-secondary">초기화</button>
+                    </div>
+                </div>
+            </div>
+
+            <button id="start-btn" class="btn btn-primary">문제풀기 ▷▷</button>
         </div>
     </div>
 </nav>
@@ -97,14 +126,13 @@
     <div id="question-count" class="text-muted" style="font-size: 14px;">
         현재 문제: 0 / 0
     </div>
-    <button id="start-btn" class="btn btn-primary mt-2">문제풀기 ▷▷</button>
 </div>
 
 <!-- ✅ 문제 리스트 -->
 <div class="container my-4" id="main">
     <h3 class="mb-3 text-success">진행중인 문제풀이</h3>
     <div class="list-group" id="session-list">
-        <!-- 세션 목록 표시 (옵션) -->
+        <!-- 세션 목록 표시 -->
     </div>
 </div>
 
@@ -137,137 +165,144 @@
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://kit.fontawesome.com/258cb932bc.js" crossorigin="anonymous"></script>
 <script>
     let questions = [];
     let currentIndex = 0;
+    let selectedSubject = null;
     let selectedRounds = [];
+    let selectedUnits = [];
 
     document.addEventListener("DOMContentLoaded", () => {
         loadSubjects();
     });
 
-    // ✅ 과목 불러오기
+    // ✅ 과목 로딩
     async function loadSubjects() {
         const res = await axios.get('/problems/api/subjects');
-        const select = document.getElementById('subject-select');
+        const subjectMenu = document.getElementById('subject-menu');
+        subjectMenu.innerHTML = '';
         res.data.forEach(item => {
-            const opt = document.createElement('option');
-            opt.value = item.id;
-            opt.textContent = item.name;
-            select.appendChild(opt);
+            const li = document.createElement('li');
+            li.innerHTML = `<a class="dropdown-item" href="#" data-id="${item.id}">${item.name}</a>`;
+            subjectMenu.appendChild(li);
+        });
+
+        subjectMenu.querySelectorAll('.dropdown-item').forEach(a => {
+            a.addEventListener('click', async (e) => {
+                e.preventDefault();
+                selectedSubject = e.target.dataset.id;
+                document.getElementById('subjectDropdown').textContent = e.target.textContent;
+                await loadRounds(selectedSubject);
+                await loadUnits(selectedSubject);
+                updateQuestionCount();
+            });
         });
     }
 
+    // ✅ 회차 로딩
+    async function loadRounds(subjectId) {
+        const res = await axios.get(`/problems/api/rounds?subjectId=${subjectId}`);
+        const container = document.getElementById('round-checkboxes');
+        container.innerHTML = '';
 
-
-    // ✅ 과목 선택 시 회차 & 목차 불러오기
-    document.getElementById('subject-select').addEventListener('change', async (e) => {
-        const subjectId = e.target.value;
-
-        // 회차 체크박스 생성
-        const roundRes = await axios.get(`/problems/api/rounds?subjectId=${subjectId}`);
-        const checkboxContainer = document.getElementById('round-checkboxes');
-        checkboxContainer.innerHTML = '';
         const allDiv = document.createElement('div');
-        allDiv.innerHTML = '<label><input type="checkbox" value="all" id="round-all"> 전체</label>';
-        checkboxContainer.appendChild(allDiv);
-        for (let i = 35; i >= 26; i--) {
-            const round = roundRes.data.find(r => r.roundNumber === i);
-            if (round) {
-                const div = document.createElement('div');
-                div.innerHTML = `<label><input type="checkbox" value="${round.id}" data-number="${i}"> ${i}회차</label>`;
-                checkboxContainer.appendChild(div);
-            }
-        }
+        allDiv.innerHTML = `<label><input type="checkbox" id="round-all"> 전체회차 (역순)</label>`;
+        container.appendChild(allDiv);
 
-        const allCheckbox = document.getElementById('round-all');
-        if (allCheckbox) {
-            allCheckbox.addEventListener('change', function() {
-                const others = checkboxContainer.querySelectorAll('input[type="checkbox"]:not(#round-all)');
-                others.forEach(cb => cb.checked = this.checked);
-            });
-        }
-
-        checkboxContainer.querySelectorAll('input[type="checkbox"]:not(#round-all)').forEach(cb => {
-            cb.addEventListener('change', () => {
-                if (!cb.checked && allCheckbox) {
-                    allCheckbox.checked = false;
-                }
-            });
+        res.data.sort((a, b) => b.roundNumber - a.roundNumber); // 역순
+        res.data.forEach(round => {
+            const year = 2024 - (35 - round.roundNumber);
+            const div = document.createElement('div');
+            div.innerHTML = `<label><input type="checkbox" value="${round.id}" data-number="${round.roundNumber}"> ${round.roundNumber}회차 (${year}년)</label>`;
+            container.appendChild(div);
         });
 
-        selectedRounds = [];
-        document.getElementById('round-panel').style.display = 'none';
-
-        const unitRes = await axios.get(`/problems/api/units?subjectId=${subjectId}`);
-        const unitSelect = document.getElementById('unit-select');
-        unitSelect.innerHTML = '<option value="">목차 선택</option>';
-        unitRes.data.forEach(unit => {
-            const opt = document.createElement('option');
-            opt.value = unit.id;
-            opt.textContent = unit.name;
-            unitSelect.appendChild(opt);
+        document.getElementById('round-all').addEventListener('change', function () {
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]:not(#round-all)');
+            checkboxes.forEach(cb => cb.checked = this.checked);
         });
-        updateQuestionCount();
-    });
-
-    // ✅ 문제 수 실시간 확인
-    async function updateQuestionCount() {
-        const subjectId = document.getElementById('subject-select').value;
-        const unitId = document.getElementById('unit-select').value;
-
-        if (!subjectId || !unitId) {
-            document.getElementById('question-count').textContent = "현재 문제: 0 / 0";
-            return;
-        }
-
-        try {
-            const params = { subjectId };
-            if (selectedRounds.length > 0) params.roundIds = selectedRounds.join(',');
-            if (unitId) params.unitId = unitId;
-            const res = await axios.get('/problems/api/problems', { params });
-            const count = res.data.length;
-            document.getElementById('question-count').textContent = `현재 문제: 0 / ${count}`;
-        } catch (err) {
-            document.getElementById('question-count').textContent = "현재 문제: 0 / 0";
-        }
     }
 
-    ['subject-select', 'unit-select'].forEach(id => {
-        document.getElementById(id).addEventListener('change', updateQuestionCount);
-    });
+    // ✅ 목차 로딩
+    async function loadUnits(subjectId) {
+        const res = await axios.get(`/problems/api/units?subjectId=${subjectId}`);
+        const container = document.getElementById('unit-checkboxes');
+        container.innerHTML = '';
 
+        const allDiv = document.createElement('div');
+        allDiv.innerHTML = `<label><input type="checkbox" id="unit-all"> 전체목차 (순차)</label>`;
+        container.appendChild(allDiv);
+
+        res.data.forEach(unit => {
+            const div = document.createElement('div');
+            div.innerHTML = `<label><input type="checkbox" value="${unit.id}">${unit.name}</label>`;
+            container.appendChild(div);
+        });
+
+        document.getElementById('unit-all').addEventListener('change', function () {
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]:not(#unit-all)');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+    }
+
+    // ✅ 패널 토글
     document.getElementById('round-selector').addEventListener('click', () => {
-        const panel = document.getElementById('round-panel');
-        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        document.getElementById('round-panel').style.display =
+            document.getElementById('round-panel').style.display === 'none' ? 'block' : 'none';
     });
 
+    document.getElementById('unit-selector').addEventListener('click', () => {
+        document.getElementById('unit-panel').style.display =
+            document.getElementById('unit-panel').style.display === 'none' ? 'block' : 'none';
+    });
+
+    // ✅ 회차 확인 버튼
     document.getElementById('round-confirm').addEventListener('click', () => {
-        const checkboxes = document.querySelectorAll('#round-checkboxes input[type="checkbox"]');
-        const allChecked = document.getElementById('round-all')?.checked;
-        const selector = document.getElementById('round-selector');
+        const allChecked = document.getElementById('round-all').checked;
+        const checkboxes = document.querySelectorAll('#round-checkboxes input[type="checkbox"]:not(#round-all)');
+        const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
+
+        selectedRounds = checkedBoxes.map(cb => cb.value);
+
+        let displayText = '회차 선택';
         if (allChecked) {
-            selectedRounds = Array.from(checkboxes)
-                .filter(cb => cb.value !== 'all')
-                .map(cb => cb.value);
-            selector.textContent = '전체';
-        } else {
-            selectedRounds = Array.from(checkboxes)
-                .filter(cb => cb.checked && cb.value !== 'all')
-                .map(cb => cb.value);
-            const numbers = Array.from(checkboxes)
-                .filter(cb => cb.checked && cb.value !== 'all')
-                .map(cb => cb.dataset.number)
-                .filter(n => n);
-            selector.textContent = numbers.length > 0
-                ? numbers.map(n => `${n}회차`).join(', ')
-                : '회차 선택';
+            displayText = '전체회차';
+        } else if (checkedBoxes.length > 1) {
+            displayText = '다중회차';
+        } else if (checkedBoxes.length === 1) {
+            displayText = `${checkedBoxes[0].dataset.number}회차`;
         }
+
+        document.getElementById('round-selector').textContent = displayText;
         document.getElementById('round-panel').style.display = 'none';
         updateQuestionCount();
     });
 
+    // ✅ 목차 확인 버튼 (표기 규칙 적용)
+    document.getElementById('unit-confirm').addEventListener('click', () => {
+        const allChecked = document.getElementById('unit-all').checked;
+        const checkboxes = document.querySelectorAll('#unit-checkboxes input[type="checkbox"]:not(#unit-all)');
+        const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
+
+        selectedUnits = checkedBoxes.map(cb => cb.value);
+
+        let displayText = '목차 선택';
+        if (allChecked) {
+            displayText = '전체목차';
+        } else if (checkedBoxes.length > 1) {
+            displayText = '다중목차';
+        } else if (checkedBoxes.length === 1) {
+            displayText = `${checkedBoxes[0].parentElement.textContent.trim()}`;
+        }
+
+        document.getElementById('unit-selector').textContent = displayText;
+        document.getElementById('unit-panel').style.display = 'none';
+        updateQuestionCount();
+    });
+
+    // ✅ 초기화 버튼
     document.getElementById('round-reset').addEventListener('click', () => {
         document.querySelectorAll('#round-checkboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
         selectedRounds = [];
@@ -275,13 +310,32 @@
         updateQuestionCount();
     });
 
+    document.getElementById('unit-reset').addEventListener('click', () => {
+        document.querySelectorAll('#unit-checkboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
+        selectedUnits = [];
+        document.getElementById('unit-selector').textContent = '목차 선택';
+        updateQuestionCount();
+    });
+
+    // ✅ 문제 개수 업데이트
+    async function updateQuestionCount() {
+        if (!selectedSubject || selectedUnits.length === 0) {
+            document.getElementById('question-count').textContent = "현재 문제: 0 / 0";
+            return;
+        }
+        const params = { subjectId: selectedSubject, unitIds: selectedUnits.join(',') };
+        if (selectedRounds.length > 0) params.roundIds = selectedRounds.join(',');
+        const res = await axios.get('/problems/api/problems', { params });
+        document.getElementById('question-count').textContent = `현재 문제: 0 / ${res.data.length}`;
+    }
+
     // ✅ 문제 로딩
     async function loadQuestions() {
-        const subjectId = document.getElementById('subject-select').value;
-        const roundId = document.getElementById('round-select').value;
-        const unitId = document.getElementById('unit-select').value;
-
-        const params = { subjectId, unitId };
+        if (!selectedSubject || selectedUnits.length === 0) {
+            alert('과목과 목차를 선택하세요.');
+            return;
+        }
+        const params = { subjectId: selectedSubject, unitIds: selectedUnits.join(',') };
         if (selectedRounds.length > 0) params.roundIds = selectedRounds.join(',');
         const res = await axios.get('/problems/api/problems', { params });
         questions = res.data;
@@ -303,7 +357,6 @@
             <div>${q.viewContent ? q.viewContent : ''}</div>
             ${q.imageUrl ? `<img src="${q.imageUrl}" style="max-width:100%; margin-top:10px;">` : ''}
         `;
-
         const choicesList = document.getElementById('choices');
         choicesList.innerHTML = '';
         q.choices.forEach(choice => {
@@ -312,15 +365,12 @@
             li.textContent = choice.content;
             choicesList.appendChild(li);
         });
-
         document.getElementById('question-count').textContent = `현재 문제: ${index + 1} / ${questions.length}`;
         bindChoiceEvents();
     }
 
-    // ✅ 보기 클릭 이벤트
     function bindChoiceEvents() {
         let allowChoiceClick = false;
-
         const clickableWord = document.querySelector('.clickable-word');
         if (clickableWord) {
             clickableWord.addEventListener('click', () => {
@@ -328,7 +378,6 @@
                 allowChoiceClick = clickableWord.classList.contains('marked');
             });
         }
-
         document.querySelectorAll('#choices li').forEach(item => {
             item.addEventListener('click', function () {
                 if (!allowChoiceClick) return;
@@ -346,7 +395,6 @@
         });
     }
 
-    // ✅ 버튼 이벤트
     document.getElementById('start-btn').addEventListener('click', () => {
         document.getElementById('main').style.display = 'none';
         document.getElementById('question-area').style.display = 'block';
@@ -371,20 +419,6 @@
         document.getElementById('main').style.display = 'block';
         document.getElementById('question-area').style.display = 'none';
     });
-
-    document.querySelectorAll('.dropdown-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            const value = e.target.dataset.value;
-            const text = e.target.textContent;
-
-            // 버튼 텍스트 변경
-            document.getElementById('roundDropdown').textContent = text;
-
-            console.log(`선택된 회차: ${value}`);
-        });
-    });
-
 </script>
 </body>
 </html>
