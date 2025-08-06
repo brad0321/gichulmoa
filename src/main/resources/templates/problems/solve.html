@@ -48,10 +48,34 @@
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="#">문제풀이</a>
         <div class="d-flex gap-2 position-relative">
+
+            <!-- 과목 -->
             <select id="subject-select" class="form-select">
                 <option value="">과목 선택</option>
             </select>
-            <div id="round-selector" class="form-select" style="cursor:pointer;">회차 선택</div>
+
+            <!-- 회차 -->
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="roundDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    회차 선택
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="roundDropdown" style="max-height: 300px; overflow-y: auto;">
+                    <li><a class="dropdown-item" href="#" data-value="all">전체 (역순)</a></li>
+                    <li><a class="dropdown-item" href="#" data-value="35">35회차 (2024년)</a></li>
+                    <li><a class="dropdown-item" href="#" data-value="34">34회차 (2023년)</a></li>
+                    <li><a class="dropdown-item" href="#" data-value="33">33회차 (2022년)</a></li>
+                    <li><a class="dropdown-item" href="#" data-value="32">32회차 (2021년)</a></li>
+                    <li><a class="dropdown-item" href="#" data-value="31">31회차 (2020년)</a></li>
+                    <li><a class="dropdown-item" href="#" data-value="30">30회차 (2019년)</a></li>
+                    <li><a class="dropdown-item" href="#" data-value="29">29회차 (2018년)</a></li>
+                    <li><a class="dropdown-item" href="#" data-value="28">28회차 (2017년)</a></li>
+                    <li><a class="dropdown-item" href="#" data-value="27">27회차 (2016년)</a></li>
+                    <li><a class="dropdown-item" href="#" data-value="26">26회차 (2015년)</a></li>
+                </ul>
+            </div>
+
+
+            <!-- 목차 -->
             <select id="unit-select" class="form-select">
                 <option value="">목차 선택</option>
             </select>
@@ -222,14 +246,23 @@
     document.getElementById('round-confirm').addEventListener('click', () => {
         const checkboxes = document.querySelectorAll('#round-checkboxes input[type="checkbox"]');
         const allChecked = document.getElementById('round-all')?.checked;
+        const selector = document.getElementById('round-selector');
         if (allChecked) {
             selectedRounds = Array.from(checkboxes)
                 .filter(cb => cb.value !== 'all')
                 .map(cb => cb.value);
+            selector.textContent = '전체';
         } else {
             selectedRounds = Array.from(checkboxes)
                 .filter(cb => cb.checked && cb.value !== 'all')
                 .map(cb => cb.value);
+            const numbers = Array.from(checkboxes)
+                .filter(cb => cb.checked && cb.value !== 'all')
+                .map(cb => cb.dataset.number)
+                .filter(n => n);
+            selector.textContent = numbers.length > 0
+                ? numbers.map(n => `${n}회차`).join(', ')
+                : '회차 선택';
         }
         document.getElementById('round-panel').style.display = 'none';
         updateQuestionCount();
@@ -238,6 +271,7 @@
     document.getElementById('round-reset').addEventListener('click', () => {
         document.querySelectorAll('#round-checkboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
         selectedRounds = [];
+        document.getElementById('round-selector').textContent = '회차 선택';
         updateQuestionCount();
     });
 
@@ -337,6 +371,20 @@
         document.getElementById('main').style.display = 'block';
         document.getElementById('question-area').style.display = 'none';
     });
+
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const value = e.target.dataset.value;
+            const text = e.target.textContent;
+
+            // 버튼 텍스트 변경
+            document.getElementById('roundDropdown').textContent = text;
+
+            console.log(`선택된 회차: ${value}`);
+        });
+    });
+
 </script>
 </body>
 </html>
