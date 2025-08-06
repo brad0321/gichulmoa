@@ -157,7 +157,7 @@
         const roundId = document.getElementById('round-select').value;
         const unitId = document.getElementById('unit-select').value;
 
-        if (!subjectId || !type || !roundId || !unitId) {
+        if (!subjectId || !roundId || !unitId) {
             document.getElementById('question-count').textContent = "현재 문제: 0 / 0";
             return;
         }
@@ -174,7 +174,7 @@
         }
     }
 
-    ['subject-select', 'type-select', 'round-select', 'unit-select'].forEach(id => {
+    ['subject-select', 'round-select', 'unit-select'].forEach(id => {
         document.getElementById(id).addEventListener('change', updateQuestionCount);
     });
 
