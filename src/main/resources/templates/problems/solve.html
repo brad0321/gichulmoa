@@ -45,26 +45,26 @@
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="#">문제풀이</a>
         <div class="d-flex gap-2">
-            <!-- 과목 -->
             <select id="subject-select" class="form-select">
                 <option value="">과목 선택</option>
             </select>
-            <!-- 유형 -->
-            <select id="type-select" class="form-select">
-                <option value="">유형 선택</option>
-            </select>
-            <!-- 회차 -->
             <select id="round-select" class="form-select">
                 <option value="">회차 선택</option>
             </select>
-            <!-- 목차 -->
             <select id="unit-select" class="form-select">
                 <option value="">목차 선택</option>
             </select>
-            <button id="start-btn" class="btn btn-primary">문제풀기 ▷▷</button>
         </div>
     </div>
 </nav>
+
+<!-- ✅ 문제 개수 표시 -->
+<div class="container my-2 text-center">
+    <div id="question-count" class="text-muted" style="font-size: 14px;">
+        현재 문제: 0 / 0
+    </div>
+    <button id="start-btn" class="btn btn-primary mt-2">문제풀기 ▷▷</button>
+</div>
 
 <!-- ✅ 문제 리스트 -->
 <div class="container my-4" id="main">
@@ -108,10 +108,8 @@
     let questions = [];
     let currentIndex = 0;
 
-    // ✅ 초기 로딩 시 데이터 불러오기
     document.addEventListener("DOMContentLoaded", () => {
         loadSubjects();
-        loadTypes();
     });
 
     // ✅ 과목 불러오기
@@ -126,23 +124,12 @@
         });
     }
 
-    // ✅ 문제 유형 불러오기 (Enum)
-    async function loadTypes() {
-        const res = await axios.get('/problems/api/types');
-        const select = document.getElementById('type-select');
-        res.data.forEach(type => {
-            const opt = document.createElement('option');
-            opt.value = type;
-            opt.textContent = type; // 필요시 description
-            select.appendChild(opt);
-        });
-    }
+
 
     // ✅ 과목 선택 시 회차 & 목차 불러오기
     document.getElementById('subject-select').addEventListener('change', async (e) => {
         const subjectId = e.target.value;
 
-        // 회차
         const roundRes = await axios.get(`/problems/api/rounds?subjectId=${subjectId}`);
         const roundSelect = document.getElementById('round-select');
         roundSelect.innerHTML = '<option value="">회차 선택</option>';
@@ -153,7 +140,6 @@
             roundSelect.appendChild(opt);
         });
 
-        // 목차
         const unitRes = await axios.get(`/problems/api/units?subjectId=${subjectId}`);
         const unitSelect = document.getElementById('unit-select');
         unitSelect.innerHTML = '<option value="">목차 선택</option>';
@@ -165,14 +151,40 @@
         });
     });
 
-    // ✅ 문제 데이터 불러오기
-    async function loadQuestions() {
+    // ✅ 문제 수 실시간 확인
+    async function updateQuestionCount() {
         const subjectId = document.getElementById('subject-select').value;
-        const type = document.getElementById('type-select').value;
         const roundId = document.getElementById('round-select').value;
         const unitId = document.getElementById('unit-select').value;
 
-        const params = { subjectId, type, roundId, unitId };
+        if (!subjectId || !type || !roundId || !unitId) {
+            document.getElementById('question-count').textContent = "현재 문제: 0 / 0";
+            return;
+        }
+
+        try {
+            const params = { subjectId };
+            if (roundId) params.roundId = roundId;
+            if (unitId) params.unitId = unitId;
+            const res = await axios.get('/problems/api/problems', { params });
+            const count = res.data.length;
+            document.getElementById('question-count').textContent = `현재 문제: 0 / ${count}`;
+        } catch (err) {
+            document.getElementById('question-count').textContent = "현재 문제: 0 / 0";
+        }
+    }
+
+    ['subject-select', 'type-select', 'round-select', 'unit-select'].forEach(id => {
+        document.getElementById(id).addEventListener('change', updateQuestionCount);
+    });
+
+    // ✅ 문제 로딩
+    async function loadQuestions() {
+        const subjectId = document.getElementById('subject-select').value;
+        const roundId = document.getElementById('round-select').value;
+        const unitId = document.getElementById('unit-select').value;
+
+        const params = { subjectId, roundId, unitId };
         const res = await axios.get('/problems/api/problems', { params });
         questions = res.data;
 
@@ -181,6 +193,7 @@
             showQuestion(currentIndex);
         } else {
             alert('해당 조건에 맞는 문제가 없습니다.');
+            document.getElementById('question-count').textContent = "현재 문제: 0 / 0";
         }
     }
 
@@ -188,10 +201,10 @@
     function showQuestion(index) {
         const q = questions[index];
         document.getElementById('question-text').innerHTML = `
-        <strong>${q.title}</strong><br>
-        <div>${q.viewContent ? q.viewContent : ''}</div>
-        ${q.imageUrl ? `<img src="${q.imageUrl}" style="max-width:100%; margin-top:10px;">` : ''}
-    `;
+            <strong>${q.title}</strong><br>
+            <div>${q.viewContent ? q.viewContent : ''}</div>
+            ${q.imageUrl ? `<img src="${q.imageUrl}" style="max-width:100%; margin-top:10px;">` : ''}
+        `;
 
         const choicesList = document.getElementById('choices');
         choicesList.innerHTML = '';
@@ -202,15 +215,14 @@
             choicesList.appendChild(li);
         });
 
+        document.getElementById('question-count').textContent = `현재 문제: ${index + 1} / ${questions.length}`;
         bindChoiceEvents();
     }
-
 
     // ✅ 보기 클릭 이벤트
     function bindChoiceEvents() {
         let allowChoiceClick = false;
 
-        // "틀린" 글자 X 표시 기능 (문제 본문에서 적용)
         const clickableWord = document.querySelector('.clickable-word');
         if (clickableWord) {
             clickableWord.addEventListener('click', () => {
@@ -219,7 +231,6 @@
             });
         }
 
-        // 보기 소거 기능
         document.querySelectorAll('#choices li').forEach(item => {
             item.addEventListener('click', function () {
                 if (!allowChoiceClick) return;

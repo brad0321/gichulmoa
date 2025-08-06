@@ -4,15 +4,15 @@ import com.pro.project01.v2.domain.problem.dto.ProblemRequest;
 import com.pro.project01.v2.domain.problem.dto.ProblemResponse;
 import com.pro.project01.v2.domain.problem.dto.ProblemResponseForSolve;
 import com.pro.project01.v2.domain.problem.entity.ProblemType;
+
 import com.pro.project01.v2.domain.problem.repository.ProblemRepository;
 import com.pro.project01.v2.domain.problem.service.ProblemService;
 import com.pro.project01.v2.domain.round.dto.RoundDto;
-import com.pro.project01.v2.domain.round.entity.Round;
 import com.pro.project01.v2.domain.subject.entity.Subject;
 import com.pro.project01.v2.domain.subject.repository.SubjectRepository;
 import com.pro.project01.v2.domain.round.repository.RoundRepository;
 import com.pro.project01.v2.domain.unit.dto.UnitDto;
-import com.pro.project01.v2.domain.unit.entity.Unit;
+
 import com.pro.project01.v2.domain.unit.repository.UnitRepository;
 import com.pro.project01.v2.domain.user.dto.UserResponse;
 import jakarta.servlet.http.HttpSession;
@@ -26,7 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Slf4j
 @Controller
@@ -170,15 +170,6 @@ public class ProblemController {
         return subjectRepository.findAll();
     }
 
-    // ✅ 문제 유형 API
-    @ResponseBody
-    @GetMapping("/api/types")
-    public List<String> getProblemTypes() {
-        log.info("[API] 문제 유형 요청");
-        return List.of(ProblemType.values()).stream()
-                .map(Enum::name)
-                .collect(Collectors.toList());
-    }
 
     // ✅ 회차 리스트 API
     @ResponseBody
@@ -210,13 +201,12 @@ public class ProblemController {
     public List<ProblemResponseForSolve> getProblems(
             @RequestParam Long subjectId,
             @RequestParam(required = false) Long roundId,
-            @RequestParam(required = false) Long unitId,
-            @RequestParam(required = false) String type
+            @RequestParam(required = false) Long unitId
     ) {
-        log.info("[API] 문제 리스트 요청: subjectId={}, roundId={}, unitId={}, type={}",
-                subjectId, roundId, unitId, type);
+        log.info("[API] 문제 리스트 요청: subjectId={}, roundId={}, unitId={}",
+                subjectId, roundId, unitId);
 
-        return problemRepository.findByFilters(subjectId, unitId, roundId, type)
+        return problemRepository.findByFilters(subjectId, roundId, unitId)
                 .stream()
                 .map(problem -> new ProblemResponseForSolve(
                         problem.getId(),
