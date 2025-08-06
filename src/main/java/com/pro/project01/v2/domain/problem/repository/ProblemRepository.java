@@ -10,9 +10,9 @@ import java.util.List;
 public interface ProblemRepository extends JpaRepository<Problem, Long>
 {
     @Query("SELECT p FROM Problem p WHERE p.subject.id = :subjectId " +
-            "AND (:roundId IS NULL OR p.round.id = :roundId) " +
+            "AND (:roundIds IS NULL OR p.round.id IN :roundIds) " +
             "AND (:unitId IS NULL OR p.unit.id = :unitId)")
     List<Problem> findByFilters(@Param("subjectId") Long subjectId,
-                                @Param("roundId") Long roundId,
+                                @Param("roundIds") List<Long> roundIds,
                                 @Param("unitId") Long unitId);
 }

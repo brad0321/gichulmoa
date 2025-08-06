@@ -200,13 +200,13 @@ public class ProblemController {
     @GetMapping("/api/problems")
     public List<ProblemResponseForSolve> getProblems(
             @RequestParam Long subjectId,
-            @RequestParam(required = false) Long roundId,
+            @RequestParam(required = false) List<Long> roundIds,
             @RequestParam(required = false) Long unitId
     ) {
-        log.info("[API] 문제 리스트 요청: subjectId={}, roundId={}, unitId={}",
-                subjectId, roundId, unitId);
+        log.info("[API] 문제 리스트 요청: subjectId={}, roundIds={}, unitId={}",
+                subjectId, roundIds, unitId);
 
-        return problemRepository.findByFilters(subjectId, roundId, unitId)
+        return problemRepository.findByFilters(subjectId, roundIds, unitId)
                 .stream()
                 .map(problem -> new ProblemResponseForSolve(
                         problem.getId(),

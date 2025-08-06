@@ -47,16 +47,23 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="#">문제풀이</a>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 position-relative">
             <select id="subject-select" class="form-select">
                 <option value="">과목 선택</option>
             </select>
-            <select id="round-select" class="form-select">
-                <option value="">회차 선택</option>
-            </select>
+            <div id="round-selector" class="form-select" style="cursor:pointer;">회차 선택</div>
             <select id="unit-select" class="form-select">
                 <option value="">목차 선택</option>
             </select>
+
+            <!-- ✅ 회차 체크박스 패널 -->
+            <div id="round-panel" class="bg-white border p-3" style="display:none; position:absolute; top:100%; left:0; z-index:1000;">
+                <div id="round-checkboxes" class="mb-2"></div>
+                <div class="text-end mt-2">
+                    <button id="round-confirm" class="btn btn-sm btn-primary me-2">확인</button>
+                    <button id="round-reset" class="btn btn-sm btn-secondary">초기화</button>
+                </div>
+            </div>
         </div>
     </div>
 </nav>
@@ -110,6 +117,7 @@
 <script>
     let questions = [];
     let currentIndex = 0;
+    let selectedRounds = [];
 
     document.addEventListener("DOMContentLoaded", () => {
         loadSubjects();
@@ -133,15 +141,40 @@
     document.getElementById('subject-select').addEventListener('change', async (e) => {
         const subjectId = e.target.value;
 
+        // 회차 체크박스 생성
         const roundRes = await axios.get(`/problems/api/rounds?subjectId=${subjectId}`);
-        const roundSelect = document.getElementById('round-select');
-        roundSelect.innerHTML = '<option value="">회차 선택</option>';
-        roundRes.data.forEach(round => {
-            const opt = document.createElement('option');
-            opt.value = round.id;
-            opt.textContent = round.name && round.name.trim() !== '' ? round.name : `${round.roundNumber}회차`;
-            roundSelect.appendChild(opt);
+        const checkboxContainer = document.getElementById('round-checkboxes');
+        checkboxContainer.innerHTML = '';
+        const allDiv = document.createElement('div');
+        allDiv.innerHTML = '<label><input type="checkbox" value="all" id="round-all"> 전체</label>';
+        checkboxContainer.appendChild(allDiv);
+        for (let i = 35; i >= 26; i--) {
+            const round = roundRes.data.find(r => r.roundNumber === i);
+            if (round) {
+                const div = document.createElement('div');
+                div.innerHTML = `<label><input type="checkbox" value="${round.id}" data-number="${i}"> ${i}회차</label>`;
+                checkboxContainer.appendChild(div);
+            }
+        }
+
+        const allCheckbox = document.getElementById('round-all');
+        if (allCheckbox) {
+            allCheckbox.addEventListener('change', function() {
+                const others = checkboxContainer.querySelectorAll('input[type="checkbox"]:not(#round-all)');
+                others.forEach(cb => cb.checked = this.checked);
+            });
+        }
+
+        checkboxContainer.querySelectorAll('input[type="checkbox"]:not(#round-all)').forEach(cb => {
+            cb.addEventListener('change', () => {
+                if (!cb.checked && allCheckbox) {
+                    allCheckbox.checked = false;
+                }
+            });
         });
+
+        selectedRounds = [];
+        document.getElementById('round-panel').style.display = 'none';
 
         const unitRes = await axios.get(`/problems/api/units?subjectId=${subjectId}`);
         const unitSelect = document.getElementById('unit-select');
@@ -152,22 +185,22 @@
             opt.textContent = unit.name;
             unitSelect.appendChild(opt);
         });
+        updateQuestionCount();
     });
 
     // ✅ 문제 수 실시간 확인
     async function updateQuestionCount() {
         const subjectId = document.getElementById('subject-select').value;
-        const roundId = document.getElementById('round-select').value;
         const unitId = document.getElementById('unit-select').value;
 
-        if (!subjectId || !roundId || !unitId) {
+        if (!subjectId || !unitId) {
             document.getElementById('question-count').textContent = "현재 문제: 0 / 0";
             return;
         }
 
         try {
             const params = { subjectId };
-            if (roundId) params.roundId = roundId;
+            if (selectedRounds.length > 0) params.roundIds = selectedRounds.join(',');
             if (unitId) params.unitId = unitId;
             const res = await axios.get('/problems/api/problems', { params });
             const count = res.data.length;
@@ -177,8 +210,35 @@
         }
     }
 
-    ['subject-select', 'round-select', 'unit-select'].forEach(id => {
+    ['subject-select', 'unit-select'].forEach(id => {
         document.getElementById(id).addEventListener('change', updateQuestionCount);
+    });
+
+    document.getElementById('round-selector').addEventListener('click', () => {
+        const panel = document.getElementById('round-panel');
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    });
+
+    document.getElementById('round-confirm').addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('#round-checkboxes input[type="checkbox"]');
+        const allChecked = document.getElementById('round-all')?.checked;
+        if (allChecked) {
+            selectedRounds = Array.from(checkboxes)
+                .filter(cb => cb.value !== 'all')
+                .map(cb => cb.value);
+        } else {
+            selectedRounds = Array.from(checkboxes)
+                .filter(cb => cb.checked && cb.value !== 'all')
+                .map(cb => cb.value);
+        }
+        document.getElementById('round-panel').style.display = 'none';
+        updateQuestionCount();
+    });
+
+    document.getElementById('round-reset').addEventListener('click', () => {
+        document.querySelectorAll('#round-checkboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
+        selectedRounds = [];
+        updateQuestionCount();
     });
 
     // ✅ 문제 로딩
@@ -187,7 +247,8 @@
         const roundId = document.getElementById('round-select').value;
         const unitId = document.getElementById('unit-select').value;
 
-        const params = { subjectId, roundId, unitId };
+        const params = { subjectId, unitId };
+        if (selectedRounds.length > 0) params.roundIds = selectedRounds.join(',');
         const res = await axios.get('/problems/api/problems', { params });
         questions = res.data;
 
