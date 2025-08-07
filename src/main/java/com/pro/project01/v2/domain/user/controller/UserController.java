@@ -38,4 +38,15 @@ public class UserController {
         // 3) 대시보드로 리다이렉트
         return "redirect:/dashboard";
     }
+
+    // ✅ 마이페이지 조회
+    @GetMapping("/mypage")
+    public String myPage(HttpSession session, Model model) {
+        UserResponse loginUser = (UserResponse) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("user", loginUser);
+        return "members/edit-myinfo";
+    }
 }
