@@ -219,7 +219,8 @@ public class ProblemController {
                                 new ProblemResponseForSolve.ChoiceDto(problem.getChoice3()),
                                 new ProblemResponseForSolve.ChoiceDto(problem.getChoice4()),
                                 new ProblemResponseForSolve.ChoiceDto(problem.getChoice5())
-                        )
+                        ),
+                        problem.getAnswer()
                 ))
                 .toList();
     }

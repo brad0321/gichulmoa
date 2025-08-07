@@ -7,7 +7,8 @@ public record ProblemResponseForSolve(
         String title,
         String viewContent,
         String imageUrl,
-        List<ChoiceDto> choices
+        List<ChoiceDto> choices,
+        Integer answer
 ) {
     public record ChoiceDto(String content) {}
 }

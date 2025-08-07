@@ -143,7 +143,10 @@
     <ul id="choices" class="list-group mb-3"></ul>
     <div class="d-flex justify-content-between">
         <button id="prev-btn" class="btn btn-outline-secondary">◀ 이전</button>
-        <button id="next-btn" class="btn btn-outline-secondary">다음 ▶</button>
+        <div>
+            <button id="check-btn" class="btn btn-success me-2">정답 확인</button>
+            <button id="next-btn" class="btn btn-outline-secondary">다음 ▶</button>
+        </div>
     </div>
 </div>
 
@@ -174,6 +177,8 @@
     let selectedSubject = null;
     let selectedRounds = [];
     let selectedUnits = [];
+    let userAnswers = [];
+    let checkedStates = [];
 
     document.addEventListener("DOMContentLoaded", () => {
         loadSubjects();
@@ -355,40 +360,42 @@
         `;
         const choicesList = document.getElementById('choices');
         choicesList.innerHTML = '';
-        q.choices.forEach(choice => {
+        q.choices.forEach((choice, idx) => {
             const li = document.createElement('li');
             li.className = 'list-group-item';
-            li.textContent = choice.content;
+            li.innerHTML = `
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="choice" id="choice-${idx + 1}" value="${idx + 1}">
+                    <label class="form-check-label" for="choice-${idx + 1}">${choice.content}</label>
+                </div>`;
+            const input = li.querySelector('input');
+            input.addEventListener('change', () => {
+                userAnswers[index] = parseInt(input.value);
+                checkedStates[index] = false;
+            });
             choicesList.appendChild(li);
         });
         document.getElementById('question-count').textContent = `${index + 1} / ${questions.length}`;
-        bindChoiceEvents();
+        const saved = userAnswers[index];
+        if (saved) {
+            const radio = document.querySelector(`input[name="choice"][value="${saved}"]`);
+            if (radio) radio.checked = true;
+            if (checkedStates[index]) {
+                highlightAnswer(saved, q.answer);
+            }
+        }
     }
 
-    /** ✅ 보기 클릭 이벤트 */
-    function bindChoiceEvents() {
-        let allowChoiceClick = false;
-        const clickableWord = document.querySelector('.clickable-word');
-        if (clickableWord) {
-            clickableWord.addEventListener('click', () => {
-                clickableWord.classList.toggle('marked');
-                allowChoiceClick = clickableWord.classList.contains('marked');
-            });
-        }
-        document.querySelectorAll('#choices li').forEach(item => {
-            item.addEventListener('click', function () {
-                if (!allowChoiceClick) return;
-                if (this.classList.contains('disabled-choice')) {
-                    this.classList.remove('disabled-choice');
-                    this.querySelector('.mark-o')?.remove();
-                } else {
-                    this.classList.add('disabled-choice');
-                    const mark = document.createElement('span');
-                    mark.textContent = ' O';
-                    mark.classList.add('mark-o');
-                    this.appendChild(mark);
-                }
-            });
+    function highlightAnswer(selected, answer) {
+        document.querySelectorAll('#choices .list-group-item').forEach((li, idx) => {
+            li.classList.remove('list-group-item-success', 'list-group-item-danger');
+            const choiceNum = idx + 1;
+            if (choiceNum === answer) {
+                li.classList.add('list-group-item-success');
+            }
+            if (choiceNum === selected && selected !== answer) {
+                li.classList.add('list-group-item-danger');
+            }
         });
     }
 
@@ -397,6 +404,18 @@
         document.getElementById('main').style.display = 'none';
         document.getElementById('question-area').style.display = 'block';
         loadQuestions();
+    });
+    document.getElementById('check-btn').addEventListener('click', () => {
+        const q = questions[currentIndex];
+        const selected = document.querySelector('input[name="choice"]:checked');
+        if (!selected) {
+            alert('보기를 선택하세요.');
+            return;
+        }
+        const value = parseInt(selected.value);
+        userAnswers[currentIndex] = value;
+        checkedStates[currentIndex] = true;
+        highlightAnswer(value, q.answer);
     });
     document.getElementById('next-btn').addEventListener('click', () => {
         if (currentIndex < questions.length - 1) {
