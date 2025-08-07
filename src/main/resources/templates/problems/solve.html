@@ -10,7 +10,7 @@
 
     <style>
         body {
-            padding-bottom: 80px;
+            padding-top: 80px;
             font-family: 'Noto Sans KR', sans-serif;
         }
         .clickable-word {
@@ -110,9 +110,13 @@
 <!-- 생략: head, style 등은 동일하므로 줄이고 변경된 부분만 하이라이트 -->
 
 <!-- ✅ 상단바 -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="#">문제풀이</a>
+<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom fixed-top">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-dark" id="zoom-in-btn">+</button>
+            <button class="btn btn-sm btn-outline-dark" id="zoom-out-btn">-</button>
+            <button class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-gear"></i></button>
+        </div>
         <div class="d-flex gap-2 position-relative flex-wrap align-items-center">
 
             <!-- ✅ 과목 선택 -->
@@ -151,7 +155,10 @@
             <span id="question-count" class="btn btn-outline-primary disabled">0 / 0</span>
 
             <!-- ✅ 문제풀기 버튼 -->
-            <button id="start-btn" class="btn btn-primary">문제풀기 ▷▷</button>
+            <button id="start-btn" class="btn btn-primary">문제풀기</button>
+        </div>
+        <div>
+            <button id="solution-btn" class="btn btn-outline-secondary">◀ 문제 해설 ▶</button>
         </div>
     </div>
 </nav>
@@ -165,8 +172,12 @@
 </div>
 
 <!-- ✅ 문제 풀이 영역 -->
-<div class="container my-4 pb-5" id="question-area" style="display:none;">
+<div class="container my-4" id="question-area" style="display:none;">
     <h4 class="text-primary mb-3">문제</h4>
+    <div class="form-check mb-3">
+        <input type="checkbox" class="form-check-input" id="wrong-checkbox">
+        <label class="form-check-label" for="wrong-checkbox">오답노트</label>
+    </div>
     <p id="question-text" class="mb-3"></p>
     <ul id="choices" class="list-group mb-3"></ul>
     <div class="d-flex justify-content-between">
@@ -174,23 +185,6 @@
         <button id="next-btn" class="btn btn-outline-secondary">다음 ▶</button>
     </div>
 </div>
-
-<!-- ✅ 하단바 -->
-<nav class="navbar fixed-bottom navbar-light bg-white border-top p-2">
-    <div class="container-fluid d-flex justify-content-between">
-        <div>
-            <button class="btn btn-sm btn-outline-dark">+</button>
-            <button class="btn btn-sm btn-outline-dark">-</button>
-            <button class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-gear"></i></button>
-        </div>
-        <div>
-            <label><input type="checkbox" id="wrong-checkbox"> 오답</label>
-        </div>
-        <div>
-            <button id="stop-btn" class="btn btn-danger btn-sm">풀이멈춤</button>
-        </div>
-    </div>
-</nav>
 
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -453,10 +447,6 @@
             currentIndex--;
             showQuestion(currentIndex);
         }
-    });
-    document.getElementById('stop-btn').addEventListener('click', () => {
-        document.getElementById('main').style.display = 'block';
-        document.getElementById('question-area').style.display = 'none';
     });
 </script>
 </body>
