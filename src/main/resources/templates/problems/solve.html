@@ -425,11 +425,12 @@
         document.querySelectorAll('#choices .list-group-item').forEach((li, idx) => {
             li.classList.remove('list-group-item-success', 'list-group-item-danger');
             const choiceNum = idx + 1;
-            if (choiceNum === answer) {
-                li.classList.add('list-group-item-success');
-            }
-            if (choiceNum === selected && selected !== answer) {
-                li.classList.add('list-group-item-danger');
+            if (choiceNum === selected) {
+                if (selected === answer) {
+                    li.classList.add('list-group-item-success');
+                } else {
+                    li.classList.add('list-group-item-danger');
+                }
             }
         });
     }
