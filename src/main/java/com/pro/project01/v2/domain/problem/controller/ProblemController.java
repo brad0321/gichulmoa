@@ -201,12 +201,12 @@ public class ProblemController {
     public List<ProblemResponseForSolve> getProblems(
             @RequestParam Long subjectId,
             @RequestParam(required = false) List<Long> roundIds,
-            @RequestParam(required = false) Long unitId
+            @RequestParam(required = false) List<Long> unitIds
     ) {
-        log.info("[API] 문제 리스트 요청: subjectId={}, roundIds={}, unitId={}",
-                subjectId, roundIds, unitId);
+        log.info("[API] 문제 리스트 요청: subjectId={}, roundIds={}, unitIds={}",
+                subjectId, roundIds, unitIds);
 
-        return problemRepository.findByFilters(subjectId, roundIds, unitId)
+        return problemRepository.findByFilters(subjectId, roundIds, unitIds)
                 .stream()
                 .map(problem -> new ProblemResponseForSolve(
                         problem.getId(),
