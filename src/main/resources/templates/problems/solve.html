@@ -157,8 +157,11 @@
             <!-- ✅ 문제풀기 버튼 -->
             <button id="start-btn" class="btn btn-primary">문제풀기</button>
         </div>
-        <div>
-            <button id="solution-btn" class="btn btn-outline-secondary">◀ 문제 해설 ▶</button>
+        <div class="btn-group">
+            <button id="prev-btn" class="btn btn-outline-secondary">◀이전</button>
+            <button id="problem-btn" class="btn btn-outline-secondary">문제</button>
+            <button id="solution-btn" class="btn btn-outline-secondary">해설</button>
+            <button id="next-btn" class="btn btn-outline-secondary">다음 ▶</button>
         </div>
     </div>
 </nav>
@@ -180,9 +183,9 @@
     </div>
     <p id="question-text" class="mb-3"></p>
     <ul id="choices" class="list-group mb-3"></ul>
-    <div class="d-flex justify-content-between">
-        <button id="prev-btn" class="btn btn-outline-secondary">◀ 이전</button>
-        <button id="next-btn" class="btn btn-outline-secondary">다음 ▶</button>
+    <div id="solution-area" class="mb-3" style="display:none;">
+        <h5 class="text-success">해설</h5>
+        <p id="solution-text" class="mb-0"></p>
     </div>
 </div>
 
@@ -404,6 +407,8 @@
             labelText.style.cursor = 'default';
             choicesList.appendChild(li);
         });
+        document.getElementById('solution-area').style.display = 'none';
+        document.getElementById('solution-text').textContent = '';
         document.getElementById('question-count').textContent = `${index + 1} / ${questions.length}`;
         const saved = userAnswers[index];
         if (saved) {
@@ -434,6 +439,18 @@
         document.getElementById('main').style.display = 'none';
         document.getElementById('question-area').style.display = 'block';
         loadQuestions();
+    });
+
+    document.getElementById('problem-btn').addEventListener('click', () => {
+        document.getElementById('solution-area').style.display = 'none';
+        document.querySelectorAll('#choices .list-group-item').forEach(li => li.classList.remove('list-group-item-success', 'list-group-item-danger'));
+    });
+
+    document.getElementById('solution-btn').addEventListener('click', () => {
+        const q = questions[currentIndex];
+        highlightAnswer(q.answer, q.answer);
+        document.getElementById('solution-text').textContent = `정답: ${q.answer}`;
+        document.getElementById('solution-area').style.display = 'block';
     });
 
     document.getElementById('next-btn').addEventListener('click', () => {
