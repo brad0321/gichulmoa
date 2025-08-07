@@ -94,6 +94,10 @@
             font-size: 14px;
             padding: 4px 12px;
         }
+        .navbar.hidden {
+            transform: translateY(-100%);
+            transition: transform 0.3s;
+        }
         @media (max-width: 768px) {
             .d-flex.gap-2 {
                 flex-wrap: wrap;
@@ -158,10 +162,13 @@
             <button id="solution-btn" class="btn btn-outline-secondary">해설</button>
             <button id="next-btn" class="btn btn-outline-secondary">다음 ▶</button>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 position-relative">
             <button class="btn btn-sm btn-outline-dark" id="zoom-in-btn">+</button>
             <button class="btn btn-sm btn-outline-dark" id="zoom-out-btn">-</button>
-            <button class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-gear"></i></button>
+            <button class="btn btn-sm btn-outline-secondary" id="settings-btn"><i class="fa-solid fa-gear"></i></button>
+            <div id="settings-panel" class="panel-box">
+                <label><input type="checkbox" id="autohide-toggle" checked> 상단바 자동 숨김</label>
+            </div>
         </div>
     </div>
 </nav>
@@ -467,6 +474,67 @@
             showQuestion(currentIndex);
         }
     });
+
+    /** ✅ 확대 / 축소 기능 */
+    let baseFontSize = 16;
+    document.getElementById('zoom-in-btn').addEventListener('click', () => {
+        baseFontSize = Math.min(baseFontSize + 1, 32);
+        document.documentElement.style.fontSize = baseFontSize + 'px';
+    });
+    document.getElementById('zoom-out-btn').addEventListener('click', () => {
+        baseFontSize = Math.max(baseFontSize - 1, 10);
+        document.documentElement.style.fontSize = baseFontSize + 'px';
+    });
+
+    /** ✅ 상단바 자동 숨김 및 설정 */
+    const navbar = document.querySelector('nav');
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsPanel = document.getElementById('settings-panel');
+    const autohideToggle = document.getElementById('autohide-toggle');
+    let autoHideEnabled = true;
+    let hideTimeout;
+
+    settingsBtn.addEventListener('click', () => {
+        settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!settingsPanel.contains(e.target) && !settingsBtn.contains(e.target)) {
+            settingsPanel.style.display = 'none';
+        }
+    });
+
+    autohideToggle.addEventListener('change', () => {
+        autoHideEnabled = autohideToggle.checked;
+        if (autoHideEnabled) {
+            scheduleHide();
+        } else {
+            navbar.classList.remove('hidden');
+            clearTimeout(hideTimeout);
+        }
+    });
+
+    function scheduleHide() {
+        clearTimeout(hideTimeout);
+        if (!autoHideEnabled) return;
+        hideTimeout = setTimeout(() => {
+            navbar.classList.add('hidden');
+        }, 3000);
+    }
+
+    function showNavbar() {
+        navbar.classList.remove('hidden');
+        scheduleHide();
+    }
+
+    document.addEventListener('mousemove', (e) => {
+        if (!autoHideEnabled) return;
+        if (e.clientY <= 80) {
+            showNavbar();
+        }
+    });
+
+    scheduleHide();
 </script>
 </body>
 </html>
