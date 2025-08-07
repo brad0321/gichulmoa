@@ -79,20 +79,20 @@
 </head>
 <body>
 
+<!-- 생략: head, style 등은 동일하므로 줄이고 변경된 부분만 하이라이트 -->
+
 <!-- ✅ 상단바 -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="#">문제풀이</a>
-        <div class="d-flex gap-2 position-relative flex-wrap">
+        <div class="d-flex gap-2 position-relative flex-wrap align-items-center">
 
             <!-- ✅ 과목 선택 -->
             <div class="dropdown">
                 <button class="btn btn-outline-primary dropdown-toggle" type="button" id="subjectDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     과목 선택
                 </button>
-                <ul class="dropdown-menu" id="subject-menu" style="max-height: 250px; overflow-y: auto;">
-                    <!-- 동적 로딩 -->
-                </ul>
+                <ul class="dropdown-menu" id="subject-menu" style="max-height: 250px; overflow-y: auto;"></ul>
             </div>
 
             <!-- ✅ 회차 선택 -->
@@ -119,18 +119,17 @@
                 </div>
             </div>
 
+            <!-- ✅ 문제 개수 표시 이동 (추가된 부분) -->
+            <span id="question-count" class="fw-bold text-muted">0 / 0</span>
+
+            <!-- ✅ 문제풀기 버튼 -->
             <button id="start-btn" class="btn btn-primary">문제풀기 ▷▷</button>
         </div>
     </div>
 </nav>
 
-<!-- ✅ 문제 개수 표시 -->
-<div class="container my-2 text-center">
-    <div id="question-count" class="text-muted" style="font-size: 16px; font-weight: bold;">
-        0 / 0
-    </div>
-</div>
-
+<!-- ❌ 기존 위치의 문제 개수 표시는 삭제됨 -->
+<!-- ✅ 이 아래부터는 기존 그대로 유지 -->
 <!-- ✅ 문제 리스트 -->
 <div class="container my-4" id="main">
     <h3 class="mb-3 text-success">진행중인 문제풀이</h3>
@@ -164,6 +163,7 @@
         </div>
     </div>
 </nav>
+
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -10,7 +10,7 @@ import com.pro.project01.v2.domain.scorestat.entity.ScoreStat;
 import com.pro.project01.v2.domain.scorestat.repository.ScoreStatRepository;
 import com.pro.project01.v2.domain.subject.entity.Subject;
 import com.pro.project01.v2.domain.subject.repository.SubjectRepository;
-import com.pro.project01.v2.domain.type.entity.Type;
+
 import com.pro.project01.v2.domain.user.entity.User;
 import com.pro.project01.v2.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
