@@ -303,11 +303,24 @@
         }
     }
 
-    /** ✅ 패널 토글 */
+    /** ✅ 패널 및 드롭다운 토글 */
+    const subjectDropdownBtn = document.getElementById('subjectDropdown');
+    subjectDropdownBtn.addEventListener('show.bs.dropdown', () => {
+        document.getElementById('round-panel').style.display = 'none';
+        document.getElementById('unit-panel').style.display = 'none';
+    });
+
     document.getElementById('round-selector').addEventListener('click', () => togglePanel('round-panel'));
     document.getElementById('unit-selector').addEventListener('click', () => togglePanel('unit-panel'));
+
     function togglePanel(id) {
         const panel = document.getElementById(id);
+        const otherPanelId = id === 'round-panel' ? 'unit-panel' : 'round-panel';
+        document.getElementById(otherPanelId).style.display = 'none';
+
+        const dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(subjectDropdownBtn);
+        dropdownInstance.hide();
+
         panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
     }
 
