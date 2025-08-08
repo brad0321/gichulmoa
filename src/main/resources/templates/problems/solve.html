@@ -217,7 +217,8 @@
         <button id="next-btn" class="btn btn-outline-secondary">▶</button>
         <span id="question-count-top" class="btn btn-outline-secondary disabled">0 / 0</span>
     </div>
-    <p id="question-text" class="mb-3 question-box"></p>
+    <p id="question-title" class="mb-3"></p>
+    <div id="question-text" class="mb-3 question-box"></div>
     <ul id="choices" class="list-group mb-3"></ul>
     <div id="solution-area" class="mb-3" style="display:none;">
         <h5 class="text-success">해설</h5>
@@ -437,8 +438,9 @@
     /** ✅ 문제 출력 (현재 index / 전체) */
     function showQuestion(index) {
         const q = questions[index];
+        document.getElementById('question-title').innerHTML = `<strong>${q.title}</strong>`;
         document.getElementById('question-text').innerHTML = `
-            <strong>${q.title}</strong><br>
+
             <div>${q.viewContent || ''}</div>
             ${q.imageUrl ? `<img src="${q.imageUrl}" style="max-width:100%; margin-top:10px;">` : ''}
         `;
