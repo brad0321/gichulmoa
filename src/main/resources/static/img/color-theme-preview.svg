@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600">
+    <!-- Header -->
+    <rect x="0" y="0" width="1000" height="80" fill="#212934"/>
+    <text x="500" y="50" font-size="32" text-anchor="middle" fill="#ede861">Header</text>
+
+    <!-- Body -->
+    <rect x="0" y="80" width="1000" height="400" fill="#e9eef5"/>
+    <text x="50" y="130" font-size="24" fill="#bcbcbc">Sample text #bcbcbc</text>
+    <text x="50" y="170" font-size="24" fill="#59ab6e">Sample text #59ab6e</text>
+    <text x="50" y="210" font-size="24" fill="#cfd6e1">Sample text #cfd6e1</text>
+
+    <!-- Button -->
+    <rect x="50" y="250" width="200" height="60" fill="#59ab6e" stroke="#56ae6c" stroke-width="3" rx="8" ry="8"/>
+    <text x="150" y="285" font-size="24" text-anchor="middle" fill="#000">Button</text>
+
+    <!-- Links -->
+    <text x="50" y="350" font-size="24" fill="#59ab6e">page link</text>
+    <rect x="180" y="320" width="200" height="40" fill="#69bb7e"/>
+    <text x="280" y="350" font-size="24" text-anchor="middle" fill="#000">hover</text>
+
+    <!-- Footer -->
+    <rect x="0" y="480" width="1000" height="120" fill="#1d242d"/>
+    <text x="500" y="550" font-size="24" text-anchor="middle" fill="#cfd6e1">Footer text</text>
+</svg>
