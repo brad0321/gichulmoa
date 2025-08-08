@@ -462,6 +462,8 @@
         document.getElementById('question-area').style.display = 'block';
         document.getElementById('selection-group').style.display = 'none';
         loadQuestions();
+        autoHideActivated = true;
+        scheduleHide();
     });
 
     document.getElementById('problem-btn').addEventListener('click', () => {
@@ -505,7 +507,8 @@
     const settingsBtn = document.getElementById('settings-btn');
     const settingsPanel = document.getElementById('settings-panel');
     const autohideToggle = document.getElementById('autohide-toggle');
-    let autoHideEnabled = true;
+    let autoHideEnabled = autohideToggle.checked;
+    let autoHideActivated = false;
     let hideTimeout;
 
     settingsBtn.addEventListener('click', () => {
@@ -520,7 +523,7 @@
 
     autohideToggle.addEventListener('change', () => {
         autoHideEnabled = autohideToggle.checked;
-        if (autoHideEnabled) {
+        if (autoHideEnabled && autoHideActivated) {
             scheduleHide();
         } else {
             navbar.classList.remove('hidden');
@@ -530,7 +533,7 @@
 
     function scheduleHide() {
         clearTimeout(hideTimeout);
-        if (!autoHideEnabled) return;
+        if (!autoHideEnabled || !autoHideActivated) return;
         hideTimeout = setTimeout(() => {
             navbar.classList.add('hidden');
         }, 3000);
@@ -542,13 +545,12 @@
     }
 
     document.addEventListener('mousemove', (e) => {
-        if (!autoHideEnabled) return;
+        if (!autoHideEnabled || !autoHideActivated) return;
         if (e.clientY >= window.innerHeight - 80) {
             showNavbar();
         }
     });
 
-    scheduleHide();
 </script>
 </body>
 </html>
