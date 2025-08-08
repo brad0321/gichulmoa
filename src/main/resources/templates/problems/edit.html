@@ -84,6 +84,31 @@
             <input type="text" name="choice5" class="form-control" th:value="${problem.choice5}">
         </div>
 
+        <!-- 정답 -->
+        <div class="mb-3">
+            <label class="form-label">정답</label>
+            <select name="answer" class="form-select" required>
+                <option value="">정답 선택</option>
+                <option value="1" th:selected="${problem.answer} == 1">1번</option>
+                <option value="2" th:selected="${problem.answer} == 2">2번</option>
+                <option value="3" th:selected="${problem.answer} == 3">3번</option>
+                <option value="4" th:selected="${problem.answer} == 4">4번</option>
+                <option value="5" th:selected="${problem.answer} == 5">5번</option>
+            </select>
+        </div>
+
+        <!-- 문제 유형 -->
+        <div class="mb-3">
+            <label class="form-label">문제 유형</label>
+            <select name="type" class="form-select" required>
+                <option value="">문제 유형 선택</option>
+                <option th:each="t : ${types}" th:value="${t.name()}"
+                        th:text="${t.description}"
+                        th:selected="${t} == ${problem.type}"></option>
+            </select>
+        </div>
+
+
         <button type="submit" class="btn btn-success">수정하기</button>
     </form>
 
