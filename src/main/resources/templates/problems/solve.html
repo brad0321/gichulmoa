@@ -156,12 +156,7 @@
             <!-- ✅ 문제풀기 버튼 -->
             <button id="start-btn" class="btn btn-primary">문제풀기</button>
         </div>
-        <div id="navigation-group" class="btn-group">
-            <button id="prev-btn" class="btn btn-outline-secondary">◀이전</button>
-            <button id="problem-btn" class="btn btn-outline-secondary">문제</button>
-            <button id="solution-btn" class="btn btn-outline-secondary">해설</button>
-            <button id="next-btn" class="btn btn-outline-secondary">다음 ▶</button>
-        </div>
+
         <div class="d-flex gap-2 position-relative">
             <button class="btn btn-sm btn-outline-dark" id="zoom-in-btn">+</button>
             <button class="btn btn-sm btn-outline-dark" id="zoom-out-btn">-</button>
@@ -182,11 +177,16 @@
 </div>
 
 <!-- ✅ 문제 풀이 영역 -->
-<div class="container my-4" id="question-area" style="display:none;">
-    <h4 class="text-primary mb-3">문제</h4>
-    <div class="form-check mb-3">
+<div class="container my-4 position-relative" id="question-area" style="display:none;">
+    <div class="form-check position-absolute top-0 end-0 m-2">
         <input type="checkbox" class="form-check-input" id="wrong-checkbox">
         <label class="form-check-label" for="wrong-checkbox">오답노트</label>
+    </div>
+    <div id="navigation-group" class="btn-group mb-3">
+        <button id="prev-btn" class="btn btn-outline-secondary">◀</button>
+        <button id="problem-btn" class="btn btn-outline-secondary">문제</button>
+        <button id="solution-btn" class="btn btn-outline-secondary">해설</button>
+        <button id="next-btn" class="btn btn-outline-secondary">▶</button>
     </div>
     <p id="question-text" class="mb-3"></p>
     <ul id="choices" class="list-group mb-3"></ul>
@@ -446,7 +446,6 @@
         document.getElementById('main').style.display = 'none';
         document.getElementById('question-area').style.display = 'block';
         document.getElementById('selection-group').style.display = 'none';
-        document.getElementById('navigation-group').classList.add('mx-auto');
         loadQuestions();
     });
 
