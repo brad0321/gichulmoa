@@ -23,7 +23,7 @@
             <select name="subjectId" class="form-select" required>
                 <option value="">과목 선택</option>
                 <option th:each="s : ${subjects}" th:value="${s.id}"
-                        th:text="${s.name}" th:selected="${s.id} == ${problem.subject.id}"></option>
+                        th:text="${s.name}" th:selected="${s.id} == ${problem.subjectId}"></option>
             </select>
         </div>
 
@@ -33,7 +33,7 @@
             <select name="roundId" class="form-select" required>
                 <option value="">회차 선택</option>
                 <option th:each="r : ${rounds}" th:value="${r.id}"
-                        th:text="${r.name}" th:selected="${r.id} == ${problem.round.id}"></option>
+                        th:text="${r.name}" th:selected="${r.id} == ${problem.roundId}"></option>
             </select>
         </div>
 
@@ -43,7 +43,7 @@
             <select name="unitId" class="form-select" required>
                 <option value="">목차 선택</option>
                 <option th:each="u : ${units}" th:value="${u.id}"
-                        th:text="${u.name}" th:selected="${u.id} == ${problem.unit.id}"></option>
+                        th:text="${u.name}" th:selected="${u.id} == ${problem.unitId}"></option>
             </select>
         </div>
 
@@ -56,9 +56,9 @@
         <!-- 이미지 업로드 -->
         <div class="mb-3">
             <label class="form-label">보기 항목 이미지 변경</label>
-            <input type="file" name="viewImage" class="form-control">
-            <div th:if="${problem.viewImagePath}" class="mt-2">
-                <img th:src="@{'/uploads/' + ${problem.viewImagePath}}" class="img-fluid" style="max-height: 200px;">
+            <input type="file" name="imageFile" class="form-control">
+            <div th:if="${problem.imageUrl}" class="mt-2">
+                <img th:src="@{'/uploads/' + ${problem.imageUrl}}" class="img-fluid" style="max-height: 200px;">
             </div>
         </div>
 

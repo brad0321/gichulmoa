@@ -83,8 +83,9 @@
         <td class="btn-group">
             <a th:href="@{/problems/{id}(id=${problem.id})}">상세</a>
             <a th:href="@{/problems/{id}/edit(id=${problem.id})}">수정</a>
-            <a th:href="@{/problems/{id}/delete(id=${problem.id})}"
-               onclick="return confirm('정말 삭제하시겠습니까?')">삭제</a>
+            <form th:action="@{/problems/{id}/delete(id=${problem.id})}" method="post" style="display:inline;">
+                <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
+            </form>
         </td>
     </tr>
     </tbody>

@@ -11,13 +11,13 @@
     <!-- 분류 정보 -->
     <div class="mb-4 row">
         <div class="col-md-4">
-            <strong>과목:</strong> <span th:text="${problem.subject.name}">과목명</span>
+            <strong>과목:</strong> <span th:text="${problem.subjectName}">과목명</span>
         </div>
         <div class="col-md-4">
-            <strong>회차:</strong> <span th:text="${problem.round.name}">회차번호</span>
+            <strong>회차:</strong> <span th:text="${problem.roundNumber}">회차번호</span>
         </div>
         <div class="col-md-4">
-            <strong>목차:</strong> <span th:text="${problem.unit.name}">목차이름</span>
+            <strong>목차:</strong> <span th:text="${problem.unitName}">목차이름</span>
         </div>
     </div>
 
@@ -31,9 +31,9 @@
         <div th:utext="${problem.viewContent}"></div>
     </div>
 
-    <div class="mb-3" th:if="${problem.viewImagePath}">
+    <div class="mb-3" th:if="${problem.imageUrl}">
         <h4>보기 항목 이미지</h4>
-        <img th:src="${problem.imageUrl}" class="img-fluid" style="max-height: 300px;">
+        <img th:src="@{'/uploads/' + ${problem.imageUrl}}" class="img-fluid" style="max-height: 300px;">
     </div>
 
     <div class="mb-3">

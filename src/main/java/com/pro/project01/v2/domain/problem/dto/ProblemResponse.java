@@ -16,8 +16,11 @@ public record ProblemResponse(
         String choice4,
         String choice5,
         Integer answer,
+        Long subjectId,
         String subjectName,
+        Long roundId,
         Integer roundNumber, // ✅ Round -> roundNumber
+        Long unitId,
         String unitName,
         ProblemType type, // ✅ 새로 추가된 필드
         LocalDateTime createdAt,
@@ -35,8 +38,11 @@ public record ProblemResponse(
                 problem.getChoice4(),
                 problem.getChoice5(),
                 problem.getAnswer(),
+                problem.getSubject() != null ? problem.getSubject().getId() : null,
                 problem.getSubject() != null ? problem.getSubject().getName() : null,
+                problem.getRound() != null ? problem.getRound().getId() : null,
                 problem.getRound() != null ? problem.getRound().getRoundNumber() : null,
+                problem.getUnit() != null ? problem.getUnit().getId() : null,
                 problem.getUnit() != null ? problem.getUnit().getName() : null,
                 problem.getType(), // ✅ enum 값 그대로 전달
                 problem.getCreatedAt(),
