@@ -187,6 +187,7 @@
         <button id="problem-btn" class="btn btn-outline-secondary">문제</button>
         <button id="solution-btn" class="btn btn-outline-secondary">해설</button>
         <button id="next-btn" class="btn btn-outline-secondary">▶</button>
+        <span id="question-count-top" class="btn btn-outline-secondary disabled">0 / 0</span>
     </div>
     <p id="question-text" class="mb-3"></p>
     <ul id="choices" class="list-group mb-3"></ul>
@@ -351,12 +352,14 @@
     async function updateQuestionCount() {
         if (!selectedSubject || selectedUnits.length === 0) {
             document.getElementById('question-count').textContent = '0 / 0';
+            document.getElementById('question-count-top').textContent = '0 / 0';
             return;
         }
         const params = { subjectId: selectedSubject, unitIds: selectedUnits.join(',') };
         if (selectedRounds.length > 0) params.roundIds = selectedRounds.join(',');
         const res = await axios.get('/problems/api/problems', { params });
         document.getElementById('question-count').textContent = `0 / ${res.data.length}`;
+        document.getElementById('question-count-top').textContent = `0 / ${res.data.length}`;
     }
 
     /** ✅ 문제 로딩 */
@@ -376,6 +379,7 @@
         } else {
             alert('해당 조건에 맞는 문제가 없습니다.');
             document.getElementById('question-count').textContent = '0 / 0';
+            document.getElementById('question-count-top').textContent = '0 / 0';
         }
     }
 
@@ -417,6 +421,7 @@
         document.getElementById('solution-area').style.display = 'none';
         document.getElementById('solution-text').textContent = '';
         document.getElementById('question-count').textContent = `${index + 1} / ${questions.length}`;
+        document.getElementById('question-count-top').textContent = `${index + 1} / ${questions.length}`;
         const saved = userAnswers[index];
         if (saved) {
             const radio = document.querySelector(`input[name="choice"][value="${saved}"]`);
