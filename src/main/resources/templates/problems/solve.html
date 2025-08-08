@@ -275,7 +275,7 @@
     /** ✅ 목차 로딩 */
     async function loadUnits(subjectId) {
         const container = document.getElementById('unit-checkboxes');
-        container.innerHTML = `<label><input type="checkbox" id="unit-all"> 전체목차 (순차)</label>`;
+        container.innerHTML = '';
         try {
             const res = await axios.get(`/problems/api/units?subjectId=${subjectId}`);
             res.data.forEach(unit => {
@@ -287,6 +287,12 @@
                     </label>`;
                 container.appendChild(div);
             });
+
+            const reference = Array.from(container.children).find(div => div.textContent.includes('부동산가격 공시제도'));
+            const allDiv = document.createElement('div');
+            allDiv.innerHTML = `<label><input type="checkbox" id="unit-all"> 전체목차</label>`;
+            if (reference) reference.insertAdjacentElement('afterend', allDiv);
+            else container.insertBefore(allDiv, container.firstChild);
 
             document.getElementById('unit-all').addEventListener('change', function () {
                 const checkboxes = container.querySelectorAll('input[type="checkbox"]:not(#unit-all)');
