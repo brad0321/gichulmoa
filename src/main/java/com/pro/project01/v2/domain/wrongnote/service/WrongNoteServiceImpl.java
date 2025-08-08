@@ -44,14 +44,14 @@ public class WrongNoteServiceImpl implements WrongNoteService {
     public WrongNoteResponse findById(Long id) {
         WrongNote wn = wrongNoteRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("오답노트 없음"));
-        return toResponse(wn);
+        return WrongNoteResponse.from(wn);
     }
 
     @Override
     public List<WrongNoteResponse> findByUserId(Long userId) {
         return wrongNoteRepository.findByUserId(userId)
                 .stream()
-                .map(this::toResponse)
+                .map(WrongNoteResponse::from)
                 .toList();
     }
 
@@ -66,16 +66,5 @@ public class WrongNoteServiceImpl implements WrongNoteService {
     @Override
     public void delete(Long id) {
         wrongNoteRepository.deleteById(id);
-    }
-
-    private WrongNoteResponse toResponse(WrongNote wn) {
-        return new WrongNoteResponse(
-                wn.getId(),
-                wn.getUser().getId(),
-                wn.getProblem().getId(),
-                wn.getMemo(),
-                wn.getCreatedAt(),
-                wn.getUpdatedAt()
-        );
     }
 }
