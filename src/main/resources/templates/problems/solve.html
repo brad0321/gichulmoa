@@ -90,9 +90,23 @@
         .panel-box label input[type="checkbox"] {
             margin-right: 8px;
         }
+        .panel-box a {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: #0d6efd;
+            text-decoration: none;
+        }
+        .panel-box a:hover {
+            text-decoration: underline;
+        }
         .panel-box .btn {
             font-size: 14px;
             padding: 4px 12px;
+        }
+        #settings-panel {
+            right: 0;
+            left: auto;
         }
         .navbar.hidden {
             transform: translateY(100%);
@@ -162,7 +176,15 @@
             <button class="btn btn-sm btn-outline-dark" id="zoom-out-btn">-</button>
             <button class="btn btn-sm btn-outline-secondary" id="settings-btn"><i class="fa-solid fa-gear"></i></button>
             <div id="settings-panel" class="panel-box">
-                <label><input type="checkbox" id="autohide-toggle" checked> 하단바 자동 숨김</label>
+                <label><input type="checkbox" id="autohide-toggle"> 자동숨기기 해제</label>
+                <a th:href="@{/wrong-notes(userId=${session.loginUser.id})}">오답노트</a>
+                <a th:href="@{/wrong-problems(userId=${session.loginUser.id})}">틀린문제</a>
+                <a th:href="@{/score-stats/user(userId=${session.loginUser.id})}">점수통계</a>
+                <a th:href="@{/calculation-problems}">계산문제</a>
+                <a th:href="@{/guide}">사용설명</a>
+                <a th:href="@{/exam-schedule}">시험일정</a>
+                <a th:href="@{/support}">민원센터</a>
+                <a th:href="@{/members/mypage}">마이페이지</a>
             </div>
         </div>
     </div>
@@ -520,7 +542,7 @@
     const settingsBtn = document.getElementById('settings-btn');
     const settingsPanel = document.getElementById('settings-panel');
     const autohideToggle = document.getElementById('autohide-toggle');
-    let autoHideEnabled = autohideToggle.checked;
+    let autoHideEnabled = !autohideToggle.checked;
     let autoHideActivated = false;
     let hideTimeout;
 
@@ -535,7 +557,7 @@
     });
 
     autohideToggle.addEventListener('change', () => {
-        autoHideEnabled = autohideToggle.checked;
+        autoHideEnabled = !autohideToggle.checked;
         if (autoHideEnabled && autoHideActivated) {
             scheduleHide();
         } else {
