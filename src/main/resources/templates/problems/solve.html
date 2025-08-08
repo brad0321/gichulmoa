@@ -19,7 +19,16 @@
             cursor: pointer;
             font-weight: bold;
         }
-        .clickable-word.marked::after {
+        .clickable-word.selected-o::after {
+            content: "O";
+            color: green;
+            font-size: 18px;
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .clickable-word.selected-x::after {
             content: "X";
             color: red;
             font-size: 18px;
@@ -65,6 +74,11 @@
         }
         .mark-o {
             color: green;
+            font-weight: bold;
+            margin-left: 6px;
+        }
+        .mark-x {
+            color: red;
             font-weight: bold;
             margin-left: 6px;
         }
@@ -238,6 +252,7 @@
     let selectedUnits = [];
     let userAnswers = [];
     let checkedStates = [];
+    let markMode = null;
 
     document.addEventListener("DOMContentLoaded", () => {
         loadSubjects();
@@ -438,12 +453,14 @@
     /** ✅ 문제 출력 (현재 index / 전체) */
     function showQuestion(index) {
         const q = questions[index];
+        markMode = null;
         document.getElementById('question-title').innerHTML = `<strong>${q.title}</strong>`;
         document.getElementById('question-text').innerHTML = `
 
             <div>${q.viewContent || ''}</div>
             ${q.imageUrl ? `<img src="${q.imageUrl}" style="max-width:100%; margin-top:10px;">` : ''}
         `;
+        markKeywords();
         const choicesList = document.getElementById('choices');
         choicesList.innerHTML = '';
         q.choices.forEach((choice, idx) => {
@@ -467,6 +484,8 @@
             labelText.addEventListener('click', (event) => {
                 event.preventDefault();
                 event.stopPropagation();
+                if (!markMode) return;
+                toggleChoiceMark(li);
             });
             labelText.style.cursor = 'default';
             choicesList.appendChild(li);
@@ -497,6 +516,55 @@
                 }
             }
         });
+    }
+
+    function markKeywords() {
+        const replacements = [
+            { kw: '옳은', type: 'o' },
+            { kw: '모두 고른 것', type: 'o' },
+            { kw: '해야하는 것', type: 'o' },
+            { kw: '해당하는 것', type: 'o' },
+            { kw: '아닌', type: 'x' },
+            { kw: '틀린', type: 'x' },
+            { kw: '없는', type: 'x' },
+            { kw: '아닌 경우를 모두 고른 것', type: 'x' }
+        ];
+        const titleEl = document.getElementById('question-title');
+        const textEl = document.getElementById('question-text');
+        [titleEl, textEl].forEach(el => {
+            let html = el.innerHTML;
+            replacements.forEach(({ kw, type }) => {
+                const regex = new RegExp(kw, 'g');
+                html = html.replace(regex, `<span class="clickable-word" data-type="${type}">${kw}</span>`);
+            });
+            el.innerHTML = html;
+        });
+        document.querySelectorAll('.clickable-word').forEach(span => {
+            span.addEventListener('click', () => {
+                if (span.classList.contains('selected-o') || span.classList.contains('selected-x')) {
+                    span.classList.remove('selected-o', 'selected-x');
+                    markMode = null;
+                } else {
+                    document.querySelectorAll('.clickable-word').forEach(s => s.classList.remove('selected-o', 'selected-x'));
+                    markMode = span.dataset.type;
+                    span.classList.add(markMode === 'o' ? 'selected-o' : 'selected-x');
+                }
+            });
+        });
+    }
+
+    function toggleChoiceMark(li) {
+        const existing = li.querySelector('.mark-o, .mark-x');
+        if (existing) {
+            existing.remove();
+            li.classList.remove('disabled-choice');
+        } else {
+            li.classList.add('disabled-choice');
+            const symbol = markMode === 'o' ? 'X' : 'O';
+            const cls = markMode === 'o' ? 'mark-x' : 'mark-o';
+            const text = li.querySelector('.choice-text');
+            text.insertAdjacentHTML('beforeend', `<span class="${cls}">${symbol}</span>`);
+        }
     }
 
     /** ✅ 버튼 이벤트 */
