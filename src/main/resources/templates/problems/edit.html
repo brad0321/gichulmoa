@@ -11,9 +11,9 @@
     <!-- ✅ 반드시 multipart/form-data 설정 -->
     <form th:action="@{'/problems/' + ${problem.id} + '/edit'}" method="post" enctype="multipart/form-data">
 
-        <!-- 제목 -->
+        <!-- 질문 -->
         <div class="mb-3">
-            <label class="form-label">문제 내용</label>
+            <label class="form-label">문제 질문</label>
             <input type="text" name="title" class="form-control" th:value="${problem.title}" required>
         </div>
 
@@ -47,9 +47,9 @@
             </select>
         </div>
 
-        <!-- 보기 텍스트 -->
+        <!-- 지문 -->
         <div class="mb-3">
-            <label class="form-label">보기 항목 (텍스트)</label>
+            <label class="form-label">문제 지문</label>
             <textarea name="viewContent" class="form-control" rows="4" th:text="${problem.viewContent}"></textarea>
         </div>
 
@@ -62,25 +62,25 @@
             </div>
         </div>
 
-        <!-- 선택 문항 -->
+        <!-- 보기 -->
         <div class="mb-3">
-            <label class="form-label">선택문항 1</label>
+            <label class="form-label">보기 1</label>
             <input type="text" name="choice1" class="form-control" th:value="${problem.choice1}">
         </div>
         <div class="mb-3">
-            <label class="form-label">선택문항 2</label>
+            <label class="form-label">보기 2</label>
             <input type="text" name="choice2" class="form-control" th:value="${problem.choice2}">
         </div>
         <div class="mb-3">
-            <label class="form-label">선택문항 3</label>
+            <label class="form-label">보기 3</label>
             <input type="text" name="choice3" class="form-control" th:value="${problem.choice3}">
         </div>
         <div class="mb-3">
-            <label class="form-label">선택문항 4</label>
+            <label class="form-label">보기 4</label>
             <input type="text" name="choice4" class="form-control" th:value="${problem.choice4}">
         </div>
         <div class="mb-3">
-            <label class="form-label">선택문항 5</label>
+            <label class="form-label">보기 5</label>
             <input type="text" name="choice5" class="form-control" th:value="${problem.choice5}">
         </div>
 
