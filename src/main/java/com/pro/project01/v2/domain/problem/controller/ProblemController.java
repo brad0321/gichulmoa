@@ -152,10 +152,18 @@ public class ProblemController {
 
     // 문제 풀이 페이지
     @GetMapping("/solve")
-    public String solvePage() {
+    public String solvePage(HttpSession session, Model model) {
         log.info("[GET] 문제 풀이 페이지 요청");
+
+        UserResponse loginUser = (UserResponse) session.getAttribute("loginUser");
+        Long userId = (loginUser != null ? loginUser.id() : 0L); // ✅ record는 getter 대신 .id()
+
+        model.addAttribute("userId", userId);
+        model.addAttribute("loginUser", loginUser); // 상단 인사말 등에 사용
+
         return "problems/solve";
     }
+
 
     // ✅ 과목 리스트 API
     @ResponseBody
