@@ -39,19 +39,9 @@
             text-align:center;
             margin-bottom:18px;
         }
-        .brand img{
-            height:60px;
-            margin-bottom:8px;
-        }
-        .brand .title{
-            font-weight:800;
-            font-size: 22px;
-            color: var(--text-main);
-        }
-        .brand .subtitle{
-            font-size:12px;
-            color: var(--text-sub);
-        }
+        .brand img{ height:60px; margin-bottom:8px; }
+        .brand .title{ font-weight:800; font-size: 22px; color: var(--text-main); }
+        .brand .subtitle{ font-size:12px; color: var(--text-sub); }
 
         .card-auth{
             border:0;
@@ -77,46 +67,19 @@
         /* 버튼 공통: 중간 크기 통일 */
         .btn-uniform{
             padding: 10px 14px;
-            min-height: 44px;     /* a, button 모두 동일 높이 보장 */
+            min-height: 44px;
             border-radius:12px;
             font-weight:700;
             font-size: 1rem;
         }
+        .btn-main{ background: var(--color-main); border-color: var(--color-main); color:#fff; }
+        .btn-main:hover{ background:#243946; border-color:#243946; }
+        .btn-sub{ background: var(--color-sub); border-color: var(--color-sub); color:#fff; }
+        .btn-sub:hover{ background:#426d96; border-color:#426d96; }
+        .btn-ghost{ border:1px solid #c9c4bd; background:transparent; color: var(--text-main); }
+        .btn-ghost:hover{ background:#f0efec; }
 
-        .btn-main{
-            background: var(--color-main);
-            border-color: var(--color-main);
-            color:#fff;
-        }
-        .btn-main:hover{
-            background:#243946;
-            border-color:#243946;
-        }
-
-        .btn-sub{
-            background: var(--color-sub);
-            border-color: var(--color-sub);
-            color:#fff;
-        }
-        .btn-sub:hover{
-            background:#426d96;
-            border-color:#426d96;
-        }
-
-        .btn-ghost{
-            border:1px solid #c9c4bd;
-            background:transparent;
-            color: var(--text-main);
-        }
-        .btn-ghost:hover{
-            background:#f0efec;
-        }
-
-        .links a{
-            color: var(--color-sub);
-            text-decoration:none;
-            font-weight:600;
-        }
+        .links a{ color: var(--color-sub); text-decoration:none; font-weight:600; }
         .links a:hover{ text-decoration:underline; }
 
         .alert-auth{
@@ -126,12 +89,7 @@
             color:#8a2a22;
         }
 
-        .foot-note{
-            text-align:center;
-            color: var(--text-sub);
-            font-size:12px;
-            margin-top:14px;
-        }
+        .foot-note{ text-align:center; color: var(--text-sub); font-size:12px; margin-top:14px; }
     </style>
 </head>
 <body>
@@ -155,7 +113,7 @@
 
         <!-- 로그인 폼 -->
         <form th:action="@{/login}" method="post" id="loginForm" novalidate>
-            <!-- Spring Security CSRF 사용 시 자동 렌더 -->
+            <!-- CSRF -->
             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
             <div class="mb-3">
@@ -190,7 +148,12 @@
         <!-- 보조 액션 -->
         <div class="d-grid gap-2 mt-3">
             <a th:href="@{/members/new}" class="btn btn-sub btn-uniform">회원가입</a>
-            <a th:href="@{/guest/start}" class="btn btn-ghost btn-uniform">비회원 시작하기</a>
+
+            <!-- ✅ 비회원 시작하기: 링크 → POST /guest/login 폼으로 변경 -->
+            <form th:action="@{/guest/login}" method="post" class="d-grid">
+                <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-ghost btn-uniform">비회원 시작하기</button>
+            </form>
         </div>
     </section>
 

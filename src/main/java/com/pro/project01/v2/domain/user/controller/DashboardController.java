@@ -1,6 +1,5 @@
 package com.pro.project01.v2.domain.user.controller;
 
-import com.pro.project01.v2.domain.user.dto.UserResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -16,19 +15,22 @@ public class DashboardController {
 
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
-        UserResponse loginUser = (UserResponse) session.getAttribute("loginUser");
-        if (loginUser == null) return "redirect:/login";
+        // ✅ 회원(UserResponse) 또는 게스트(GuestSessionUser) 모두 허용
+        Object principal = session.getAttribute("loginUser");
+        if (principal == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("loginUser", principal); // 캐스팅 금지
 
-        // ✅ 시험일: 2025년 10월 25일 09:00
+        // ✅ 시험일: 2025-10-25 09:00 (음수 방지)
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime examDate = LocalDateTime.of(2025, 10, 25, 9, 0);
 
         Duration duration = Duration.between(now, examDate);
-        long totalHours = duration.toHours();
-        long daysLeft = duration.toDays();
-        long hoursLeft = totalHours % 24;
+        long totalSecs = Math.max(0, duration.getSeconds()); // 음수 방지
+        long daysLeft  = totalSecs / 86_400;
+        long hoursLeft = (totalSecs % 86_400) / 3_600;
 
-        model.addAttribute("loginUser", loginUser);
         model.addAttribute("daysLeft", daysLeft);
         model.addAttribute("hoursLeft", hoursLeft);
 

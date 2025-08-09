@@ -46,4 +46,19 @@ public class User {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    public static User create(String username, String email, String encodedPassword)
+    {
+        return User.builder()
+                .username(username)
+                .email(email)
+                .password(encodedPassword)
+                .grade(Grade.BRONZE)
+                .role(Role.USER)
+                .build();
+    }
+
+    public void changeEmail(String email) { this.email = email; }
+    public void changePassword(String encodedPassword) { this.password = encodedPassword; }
+    public void chageGrade(Grade grade)  { this.grade = grade; }
 }
