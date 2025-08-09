@@ -22,12 +22,12 @@
     </div>
 
     <div class="mb-3">
-        <h4>문제 내용</h4>
+        <h4>문제 질문</h4>
         <p th:text="${problem.title}"></p>
     </div>
 
     <div class="mb-3">
-        <h4>보기 항목 (텍스트)</h4>
+        <h4>문제 지문</h4>
         <div th:utext="${problem.viewContent}"></div>
     </div>
 
@@ -39,11 +39,11 @@
     <div class="mb-3">
         <h4>선택 문항</h4>
         <ul class="list-group">
-            <li class="list-group-item" th:text="'선택문항 1: ' + ${problem.choice1}"></li>
-            <li class="list-group-item" th:text="'선택문항 2: ' + ${problem.choice2}"></li>
-            <li class="list-group-item" th:text="'선택문항 3: ' + ${problem.choice3}"></li>
-            <li class="list-group-item" th:text="'선택문항 4: ' + ${problem.choice4}"></li>
-            <li class="list-group-item" th:text="'선택문항 5: ' + ${problem.choice5}"></li>
+            <li class="list-group-item" th:text="'보기 1: ' + ${problem.choice1}"></li>
+            <li class="list-group-item" th:text="'보기 2: ' + ${problem.choice2}"></li>
+            <li class="list-group-item" th:text="'보기 3: ' + ${problem.choice3}"></li>
+            <li class="list-group-item" th:text="'보기 4: ' + ${problem.choice4}"></li>
+            <li class="list-group-item" th:text="'보기 5: ' + ${problem.choice5}"></li>
         </ul>
     </div>
 

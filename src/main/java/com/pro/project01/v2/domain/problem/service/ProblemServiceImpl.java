@@ -3,7 +3,6 @@ package com.pro.project01.v2.domain.problem.service;
 import com.pro.project01.v2.domain.problem.dto.ProblemRequest;
 import com.pro.project01.v2.domain.problem.dto.ProblemResponse;
 import com.pro.project01.v2.domain.problem.entity.Problem;
-import com.pro.project01.v2.domain.problem.entity.ProblemType;
 import com.pro.project01.v2.domain.problem.repository.ProblemRepository;
 import com.pro.project01.v2.domain.round.repository.RoundRepository;
 import com.pro.project01.v2.domain.subject.repository.SubjectRepository;
@@ -11,7 +10,6 @@ import com.pro.project01.v2.domain.unit.repository.UnitRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.pro.project01.v2.domain.calculation.entity.CalculationProblem;             // ★추가
 import com.pro.project01.v2.domain.calculation.repository.CalculationProblemRepository; // ★추가
 
 
@@ -44,7 +42,7 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public Long create(ProblemRequest request, String imagePath, ProblemType type) {
+    public Long create(ProblemRequest request, String imagePath) {
         Problem problem = Problem.builder()
                 .title(request.title())
                 .viewContent(request.viewContent())
@@ -61,7 +59,6 @@ public class ProblemServiceImpl implements ProblemService {
                         .orElseThrow(() -> new IllegalArgumentException("회차를 찾을 수 없습니다.")))
                 .unit(unitRepository.findById(request.unitId())
                         .orElseThrow(() -> new IllegalArgumentException("목차를 찾을 수 없습니다.")))
-                .type(type) // ✅ 추가
                 .build();
 
         problemRepository.save(problem);
@@ -71,7 +68,7 @@ public class ProblemServiceImpl implements ProblemService {
 
 
     @Override
-    public void update(Long id, ProblemRequest request, String imagePath, ProblemType type) {
+    public void update(Long id, ProblemRequest request, String imagePath) {
         Problem problem = problemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("문제를 찾을 수 없습니다."));
 
@@ -90,8 +87,7 @@ public class ProblemServiceImpl implements ProblemService {
                 roundRepository.findById(request.roundId())
                         .orElseThrow(() -> new IllegalArgumentException("회차를 찾을 수 없습니다.")),
                 unitRepository.findById(request.unitId())
-                        .orElseThrow(() -> new IllegalArgumentException("목차를 찾을 수 없습니다.")),
-                type // ✅ 추가
+                        .orElseThrow(() -> new IllegalArgumentException("목차를 찾을 수 없습니다."))
         );
     }
 

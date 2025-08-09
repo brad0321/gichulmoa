@@ -7,7 +7,6 @@ public record ScoreStatResponse(
         Long userId,
         String subjectName,
         Integer roundNumber,     // ✅ String → Integer (명확하게 변경)
-        String type,
         int totalQuestions,
         int correctAnswers,
         LocalDateTime createdAt,

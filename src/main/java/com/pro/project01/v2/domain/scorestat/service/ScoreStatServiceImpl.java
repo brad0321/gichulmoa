@@ -1,6 +1,5 @@
 package com.pro.project01.v2.domain.scorestat.service;
 
-import com.pro.project01.v2.domain.problem.entity.ProblemType;
 import com.pro.project01.v2.domain.round.entity.Round;
 import com.pro.project01.v2.domain.round.repository.RoundRepository;
 import com.pro.project01.v2.domain.scorestat.dto.ScoreStatCreateRequest;
@@ -37,13 +36,11 @@ public class ScoreStatServiceImpl implements ScoreStatService {
                 .orElseThrow(() -> new IllegalArgumentException("과목 없음"));
         Round round = roundRepository.findById(request.roundId())
                 .orElseThrow(() -> new IllegalArgumentException("회차 없음"));
-        ProblemType type = ProblemType.valueOf(request.type());
 
         ScoreStat stat = ScoreStat.builder()
                 .user(user)
                 .subject(subject)
                 .round(round)
-                .type(type)
                 .totalQuestions(request.totalQuestions())
                 .correctAnswers(request.correctAnswers())
                 .build();
@@ -92,7 +89,6 @@ public class ScoreStatServiceImpl implements ScoreStatService {
                 stat.getUser().getId(),
                 stat.getSubject().getName(),
                 stat.getRound().getRoundNumber(),
-                stat.getType().name(),
                 stat.getTotalQuestions(),
                 stat.getCorrectAnswers(),
                 stat.getCreatedAt(),

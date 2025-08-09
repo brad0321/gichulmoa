@@ -1,6 +1,5 @@
 package com.pro.project01.v2.domain.scorestat.entity;
 
-import com.pro.project01.v2.domain.problem.entity.ProblemType;
 import com.pro.project01.v2.domain.round.entity.Round;
 import com.pro.project01.v2.domain.subject.entity.Subject;
 import com.pro.project01.v2.domain.user.entity.User;
@@ -34,10 +33,6 @@ public class ScoreStat {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "round_id", nullable = false)
     private Round round;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ProblemType type;
 
     private int totalQuestions;   // 총 문제 수
     private int correctAnswers;   // 맞힌 문제 수

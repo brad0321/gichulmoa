@@ -22,10 +22,6 @@ public class Problem {
     @Column(nullable = false)
     private String title; // 문제 제목
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ProblemType type; // ✅ 문제 유형 (기출문제 / OX퀴즈)
-
     @Column(columnDefinition = "TEXT")
     private String viewContent; // 보기 지문 (텍스트)
 
@@ -70,7 +66,7 @@ public class Problem {
     public void update(String title, String viewContent, String imageUrl,
                        String choice1, String choice2, String choice3,
                        String choice4, String choice5, Integer answer,
-                       Subject subject, Round round, Unit unit, ProblemType type) {
+                       Subject subject, Round round, Unit unit) {
         this.title = title;
         this.viewContent = viewContent;
         this.imageUrl = imageUrl;
@@ -83,6 +79,5 @@ public class Problem {
         this.subject = subject;
         this.round = round;
         this.unit = unit;
-        this.type = type;
     }
 }

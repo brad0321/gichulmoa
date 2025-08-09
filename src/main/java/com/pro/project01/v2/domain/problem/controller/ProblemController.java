@@ -3,7 +3,6 @@ package com.pro.project01.v2.domain.problem.controller;
 import com.pro.project01.v2.domain.problem.dto.ProblemRequest;
 import com.pro.project01.v2.domain.problem.dto.ProblemResponse;
 import com.pro.project01.v2.domain.problem.dto.ProblemResponseForSolve;
-import com.pro.project01.v2.domain.problem.entity.ProblemType;
 
 import com.pro.project01.v2.domain.problem.repository.ProblemRepository;
 import com.pro.project01.v2.domain.problem.service.ProblemService;
@@ -58,12 +57,11 @@ public class ProblemController {
     public String createForm(Model model) {
         log.info("[GET] 문제 등록 폼 요청");
         model.addAttribute("problem", new ProblemRequest(
-                null, null, null, null, null, null, null, null, null, null, null, null
+                null, null, null, null, null, null, null, null, null, null, null
         ));
         model.addAttribute("subjects", subjectRepository.findAll());
         model.addAttribute("rounds", roundRepository.findAll());
         model.addAttribute("units", unitRepository.findAll());
-        model.addAttribute("types", ProblemType.values());
         return "problems/problems-new";
     }
 
@@ -84,8 +82,7 @@ public class ProblemController {
             log.info("이미지 업로드 완료: {}", imagePath);
         }
 
-        ProblemType type = ProblemType.valueOf(request.type());
-        problemService.create(request, imagePath, type);
+        problemService.create(request, imagePath);
         log.info("문제 등록 완료");
 
         return "redirect:/problems";
@@ -102,7 +99,6 @@ public class ProblemController {
         model.addAttribute("subjects", subjectRepository.findAll());
         model.addAttribute("rounds", roundRepository.findAll());
         model.addAttribute("units", unitRepository.findAll());
-        model.addAttribute("types", ProblemType.values());
         return "problems/edit";
     }
 
@@ -124,8 +120,7 @@ public class ProblemController {
             log.info("이미지 업로드 완료: {}", imagePath);
         }
 
-        ProblemType type = ProblemType.valueOf(request.type());
-        problemService.update(id, request, imagePath, type);
+        problemService.update(id, request, imagePath);
         log.info("문제 수정 완료: id={}", id);
         return "redirect:/problems/" + id;
     }
