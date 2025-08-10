@@ -4,206 +4,73 @@
     <meta charset="UTF-8">
     <title>문제풀이 | 공인중개사 기출모아</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/favicon.ico"><!-- 없으면 500 찍히니 /static/favicon.ico 하나 두세요 -->
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
         :root{
-            /* Brand Tokens */
-            --color-main:#2F4858;   /* Deep Teal Blue */
-            --color-sub:#4F7CAC;    /* Smoky Blue */
-            --color-point:#F5CD90;  /* Warm Pastel Yellow */
-            --text-main:#2C3E3F;    /* Dark Charcoal */
-            --text-sub:#7A746E;     /* Warm Gray */
-            --bg:#F4F3F1;           /* Warm Light Gray */
-            --white:#fff;
-
-            --radius-lg:20px;
-            --radius-md:14px;
-            --shadow-sm:0 6px 18px rgba(47,72,88,.10);
-            --shadow-xs:0 3px 10px rgba(47,72,88,.08);
-
-            /* Sizes */
-            --bar-h:72px;
-            --maxw:1100px;
+            --color-main:#2F4858; --color-sub:#4F7CAC; --color-point:#F5CD90;
+            --text-main:#2C3E3F; --text-sub:#7A746E; --bg:#F4F3F1; --white:#fff;
+            --radius-lg:20px; --radius-md:14px;
+            --shadow-sm:0 6px 18px rgba(47,72,88,.10); --shadow-xs:0 3px 10px rgba(47,72,88,.08);
+            --bar-h:72px; --maxw:1100px;
         }
-
         html,body{height:100%}
-        body{
-            margin:0;
-            background:var(--bg);
-            color:var(--text-main);
-            font-family:'Noto Sans KR', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-            letter-spacing:.2px;
-        }
-
-        /* ---------- Common ---------- */
-        .btn-main{
-            background:var(--color-main);
-            color:#fff;
-            border:none;
-        }
-        .btn-main:hover{ filter:brightness(.95) }
-        .btn-sub{
-            color:var(--color-sub);
-            border:1.5px solid var(--color-sub);
-            background:transparent;
-        }
-        .btn-sub:hover{ background:rgba(79,124,172,.08) }
-        .btn-ghost{
-            border:1px solid #d9dde2;
-            background:#fff;
-            color:var(--text-main);
-        }
-        .chip{
-            display:inline-flex; align-items:center; gap:8px;
-            background:#e9eef3; color:var(--color-main);
-            border-radius:999px; padding:6px 12px; font-weight:700; font-size:.9rem;
-        }
-
-        .cardx{
-            background:#fff; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm);
-            padding:20px;
-        }
-
-        /* ---------- Top header (viewer header) ---------- */
-        .viewer-header{
-            position:sticky; top:0; z-index:3;
-            background:var(--white);
-            box-shadow:var(--shadow-sm);
-            padding:14px 16px;
-        }
-        .vh-wrap{ max-width:var(--maxw); margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; }
-        .vh-left{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-        .vh-title{
-            font-weight:900; letter-spacing:.3px; color:var(--color-main);
-        }
-
-        /* ---------- Selection row (bottom bar replacement at top on desktop) ---------- */
-        .select-row{
-            display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-        }
-        .panel-box{
-            position:absolute; bottom:100%; left:0;
-            width:280px; background:#fff; border:1px solid #e5e7ea; border-radius:14px; padding:14px;
-            display:none; z-index:1000; box-shadow:var(--shadow-xs);
-        }
-        .panel-box label{ display:flex; align-items:center; gap:8px; font-size:.95rem; margin-bottom:8px; color:var(--text-main) }
-        .panel-box .btn{ font-size:.9rem; padding:5px 12px }
-        .select-holder{ position:relative }
-
-        /* Dropdown (subject) */
-        .dropdown-menu{ border-radius:12px; box-shadow:var(--shadow-xs); border:1px solid #e5e7ea; }
-
-        /* ---------- Counters ---------- */
-        .counter-badge{
-            border:1.5px solid var(--color-sub);
-            color:var(--color-sub);
-            background:#fff;
-            font-weight:800;
-        }
-
-        /* ---------- Main containers ---------- */
-        .container-wrap{ max-width:var(--maxw); margin:18px auto; padding:0 12px; }
-        #main .list-group-item{
-            border-radius:12px; margin-bottom:8px; border:1px solid #e8ebef;
-        }
-
-        /* ---------- Question area ---------- */
-        .question-top{
-            display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px;
-        }
-        .nav-group .btn{ border-radius:999px; }
-        .question-box{
-            background:#fff;
-            border:1px solid #e5e7ea;
-            border-radius:var(--radius-lg);
-            padding:18px;
-            box-shadow:var(--shadow-xs);
-        }
-        #question-title{ font-size:1.1rem; font-weight:800; color:var(--text-main) }
-        #question-text{ color:var(--text-main) }
-
-        /* ---------- Choices ---------- */
-        #choices .list-group-item{
-            border:1px solid #e6eaee; border-radius:14px; margin-bottom:10px; padding:12px 14px;
-            display:block;
-        }
-        .form-check.custom-radio .form-check-input{ display:none; }
-        .form-check.custom-radio .form-check-label{
-            position:relative; padding-left:40px; cursor:pointer; width:100%;
-        }
-        .form-check.custom-radio .form-check-label:before{
-            content: attr(data-number);
-            position:absolute; left:0; top:50%; transform:translateY(-50%);
-            width:28px; height:28px; border:2px solid var(--color-sub); border-radius:50%;
-            text-align:center; line-height:24px; font-weight:800; color:var(--color-sub);
-            background:#fff;
-        }
-        .form-check.custom-radio .form-check-input:checked + .form-check-label:before{
-            background:var(--color-main); color:#fff; border-color:var(--color-main);
-        }
-        /* Correct/Wrong after selection */
-        .choice-correct{ border-color:#2e7d32 !important; box-shadow:0 0 0 3px rgba(46,125,50,.08) }
-        .choice-wrong{ border-color:#c62828 !important; box-shadow:0 0 0 3px rgba(198,40,40,.08) }
-
-        /* Elimination mark & disabled */
-        #choices li.disabled-choice{ color:#9aa1a6; background:linear-gradient(0deg, rgba(0,0,0,.02), rgba(0,0,0,.02)) }
-        .mark-o{ color:#2e7d32; font-weight:800; margin-left:8px; }  /* O */
-        .mark-x{ color:#c62828; font-weight:800; margin-left:8px; }  /* X */
-
-        /* ---------- Keyword mark (O/X on title/text) ---------- */
-        .clickable-word{
-            position:relative; cursor:pointer; font-weight:900; color:var(--color-main);
-            padding:2px 6px; border-radius:8px;
-            border-bottom:2px dotted var(--color-sub);
-        }
-        .clickable-word.selected-o{ background:rgba(46,125,50,.08) }
-        .clickable-word.selected-o::after{
-            content:"O"; color:#2e7d32; font-size:18px; position:absolute; top:-10px; left:50%; transform:translateX(-50%);
-        }
-        .clickable-word.selected-x{ background:rgba(198,40,40,.08) }
-        .clickable-word.selected-x::after{
-            content:"X"; color:#c62828; font-size:18px; position:absolute; top:-10px; left:50%; transform:translateX(-50%);
-        }
-
-        /* ---------- Solution box ---------- */
-        #solution-area{
-            background:#fff; border:1px solid #e5e7ea; border-radius:16px; padding:16px;
-        }
-        #solution-area h5{
-            color:var(--color-main); font-weight:900;
-        }
-        .solution-pill{
-            background:var(--color-point); color:#4d3a16; font-weight:900;
-            padding:4px 10px; border-radius:999px; margin-left:8px;
-        }
-
-        /* ---------- Bottom action bar (mobile-first) ---------- */
-        .bottom-bar{
-            position:fixed; bottom:0; left:0; right:0; height:var(--bar-h);
-            background:#fff; border-top:1px solid #e6eaee; box-shadow:var(--shadow-sm);
-            display:flex; align-items:center; justify-content:center; z-index:5;
-            transition: transform .28s ease;
-        }
-        .bottom-bar.hidden{ transform: translateY(100%); }
-        .bar-wrap{ width:100%; max-width:var(--maxw); display:flex; align-items:center; justify-content:space-between; gap:10px; padding:0 12px; }
-        .bar-left, .bar-right{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-
-        /* move panels for bar buttons (pop upward) */
-        .bar-pop{ position:relative }
-        .bar-pop .panel-box{ bottom:calc(100% + 8px) }
-
-        /* Responsive tweaks */
-        @media (max-width: 768px){
-            .viewer-header{ display:none } /* 작은 화면: 상단 고정 헤더 감추고 하단 바만 사용 */
-        }
+        body{margin:0;background:var(--bg);color:var(--text-main);font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;letter-spacing:.2px}
+        .btn-main{background:var(--color-main);color:#fff;border:none}.btn-main:hover{filter:brightness(.95)}
+        .btn-sub{color:var(--color-sub);border:1.5px solid var(--color-sub);background:transparent}.btn-sub:hover{background:rgba(79,124,172,.08)}
+        .btn-ghost{border:1px solid #d9dde2;background:#fff;color:var(--text-main)}
+        .chip{display:inline-flex;align-items:center;gap:8px;background:#e9eef3;color:var(--color-main);border-radius:999px;padding:6px 12px;font-weight:700;font-size:.9rem}
+        .cardx{background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:20px}
+        .viewer-header{position:sticky;top:0;z-index:3;background:var(--white);box-shadow:var(--shadow-sm);padding:14px 16px}
+        .vh-wrap{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+        .vh-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .vh-title{font-weight:900;letter-spacing:.3px;color:var(--color-main)}
+        .select-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+        .panel-box{position:absolute;bottom:100%;left:0;width:280px;background:#fff;border:1px solid #e5e7ea;border-radius:14px;padding:14px;display:none;z-index:1000;box-shadow:var(--shadow-xs)}
+        .panel-box label{display:flex;align-items:center;gap:8px;font-size:.95rem;margin-bottom:8px;color:var(--text-main)}
+        .panel-box .btn{font-size:.9rem;padding:5px 12px}
+        .select-holder{position:relative}
+        .dropdown-menu{border-radius:12px;box-shadow:var(--shadow-xs);border:1px solid #e5e7ea}
+        .counter-badge{border:1.5px solid var(--color-sub);color:var(--color-sub);background:#fff;font-weight:800}
+        .container-wrap{max-width:var(--maxw);margin:18px auto;padding:0 12px}
+        #main .list-group-item{border-radius:12px;margin-bottom:8px;border:1px solid #e8ebef}
+        .question-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+        .nav-group .btn{border-radius:999px}
+        .question-box{background:#fff;border:1px solid #e5e7ea;border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow-xs)}
+        #question-title{font-size:1.1rem;font-weight:800;color:var(--text-main)}
+        #choices .list-group-item{border:1px solid #e6eaee;border-radius:14px;margin-bottom:10px;padding:12px 14px;display:block}
+        .form-check.custom-radio .form-check-input{display:none}
+        .form-check.custom-radio .form-check-label{position:relative;padding-left:40px;cursor:pointer;width:100%}
+        .form-check.custom-radio .form-check-label:before{content:attr(data-number);position:absolute;left:0;top:50%;transform:translateY(-50%);width:28px;height:28px;border:2px solid var(--color-sub);border-radius:50%;text-align:center;line-height:24px;font-weight:800;color:var(--color-sub);background:#fff}
+        .form-check.custom-radio .form-check-input:checked + .form-check-label:before{background:var(--color-main);color:#fff;border-color:var(--color-main)}
+        .choice-correct{border-color:#2e7d32!important;box-shadow:0 0 0 3px rgba(46,125,50,.08)}
+        .choice-wrong{border-color:#c62828!important;box-shadow:0 0 0 3px rgba(198,40,40,.08)}
+        #choices li.disabled-choice{color:#9aa1a6;background:linear-gradient(0deg,rgba(0,0,0,.02),rgba(0,0,0,.02))}
+        .mark-o{color:#2e7d32;font-weight:800;margin-left:8px}
+        .mark-x{color:#c62828;font-weight:800;margin-left:8px}
+        .clickable-word{position:relative;cursor:pointer;font-weight:900;color:var(--color-main);padding:2px 6px;border-radius:8px;border-bottom:2px dotted var(--color-sub)}
+        .clickable-word.selected-o{background:rgba(46,125,50,.08)}
+        .clickable-word.selected-o::after{content:"O";color:#2e7d32;font-size:18px;position:absolute;top:-10px;left:50%;transform:translateX(-50%)}
+        .clickable-word.selected-x{background:rgba(198,40,40,.08)}
+        .clickable-word.selected-x::after{content:"X";color:#c62828;font-size:18px;position:absolute;top:-10px;left:50%;transform:translateX(-50%)}
+        #solution-area{background:#fff;border:1px solid #e5e7ea;border-radius:16px;padding:16px}
+        #solution-area h5{color:var(--color-main);font-weight:900}
+        .solution-pill{background:var(--color-point);color:#4d3a16;font-weight:900;padding:4px 10px;border-radius:999px;margin-left:8px}
+        .bottom-bar{position:fixed;bottom:0;left:0;right:0;height:var(--bar-h);background:#fff;border-top:1px solid #e6eaee;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;z-index:5;transition:transform .28s ease}
+        .bottom-bar.hidden{transform:translateY(100%)}
+        .bar-wrap{width:100%;max-width:var(--maxw);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 12px}
+        .bar-left,.bar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+        .bar-pop{position:relative}
+        .bar-pop .panel-box{bottom:calc(100% + 8px)}
+        @media (max-width:768px){.viewer-header{display:none}}
     </style>
 </head>
 <body>
 
-<!-- ===== Desktop/Tablet 상단 헤더 (모바일은 숨김) ===== -->
+<!-- ===== Desktop/Tablet 상단 헤더 ===== -->
 <header class="viewer-header">
     <div class="vh-wrap">
         <div class="vh-left">
@@ -214,10 +81,8 @@
         <div class="select-row">
             <!-- 과목 -->
             <div class="dropdown">
-                <button class="btn btn-ghost dropdown-toggle" type="button" id="subjectDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    과목 선택
-                </button>
-                <ul class="dropdown-menu" id="subject-menu" style="max-height: 260px; overflow-y: auto;"></ul>
+                <button class="btn btn-ghost dropdown-toggle" type="button" id="subjectDropdown" data-bs-toggle="dropdown" aria-expanded="false">과목 선택</button>
+                <ul class="dropdown-menu" id="subject-menu" style="max-height:260px;overflow-y:auto;"></ul>
             </div>
 
             <!-- 회차 -->
@@ -244,10 +109,7 @@
                 </div>
             </div>
 
-            <!-- 개수 -->
             <span id="question-count" class="btn counter-badge disabled">0 / 0</span>
-
-            <!-- 시작 -->
             <button id="start-btn" class="btn btn-main">문제풀기</button>
 
             <!-- 확대/축소 -->
@@ -256,37 +118,38 @@
                 <button class="btn btn-ghost btn-sm" id="zoom-out-btn">-</button>
             </div>
 
-            <!-- 설정 -->
+            <!-- 설정 (회원 전용 링크는 userId>0일 때만 노출) -->
             <div class="select-holder">
                 <button class="btn btn-ghost btn-sm" id="settings-btn">설정 ⚙</button>
-                <div id="settings-panel" class="panel-box" style="right:0; left:auto;">
+                <div id="settings-panel" class="panel-box" style="right:0;left:auto;">
                     <label><input type="checkbox" id="autohide-toggle"> 자동숨기기 해제</label>
-                    <a th:href="@{/wrong-notes(userId=${userId})}">오답노트</a>
-                    <a th:href="@{/wrong-problems(userId=${userId})}">틀린문제</a>
-                    <a th:href="@{/score-stats/user(userId=${userId})}">점수통계</a>
+
+                    <a class="d-block mb-1 text-decoration-none" th:if="${userId > 0}" th:href="@{/wrong-notes(userId=${userId})}">오답노트</a>
+                    <a class="d-block mb-1 text-decoration-none" th:if="${userId > 0}" th:href="@{/wrong-problems(userId=${userId})}">틀린문제</a>
+                    <a class="d-block mb-1 text-decoration-none" th:if="${userId > 0}" th:href="@{/score-stats/user(userId=${userId})}">점수통계</a>
                     <a class="d-block mb-1 text-decoration-none" th:href="@{/calculation-problems}">계산문제</a>
                     <a class="d-block mb-1 text-decoration-none" th:href="@{/guide}">사용설명</a>
                     <a class="d-block mb-1 text-decoration-none" th:href="@{/exam-schedule}">시험일정</a>
                     <a class="d-block mb-1 text-decoration-none" th:href="@{/support}">민원센터</a>
                     <a class="d-block mb-1 text-decoration-none" th:href="@{/members/mypage}">마이페이지</a>
+                    <a class="d-block mb-1 text-decoration-none" th:if="${userId == 0}" th:href="@{/login}">로그인</a>
                 </div>
             </div>
         </div>
     </div>
 </header>
 
-<!-- ===== 진행중 세션 목록 ===== -->
+<!-- 진행중 목록 -->
 <div class="container-wrap" id="main">
     <div class="cardx">
-        <h3 class="mb-3" style="color:var(--color-main); font-weight:900;">진행중인 문제풀이</h3>
+        <h3 class="mb-3" style="color:var(--color-main);font-weight:900;">진행중인 문제풀이</h3>
         <div class="list-group" id="session-list"></div>
     </div>
 </div>
 
-<!-- ===== 문제 풀이 영역 ===== -->
+<!-- 문제 풀이 영역 -->
 <div class="container-wrap" id="question-area" style="display:none;">
     <div class="cardx">
-
         <div class="d-flex justify-content-between align-items-center mb-2">
             <div class="question-top nav-group btn-group">
                 <button id="prev-btn" class="btn btn-sub">◀</button>
@@ -294,21 +157,15 @@
                 <button id="solution-btn" class="btn btn-ghost">해설</button>
                 <button id="next-btn" class="btn btn-sub">▶</button>
             </div>
-
             <div class="form-check">
                 <input type="checkbox" class="form-check-input" id="wrong-checkbox">
                 <label class="form-check-label" for="wrong-checkbox">오답노트</label>
             </div>
         </div>
 
-        <div class="mb-2">
-            <span class="chip">진행 <strong id="qc-top">0 / 0</strong></span>
-        </div>
-
+        <div class="mb-2"><span class="chip">진행 <strong id="qc-top">0 / 0</strong></span></div>
         <p id="question-title" class="mb-2"></p>
-
         <div id="question-text" class="mb-3 question-box"></div>
-
         <ul id="choices" class="list-group mb-3"></ul>
 
         <div id="solution-area" class="mb-2" style="display:none;">
@@ -318,18 +175,14 @@
     </div>
 </div>
 
-<!-- ===== 모바일 하단 바 ===== -->
+<!-- 모바일 하단 바 -->
 <nav class="bottom-bar">
     <div class="bar-wrap">
         <div class="bar-left">
-            <!-- 과목 -->
             <div class="dropdown">
-                <button class="btn btn-ghost btn-sm dropdown-toggle" type="button" id="subjectDropdownBar" data-bs-toggle="dropdown" aria-expanded="false">
-                    과목 선택
-                </button>
-                <ul class="dropdown-menu" id="subject-menu-bar" style="max-height: 260px; overflow-y: auto;"></ul>
+                <button class="btn btn-ghost btn-sm dropdown-toggle" type="button" id="subjectDropdownBar" data-bs-toggle="dropdown" aria-expanded="false">과목 선택</button>
+                <ul class="dropdown-menu" id="subject-menu-bar" style="max-height:260px;overflow-y:auto;"></ul>
             </div>
-            <!-- 회차 -->
             <div class="bar-pop">
                 <button class="btn btn-ghost btn-sm" id="round-selector-bar">회차 선택</button>
                 <div id="round-panel-bar" class="panel-box">
@@ -340,7 +193,6 @@
                     </div>
                 </div>
             </div>
-            <!-- 목차 -->
             <div class="bar-pop">
                 <button class="btn btn-ghost btn-sm" id="unit-selector-bar">목차 선택</button>
                 <div id="unit-panel-bar" class="panel-box">
@@ -351,7 +203,6 @@
                     </div>
                 </div>
             </div>
-
             <span id="question-count-bar" class="btn counter-badge btn-sm disabled">0 / 0</span>
             <button id="start-btn-bar" class="btn btn-main btn-sm">문제풀기</button>
         </div>
@@ -361,16 +212,18 @@
             <button class="btn btn-ghost btn-sm" id="zoom-out-btn-bar">-</button>
             <div class="bar-pop">
                 <button class="btn btn-ghost btn-sm" id="settings-btn-bar">설정 ⚙</button>
-                <div id="settings-panel-bar" class="panel-box" style="right:0; left:auto;">
+                <div id="settings-panel-bar" class="panel-box" style="right:0;left:auto;">
                     <label><input type="checkbox" id="autohide-toggle-bar"> 자동숨기기 해제</label>
-                    <a class="d-block mb-1 text-decoration-none" th:href="@{/wrong-notes(userId=${session.loginUser.id})}">오답노트</a>
-                    <a class="d-block mb-1 text-decoration-none" th:href="@{/wrong-problems(userId=${session.loginUser.id})}">틀린문제</a>
-                    <a class="d-block mb-1 text-decoration-none" th:href="@{/score-stats/user(userId=${session.loginUser.id})}">점수통계</a>
+
+                    <a class="d-block mb-1 text-decoration-none" th:if="${userId > 0}" th:href="@{/wrong-notes(userId=${userId})}">오답노트</a>
+                    <a class="d-block mb-1 text-decoration-none" th:if="${userId > 0}" th:href="@{/wrong-problems(userId=${userId})}">틀린문제</a>
+                    <a class="d-block mb-1 text-decoration-none" th:if="${userId > 0}" th:href="@{/score-stats/user(userId=${userId})}">점수통계</a>
                     <a class="d-block mb-1 text-decoration-none" th:href="@{/calculation-problems}">계산문제</a>
                     <a class="d-block mb-1 text-decoration-none" th:href="@{/guide}">사용설명</a>
                     <a class="d-block mb-1 text-decoration-none" th:href="@{/exam-schedule}">시험일정</a>
                     <a class="d-block mb-1 text-decoration-none" th:href="@{/support}">민원센터</a>
                     <a class="d-block mb-1 text-decoration-none" th:href="@{/members/mypage}">마이페이지</a>
+                    <a class="d-block mb-1 text-decoration-none" th:if="${userId == 0}" th:href="@{/login}">로그인</a>
                 </div>
             </div>
         </div>
@@ -381,504 +234,307 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    /* ===================== State ===================== */
-    let questions = [];
-    let currentIndex = 0;
-    let selectedSubject = null;
-    let selectedRounds = [];
-    let selectedUnits = [];
-    let userAnswers = [];
-    let checkedStates = [];
-    let markMode = null;
+    /* ===== state ===== */
+    let questions=[], currentIndex=0, selectedSubject=null, selectedRounds=[], selectedUnits=[];
+    let userAnswers=[], checkedStates=[], markMode=null;
 
-    /* ===================== Init ===================== */
-    document.addEventListener("DOMContentLoaded", () => {
-        loadSubjects();
-        wireBarMirrors();
-    });
+    document.addEventListener("DOMContentLoaded", () => { loadSubjects(); wireBarMirrors(); });
 
-    /* ===================== Helpers ===================== */
-    function syncCounts(current, total){
-        const a = `${current} / ${total}`;
-        document.getElementById('question-count').textContent = a;
-        document.getElementById('question-count-top').textContent = a;
-        document.getElementById('question-count-bar').textContent = a;
-        const qcTop = document.getElementById('qc-top');
-        if(qcTop) qcTop.textContent = a;
+    function syncCounts(current,total){
+        const a=`${current} / ${total}`;
+        ['question-count','question-count-top','question-count-bar','qc-top'].forEach(id=>{
+            const el=document.getElementById(id); if(el) el.textContent=a;
+        });
     }
+    function makeYearByRound(r){ return 2024 - (35 - r); }
 
-    function makeYearByRound(roundNumber){
-        // 기준 35회 = 2024년 (필요시 조정)
-        return 2024 - (35 - roundNumber);
-    }
+    /* ===== subjects ===== */
+    async function loadSubjects(){
+        try{
+            const res=await axios.get('/problems/api/subjects');
+            const menus=[document.getElementById('subject-menu'), document.getElementById('subject-menu-bar')];
+            menus.forEach(m=>m.innerHTML='');
 
-    /* ===================== Subjects ===================== */
-    async function loadSubjects() {
-        try {
-            const res = await axios.get('/problems/api/subjects');
-            const menus = [document.getElementById('subject-menu'), document.getElementById('subject-menu-bar')];
-            menus.forEach(menu => menu.innerHTML = '');
-
-            res.data.forEach(item => {
-                const li = document.createElement('li');
-                li.innerHTML = `<a class="dropdown-item" href="#" data-id="${item.id}">${item.name}</a>`;
-                menus.forEach(m => m.appendChild(li.cloneNode(true)));
+            res.data.forEach(it=>{
+                const li=document.createElement('li');
+                li.innerHTML=`<a class="dropdown-item" href="#" data-id="${it.id}">${it.name}</a>`;
+                menus.forEach(m=>m.appendChild(li.cloneNode(true)));
             });
 
-            [...document.querySelectorAll('#subject-menu .dropdown-item, #subject-menu-bar .dropdown-item')].forEach(a => {
-                a.addEventListener('click', async (e) => {
+            [...document.querySelectorAll('#subject-menu .dropdown-item, #subject-menu-bar .dropdown-item')].forEach(a=>{
+                a.addEventListener('click', async (e)=>{
                     e.preventDefault();
-                    selectedSubject = e.target.dataset.id;
-                    document.getElementById('subjectDropdown').textContent = e.target.textContent;
-                    document.getElementById('subjectDropdownBar').textContent = e.target.textContent;
-
-                    await loadRounds(selectedSubject);
-                    await loadUnits(selectedSubject);
-                    updateQuestionCount();
+                    selectedSubject=e.target.dataset.id;
+                    document.getElementById('subjectDropdown').textContent=e.target.textContent;
+                    document.getElementById('subjectDropdownBar').textContent=e.target.textContent;
+                    await loadRounds(selectedSubject); await loadUnits(selectedSubject); updateQuestionCount();
                 });
             });
-        } catch (err) {
-            console.error('과목 로딩 실패:', err);
-        }
+        }catch(err){ console.error('과목 로딩 실패:',err); }
     }
 
-    /* ===================== Rounds ===================== */
-    async function loadRounds(subjectId) {
-        const targets = [
-            { box:'#round-checkboxes', all:'#round-all', panel:'#round-panel' },
-            { box:'#round-checkboxes-bar', all:'#round-all-bar', panel:'#round-panel-bar' }
-        ];
-        for (const t of targets) {
-            document.querySelector(t.box).innerHTML = '';
-        }
-
-        try {
-            const res = await axios.get(`/problems/api/rounds?subjectId=${subjectId}`);
-            res.data.sort((a, b) => a.roundNumber - b.roundNumber);
-
-            const render = (containerSel, allId) => {
-                const c = document.querySelector(containerSel);
-                res.data.forEach(round => {
-                    const year = makeYearByRound(round.roundNumber);
-                    const div = document.createElement('div');
-                    div.innerHTML = `
-                    <label>
-                        <input type="checkbox" value="${round.id}" data-number="${round.roundNumber}">
-                        ${round.roundNumber}회차 (${year}년)
-                    </label>`;
-                    c.appendChild(div);
+    /* ===== rounds ===== */
+    async function loadRounds(subjectId){
+        const targets=[{box:'#round-checkboxes',all:'#round-all'},{box:'#round-checkboxes-bar',all:'#round-all-bar'}];
+        targets.forEach(t=>document.querySelector(t.box).innerHTML='');
+        try{
+            const res=await axios.get(`/problems/api/rounds?subjectId=${subjectId}`);
+            res.data.sort((a,b)=>a.roundNumber-b.roundNumber);
+            const render=(boxSel, allSel)=>{
+                const c=document.querySelector(boxSel);
+                res.data.forEach(r=>{
+                    const year=makeYearByRound(r.roundNumber);
+                    c.insertAdjacentHTML('beforeend', `
+                        <label class="d-block mb-1"><input type="checkbox" value="${r.id}" data-number="${r.roundNumber}"> ${r.roundNumber}회차 (${year}년)</label>
+                    `);
                 });
-                const allDiv = document.createElement('div');
-                allDiv.innerHTML = `<label><input type="checkbox" id="${allId.slice(1)}"> 전체회차</label>`;
-                c.appendChild(allDiv);
-
-                document.querySelector(allId).addEventListener('change', function () {
-                    c.querySelectorAll('input[type="checkbox"]:not(' + allId + ')').forEach(cb => cb.checked = this.checked);
+                c.insertAdjacentHTML('beforeend', `<label class="d-block"><input type="checkbox" id="${allSel.slice(1)}"> 전체회차</label>`);
+                document.querySelector(allSel).addEventListener('change', function(){
+                    c.querySelectorAll('input[type="checkbox"]:not(' + allSel + ')').forEach(cb=>cb.checked=this.checked);
                 });
             };
-
-            render('#round-checkboxes', '#round-all');
-            render('#round-checkboxes-bar', '#round-all-bar');
-
-        } catch (err) {
-            console.error('회차 로딩 실패:', err);
-        }
+            render('#round-checkboxes','#round-all'); render('#round-checkboxes-bar','#round-all-bar');
+        }catch(err){ console.error('회차 로딩 실패:',err); }
     }
 
-    /* ===================== Units ===================== */
-    async function loadUnits(subjectId) {
-        const targets = [
-            { box:'#unit-checkboxes', all:'#unit-all' },
-            { box:'#unit-checkboxes-bar', all:'#unit-all-bar' }
-        ];
-        for (const t of targets) {
-            document.querySelector(t.box).innerHTML = '';
-        }
-
-        try {
-            const res = await axios.get(`/problems/api/units?subjectId=${subjectId}`);
-            const render = (containerSel, allId) => {
-                const container = document.querySelector(containerSel);
-                res.data.forEach(unit => {
-                    const div = document.createElement('div');
-                    div.innerHTML = `
-                    <label>
-                        <input type="checkbox" value="${unit.id}">
-                        ${unit.name}
-                    </label>`;
-                    container.appendChild(div);
+    /* ===== units ===== */
+    async function loadUnits(subjectId){
+        const targets=[{box:'#unit-checkboxes',all:'#unit-all'},{box:'#unit-checkboxes-bar',all:'#unit-all-bar'}];
+        targets.forEach(t=>document.querySelector(t.box).innerHTML='');
+        try{
+            const res=await axios.get(`/problems/api/units?subjectId=${subjectId}`);
+            const render=(boxSel, allSel)=>{
+                const c=document.querySelector(boxSel);
+                c.insertAdjacentHTML('beforeend', `<label class="d-block mb-1"><input type="checkbox" id="${allSel.slice(1)}"> 전체목차</label>`);
+                res.data.forEach(u=>{
+                    c.insertAdjacentHTML('beforeend', `<label class="d-block mb-1"><input type="checkbox" value="${u.id}"> ${u.name}</label>`);
                 });
-
-                const allDiv = document.createElement('div');
-                allDiv.innerHTML = `<label><input type="checkbox" id="${allId.slice(1)}"> 전체목차</label>`;
-                container.insertBefore(allDiv, container.firstChild);
-
-                document.querySelector(allId).addEventListener('change', function () {
-                    container.querySelectorAll('input[type="checkbox"]:not(' + allId + ')').forEach(cb => cb.checked = this.checked);
+                document.querySelector(allSel).addEventListener('change', function(){
+                    c.querySelectorAll('input[type="checkbox"]:not(' + allSel + ')').forEach(cb=>cb.checked=this.checked);
                 });
             };
-            render('#unit-checkboxes', '#unit-all');
-            render('#unit-checkboxes-bar', '#unit-all-bar');
-
-        } catch (err) {
-            console.error('목차 로딩 실패:', err);
-        }
+            render('#unit-checkboxes','#unit-all'); render('#unit-checkboxes-bar','#unit-all-bar');
+        }catch(err){ console.error('목차 로딩 실패:',err); }
     }
 
-    /* ===================== Panels & Dropdowns ===================== */
-    const subjectDropdownBtn = document.getElementById('subjectDropdown');
-    subjectDropdownBtn.addEventListener('show.bs.dropdown', () => {
-        document.getElementById('round-panel').style.display = 'none';
-        document.getElementById('unit-panel').style.display = 'none';
+    /* ===== panels ===== */
+    const subjectDropdownBtn=document.getElementById('subjectDropdown');
+    subjectDropdownBtn.addEventListener('show.bs.dropdown', ()=>{
+        document.getElementById('round-panel').style.display='none';
+        document.getElementById('unit-panel').style.display='none';
     });
-    document.getElementById('round-selector').addEventListener('click', () => togglePanel('round-panel', 'unit-panel'));
-    document.getElementById('unit-selector').addEventListener('click', () => togglePanel('unit-panel', 'round-panel'));
-
+    document.getElementById('round-selector').addEventListener('click',()=>togglePanel('round-panel','unit-panel'));
+    document.getElementById('unit-selector').addEventListener('click',()=>togglePanel('unit-panel','round-panel'));
     function togglePanel(showId, hideId){
-        const showEl = document.getElementById(showId);
-        const hideEl = document.getElementById(hideId);
-        if(hideEl) hideEl.style.display = 'none';
-        const dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(subjectDropdownBtn);
-        dropdownInstance.hide();
-        showEl.style.display = (showEl.style.display === 'block') ? 'none' : 'block';
+        const showEl=document.getElementById(showId), hideEl=document.getElementById(hideId);
+        if(hideEl) hideEl.style.display='none';
+        bootstrap.Dropdown.getOrCreateInstance(subjectDropdownBtn).hide();
+        showEl.style.display=(showEl.style.display==='block')?'none':'block';
     }
-
-    /* Confirm/Reset Rounds */
     function confirmRounds(scope=''){
-        const boxSel = scope ? `#round-checkboxes-${scope}` : '#round-checkboxes';
-        const allSel = scope ? `#round-all-${scope}` : '#round-all';
-        const labelSel = scope ? `#round-selector-${scope}` : '#round-selector';
-        const panelSel = scope ? `#round-panel-${scope}` : '#round-panel';
-
-        const allChecked = document.querySelector(allSel)?.checked;
-        const checkedBoxes = Array.from(document.querySelectorAll(`${boxSel} input[type="checkbox"]:not(${allSel})`)).filter(cb => cb.checked);
-        selectedRounds = checkedBoxes.map(cb => cb.value);
-
-        let text = '회차 선택';
-        if (allChecked) text = '전체회차';
-        else if (checkedBoxes.length > 1) text = '다중회차';
-        else if (checkedBoxes.length === 1) text = `${checkedBoxes[0].dataset.number}회차`;
-
-        const label = document.querySelector(labelSel);
-        if (label) label.textContent = text;
-
-        const panel = document.querySelector(panelSel);
-        if (panel) panel.style.display = 'none';
+        const boxSel=scope?`#round-checkboxes-${scope}`:'#round-checkboxes';
+        const allSel=scope?`#round-all-${scope}`:'#round-all';
+        const labelSel=scope?`#round-selector-${scope}`:'#round-selector';
+        const panelSel=scope?`#round-panel-${scope}`:'#round-panel';
+        const allChecked=document.querySelector(allSel)?.checked;
+        const checked=[...document.querySelectorAll(`${boxSel} input[type="checkbox"]:not(${allSel})`)].filter(cb=>cb.checked);
+        selectedRounds=checked.map(cb=>cb.value);
+        let text='회차 선택';
+        if(allChecked) text='전체회차'; else if(checked.length>1) text='다중회차'; else if(checked.length===1) text=`${checked[0].dataset.number}회차`;
+        const label=document.querySelector(labelSel); if(label) label.textContent=text;
+        const panel=document.querySelector(panelSel); if(panel) panel.style.display='none';
         updateQuestionCount();
     }
     function resetRounds(scope=''){
-        const boxSel = scope ? `#round-checkboxes-${scope}` : '#round-checkboxes';
-        document.querySelectorAll(`${boxSel} input[type="checkbox"]`).forEach(cb => cb.checked = false);
-        selectedRounds = [];
-        const label = document.getElementById(scope ? `round-selector-${scope}` : 'round-selector');
-        if(label) label.textContent = '회차 선택';
-        updateQuestionCount();
+        const boxSel=scope?`#round-checkboxes-${scope}`:'#round-checkboxes';
+        document.querySelectorAll(`${boxSel} input[type="checkbox"]`).forEach(cb=>cb.checked=false);
+        selectedRounds=[]; const label=document.getElementById(scope?`round-selector-${scope}`:'round-selector');
+        if(label) label.textContent='회차 선택'; updateQuestionCount();
     }
-    document.getElementById('round-confirm').addEventListener('click', () => confirmRounds());
-    document.getElementById('round-reset').addEventListener('click', () => resetRounds());
+    document.getElementById('round-confirm').addEventListener('click',()=>confirmRounds());
+    document.getElementById('round-reset').addEventListener('click',()=>resetRounds());
 
-    /* Confirm/Reset Units */
     function confirmUnits(scope=''){
-        const boxSel = scope ? `#unit-checkboxes-${scope}` : '#unit-checkboxes';
-        const allSel = scope ? `#unit-all-${scope}` : '#unit-all';
-        const labelSel = scope ? `#unit-selector-${scope}` : '#unit-selector';
-        const panelSel = scope ? `#unit-panel-${scope}` : '#unit-panel';
-
-        const allChecked = document.querySelector(allSel)?.checked;
-        const checkedBoxes = Array.from(document.querySelectorAll(`${boxSel} input[type="checkbox"]:not(${allSel})`)).filter(cb => cb.checked);
-        selectedUnits = checkedBoxes.map(cb => cb.value);
-
-        let text = '목차 선택';
-        if (allChecked) text = '전체목차';
-        else if (checkedBoxes.length > 1) text = '다중목차';
-        else if (checkedBoxes.length === 1) text = `${checkedBoxes[0].parentElement.textContent.trim()}`;
-
-        const label = document.querySelector(labelSel);
-        if (label) label.textContent = text;
-
-        const panel = document.querySelector(panelSel);
-        if (panel) panel.style.display = 'none';
+        const boxSel=scope?`#unit-checkboxes-${scope}`:'#unit-checkboxes';
+        const allSel=scope?`#unit-all-${scope}`:'#unit-all';
+        const labelSel=scope?`#unit-selector-${scope}`:'#unit-selector';
+        const panelSel=scope?`#unit-panel-${scope}`:'#unit-panel';
+        const allChecked=document.querySelector(allSel)?.checked;
+        const checked=[...document.querySelectorAll(`${boxSel} input[type="checkbox"]:not(${allSel})`)].filter(cb=>cb.checked);
+        selectedUnits=checked.map(cb=>cb.value);
+        let text='목차 선택';
+        if(allChecked) text='전체목차'; else if(checked.length>1) text='다중목차'; else if(checked.length===1) text=`${checked[0].parentElement.textContent.trim()}`;
+        const label=document.querySelector(labelSel); if(label) label.textContent=text;
+        const panel=document.querySelector(panelSel); if(panel) panel.style.display='none';
         updateQuestionCount();
     }
     function resetUnits(scope=''){
-        const boxSel = scope ? `#unit-checkboxes-${scope}` : '#unit-checkboxes';
-        document.querySelectorAll(`${boxSel} input[type="checkbox"]`).forEach(cb => cb.checked = false);
-        selectedUnits = [];
-        const label = document.getElementById(scope ? `unit-selector-${scope}` : 'unit-selector');
-        if(label) label.textContent = '목차 선택';
-        updateQuestionCount();
+        const boxSel=scope?`#unit-checkboxes-${scope}`:'#unit-checkboxes';
+        document.querySelectorAll(`${boxSel} input[type="checkbox"]`).forEach(cb=>cb.checked=false);
+        selectedUnits=[]; const label=document.getElementById(scope?`unit-selector-${scope}`:'unit-selector');
+        if(label) label.textContent='목차 선택'; updateQuestionCount();
     }
-    document.getElementById('unit-confirm').addEventListener('click', () => confirmUnits());
-    document.getElementById('unit-reset').addEventListener('click', () => resetUnits());
+    document.getElementById('unit-confirm').addEventListener('click',()=>confirmUnits());
+    document.getElementById('unit-reset').addEventListener('click',()=>resetUnits());
 
-    /* ===================== Question Count ===================== */
-    async function updateQuestionCount() {
-        if (!selectedSubject || selectedUnits.length === 0) {
-            syncCounts(0, 0);
-            return;
-        }
-        const params = { subjectId: selectedSubject, unitIds: selectedUnits.join(',') };
-        if (selectedRounds.length > 0) params.roundIds = selectedRounds.join(',');
-        const res = await axios.get('/problems/api/problems', { params });
-        syncCounts(0, res.data.length);
+    /* ===== count ===== */
+    async function updateQuestionCount(){
+        if(!selectedSubject || selectedUnits.length===0){ syncCounts(0,0); return; }
+        const params={subjectId:selectedSubject, unitIds:selectedUnits.join(',')};
+        if(selectedRounds.length>0) params.roundIds=selectedRounds.join(',');
+        const res=await axios.get('/problems/api/problems',{params}); syncCounts(0,res.data.length);
     }
 
-    /* ===================== Load Questions ===================== */
-    async function loadQuestions() {
-        if (!selectedSubject || selectedUnits.length === 0) {
-            alert('과목과 목차를 선택하세요.');
-            return;
-        }
-        const params = { subjectId: selectedSubject, unitIds: selectedUnits.join(',') };
-        if (selectedRounds.length > 0) params.roundIds = selectedRounds.join(',');
-        const res = await axios.get('/problems/api/problems', { params });
-        questions = res.data;
-
-        if (questions.length > 0) {
-            currentIndex = 0;
-            showQuestion(currentIndex);
-        } else {
-            alert('해당 조건에 맞는 문제가 없습니다.');
-            syncCounts(0, 0);
-        }
+    /* ===== load & render ===== */
+    async function loadQuestions(){
+        if(!selectedSubject || selectedUnits.length===0){ alert('과목과 목차를 선택하세요.'); return; }
+        const params={subjectId:selectedSubject, unitIds:selectedUnits.join(',')};
+        if(selectedRounds.length>0) params.roundIds=selectedRounds.join(',');
+        const res=await axios.get('/problems/api/problems',{params});
+        questions=res.data;
+        if(questions.length>0){ currentIndex=0; showQuestion(currentIndex); }
+        else{ alert('해당 조건에 맞는 문제가 없습니다.'); syncCounts(0,0); }
     }
 
-    /* ===================== Render Question ===================== */
-    function showQuestion(index) {
-        const q = questions[index];
-        markMode = null;
-
-        document.getElementById('question-title').innerHTML = `<strong>${q.title || ''}</strong>`;
-        document.getElementById('question-text').innerHTML = `
-        <div>${q.viewContent || ''}</div>
-        ${q.imageUrl ? `<img src="${q.imageUrl}" style="max-width:100%; margin-top:10px; border-radius:12px;">` : ''}
-    `;
-
+    function showQuestion(index){
+        const q=questions[index]; markMode=null;
+        document.getElementById('question-title').innerHTML=`<strong>${q.title||''}</strong>`;
+        document.getElementById('question-text').innerHTML=`<div>${q.viewContent||''}</div>${q.imageUrl?`<img src="${q.imageUrl}" style="max-width:100%;margin-top:10px;border-radius:12px;">`:''}`;
         markKeywords();
 
-        const choicesList = document.getElementById('choices');
-        choicesList.innerHTML = '';
-        (q.choices || []).forEach((choice, idx) => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item';
-            li.innerHTML = `
-            <div class="form-check custom-radio">
-                <input class="form-check-input" type="radio" name="choice" id="choice-${idx + 1}" value="${idx + 1}">
-                <label class="form-check-label" for="choice-${idx + 1}" data-number="${idx + 1}">
-                    <span class="choice-text">${choice.content || ''}</span>
-                </label>
-            </div>`;
-            const input = li.querySelector('input');
-            input.addEventListener('change', () => {
-                const value = parseInt(input.value);
-                userAnswers[index] = value;
-                checkedStates[index] = true;
-                highlightAnswer(value, q.answer);
+        const ul=document.getElementById('choices'); ul.innerHTML='';
+        (q.choices||[]).forEach((choice,idx)=>{
+            const li=document.createElement('li'); li.className='list-group-item';
+            li.innerHTML=`<div class="form-check custom-radio">
+                <input class="form-check-input" type="radio" name="choice" id="choice-${idx+1}" value="${idx+1}">
+                <label class="form-check-label" for="choice-${idx+1}" data-number="${idx+1}">
+                    <span class="choice-text">${choice.content||''}</span>
+                </label></div>`;
+            const input=li.querySelector('input');
+            input.addEventListener('change', async ()=>{
+                const val=parseInt(input.value); userAnswers[index]=val; checkedStates[index]=true;
+                // ✅ 즉시 채점
+                try{
+                    const resp=await axios.post('/problems/answer',{problemId:q.id, selected:val});
+                    const {correct, answer, explanation}=resp.data;
+                    highlightAnswer(val, answer);
+                    document.getElementById('solution-text').textContent = explanation ? explanation : (correct?'정답입니다.':'오답입니다.');
+                    document.getElementById('sol-answer-pill').textContent = `정답: ${answer ?? '-'}`;
+                    document.getElementById('solution-area').style.display='block';
+                }catch(e){ console.error('채점 실패', e); }
             });
-            const labelText = li.querySelector('.choice-text');
-            labelText.addEventListener('click', (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                if (!markMode) return;
-                toggleChoiceMark(li);
-            });
-            choicesList.appendChild(li);
+            li.querySelector('.choice-text').addEventListener('click',(ev)=>{ev.preventDefault();ev.stopPropagation(); if(!markMode)return; toggleChoiceMark(li);});
+            ul.appendChild(li);
         });
 
-        document.getElementById('solution-area').style.display = 'none';
-        document.getElementById('solution-text').textContent = '';
-        document.getElementById('sol-answer-pill').textContent = `정답: ${q.answer ?? '-'}`;
+        document.getElementById('solution-area').style.display='none';
+        document.getElementById('solution-text').textContent='';
+        document.getElementById('sol-answer-pill').textContent=`정답: ${q.answer ?? '-'}`;
 
-        syncCounts(index + 1, questions.length);
+        syncCounts(index+1, questions.length);
 
-        const saved = userAnswers[index];
-        if (saved) {
-            const radio = document.querySelector(`input[name="choice"][value="${saved}"]`);
-            if (radio) radio.checked = true;
-            if (checkedStates[index]) {
-                highlightAnswer(saved, q.answer);
-            }
+        const saved=userAnswers[index];
+        if(saved){
+            const radio=document.querySelector(`input[name="choice"][value="${saved}"]`);
+            if(radio) radio.checked=true;
+            if(checkedStates[index]) highlightAnswer(saved, q.answer);
         }
     }
 
-    function highlightAnswer(selected, answer) {
-        document.querySelectorAll('#choices .list-group-item').forEach((li, idx) => {
-            li.classList.remove('choice-correct', 'choice-wrong');
-            const choiceNum = idx + 1;
-            if (choiceNum === selected) {
-                if (selected === answer) {
-                    li.classList.add('choice-correct');
-                } else {
-                    li.classList.add('choice-wrong');
-                }
-            }
+    function highlightAnswer(selected, answer){
+        document.querySelectorAll('#choices .list-group-item').forEach((li,idx)=>{
+            li.classList.remove('choice-correct','choice-wrong');
+            const num=idx+1;
+            if(num===selected){ li.classList.add(selected===answer?'choice-correct':'choice-wrong'); }
         });
     }
 
-    /* ===================== Keyword Mark ===================== */
-    function markKeywords() {
-        const replacements = [
-            { kw: '옳은', type: 'o' },
-            { kw: '모두 고른 것', type: 'o' },
-            { kw: '해야하는 것', type: 'o' },
-            { kw: '해당하는 것', type: 'o' },
-            { kw: '아닌', type: 'x' },
-            { kw: '틀린', type: 'x' },
-            { kw: '없는', type: 'x' },
-            { kw: '아닌 경우를 모두 고른 것', type: 'x' }
-        ];
-        const titleEl = document.getElementById('question-title');
-        const textEl = document.getElementById('question-text');
-        [titleEl, textEl].forEach(el => {
-            let html = el.innerHTML;
-            replacements.forEach(({ kw, type }) => {
-                const regex = new RegExp(kw, 'g');
-                html = html.replace(regex, `<span class="clickable-word" data-type="${type}">${kw}</span>`);
-            });
-            el.innerHTML = html;
+    /* ===== keyword mark ===== */
+    function markKeywords(){
+        const reps=[{kw:'옳은',type:'o'},{kw:'모두 고른 것',type:'o'},{kw:'해야하는 것',type:'o'},{kw:'해당하는 것',type:'o'},
+            {kw:'아닌',type:'x'},{kw:'틀린',type:'x'},{kw:'없는',type:'x'},{kw:'아닌 경우를 모두 고른 것',type:'x'}];
+        const titleEl=document.getElementById('question-title'), textEl=document.getElementById('question-text');
+        [titleEl,textEl].forEach(el=>{
+            let html=el.innerHTML; reps.forEach(({kw,type})=>{
+                const re=new RegExp(kw,'g'); html=html.replace(re, `<span class="clickable-word" data-type="${type}">${kw}</span>`);
+            }); el.innerHTML=html;
         });
-        document.querySelectorAll('.clickable-word').forEach(span => {
-            span.addEventListener('click', () => {
-                if (span.classList.contains('selected-o') || span.classList.contains('selected-x')) {
-                    span.classList.remove('selected-o', 'selected-x');
-                    markMode = null;
-                } else {
-                    document.querySelectorAll('.clickable-word').forEach(s => s.classList.remove('selected-o', 'selected-x'));
-                    markMode = span.dataset.type;
-                    span.classList.add(markMode === 'o' ? 'selected-o' : 'selected-x');
-                }
+        document.querySelectorAll('.clickable-word').forEach(span=>{
+            span.addEventListener('click',()=>{
+                if(span.classList.contains('selected-o')||span.classList.contains('selected-x')){ span.classList.remove('selected-o','selected-x'); markMode=null; }
+                else{ document.querySelectorAll('.clickable-word').forEach(s=>s.classList.remove('selected-o','selected-x')); markMode=span.dataset.type; span.classList.add(markMode==='o'?'selected-o':'selected-x'); }
             });
         });
     }
-
-    /* ===================== Choice Elimination ===================== */
-    function toggleChoiceMark(li) {
-        const existing = li.querySelector('.mark-o, .mark-x');
-        if (existing) {
-            existing.remove();
-            li.classList.remove('disabled-choice');
-        } else {
+    function toggleChoiceMark(li){
+        const ex=li.querySelector('.mark-o,.mark-x');
+        if(ex){ ex.remove(); li.classList.remove('disabled-choice'); }
+        else{
             li.classList.add('disabled-choice');
-            const symbol = markMode === 'o' ? 'X' : 'O';
-            const cls = markMode === 'o' ? 'mark-x' : 'mark-o';
-            const text = li.querySelector('.choice-text');
-            text.insertAdjacentHTML('beforeend', `<span class="${cls}">${symbol}</span>`);
+            const symbol=markMode==='o'?'X':'O', cls=markMode==='o'?'mark-x':'mark-o';
+            li.querySelector('.choice-text').insertAdjacentHTML('beforeend', `<span class="${cls}">${symbol}</span>`);
         }
     }
 
-    /* ===================== Buttons ===================== */
+    /* ===== buttons ===== */
     function startSolving(){
-        document.getElementById('main').style.display = 'none';
-        document.getElementById('question-area').style.display = 'block';
-        loadQuestions();
-        autoHideActivated = true;
-        scheduleHide();
+        document.getElementById('main').style.display='none';
+        document.getElementById('question-area').style.display='block';
+        loadQuestions(); autoHideActivated=true; scheduleHide();
     }
-    document.getElementById('start-btn').addEventListener('click', startSolving);
-    document.getElementById('start-btn-bar').addEventListener('click', startSolving);
+    document.getElementById('start-btn').addEventListener('click',startSolving);
+    document.getElementById('start-btn-bar').addEventListener('click',startSolving);
 
-    document.getElementById('problem-btn').addEventListener('click', () => {
-        document.getElementById('solution-area').style.display = 'none';
-        document.querySelectorAll('#choices .list-group-item').forEach(li => li.classList.remove('choice-correct', 'choice-wrong'));
+    document.getElementById('problem-btn').addEventListener('click',()=>{
+        document.getElementById('solution-area').style.display='none';
+        document.querySelectorAll('#choices .list-group-item').forEach(li=>li.classList.remove('choice-correct','choice-wrong'));
     });
-    document.getElementById('solution-btn').addEventListener('click', () => {
-        const q = questions[currentIndex];
-        highlightAnswer(q.answer, q.answer);
-        document.getElementById('solution-text').textContent = q.explanation ? q.explanation : `정답: ${q.answer}`;
-        document.getElementById('solution-area').style.display = 'block';
+    document.getElementById('solution-btn').addEventListener('click',()=>{
+        const q=questions[currentIndex]; highlightAnswer(q.answer,q.answer);
+        document.getElementById('solution-text').textContent=q.explanation ? q.explanation : `정답: ${q.answer}`;
+        document.getElementById('solution-area').style.display='block';
     });
+    document.getElementById('next-btn').addEventListener('click',()=>{ if(currentIndex<questions.length-1){ currentIndex++; showQuestion(currentIndex);} });
+    document.getElementById('prev-btn').addEventListener('click',()=>{ if(currentIndex>0){ currentIndex--; showQuestion(currentIndex);} });
 
-    document.getElementById('next-btn').addEventListener('click', () => {
-        if (currentIndex < questions.length - 1) {
-            currentIndex++;
-            showQuestion(currentIndex);
-        }
-    });
-    document.getElementById('prev-btn').addEventListener('click', () => {
-        if (currentIndex > 0) {
-            currentIndex--;
-            showQuestion(currentIndex);
-        }
-    });
+    /* ===== zoom ===== */
+    let baseFontSize=16; function applyZoom(){ document.documentElement.style.fontSize=baseFontSize+'px'; }
+    document.getElementById('zoom-in-btn').addEventListener('click',()=>{ baseFontSize=Math.min(baseFontSize+1,32); applyZoom(); });
+    document.getElementById('zoom-out-btn').addEventListener('click',()=>{ baseFontSize=Math.max(baseFontSize-1,10); applyZoom(); });
+    document.getElementById('zoom-in-btn-bar').addEventListener('click',()=>{ baseFontSize=Math.min(baseFontSize+1,32); applyZoom(); });
+    document.getElementById('zoom-out-btn-bar').addEventListener('click',()=>{ baseFontSize=Math.max(baseFontSize-1,10); applyZoom(); });
 
-    /* ===================== Zoom (both bars) ===================== */
-    let baseFontSize = 16;
-    function applyZoom(){ document.documentElement.style.fontSize = baseFontSize + 'px'; }
-    document.getElementById('zoom-in-btn').addEventListener('click', () => { baseFontSize = Math.min(baseFontSize + 1, 32); applyZoom(); });
-    document.getElementById('zoom-out-btn').addEventListener('click', () => { baseFontSize = Math.max(baseFontSize - 1, 10); applyZoom(); });
-    document.getElementById('zoom-in-btn-bar').addEventListener('click', () => { baseFontSize = Math.min(baseFontSize + 1, 32); applyZoom(); });
-    document.getElementById('zoom-out-btn-bar').addEventListener('click', () => { baseFontSize = Math.max(baseFontSize - 1, 10); applyZoom(); });
-
-    /* ===================== Bottom bar auto hide ===================== */
-    const bottomBar = document.querySelector('.bottom-bar');
-    let autoHideEnabled = true;
-    let autoHideActivated = false;
-    let hideTimeout;
-
-    const settingsBtn = document.getElementById('settings-btn');
-    const settingsPanel = document.getElementById('settings-panel');
-    const autohideToggle = document.getElementById('autohide-toggle');
-
-    const settingsBtnBar = document.getElementById('settings-btn-bar');
-    const settingsPanelBar = document.getElementById('settings-panel-bar');
-    const autohideToggleBar = document.getElementById('autohide-toggle-bar');
-
-    settingsBtn?.addEventListener('click', () => {
-        settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
+    /* ===== bottom bar autohide ===== */
+    const bottomBar=document.querySelector('.bottom-bar'); let autoHideEnabled=true, autoHideActivated=false, hideTimeout;
+    const settingsBtn=document.getElementById('settings-btn'), settingsPanel=document.getElementById('settings-panel'), autohideToggle=document.getElementById('autohide-toggle');
+    const settingsBtnBar=document.getElementById('settings-btn-bar'), settingsPanelBar=document.getElementById('settings-panel-bar'), autohideToggleBar=document.getElementById('autohide-toggle-bar');
+    settingsBtn?.addEventListener('click',()=>{ settingsPanel.style.display=settingsPanel.style.display==='block'?'none':'block'; });
+    settingsBtnBar.addEventListener('click',()=>{ settingsPanelBar.style.display=settingsPanelBar.style.display==='block'?'none':'block'; });
+    document.addEventListener('click',(e)=>{
+        if(!settingsPanel?.contains(e.target)&&!settingsBtn?.contains(e.target)) settingsPanel&&(settingsPanel.style.display='none');
+        if(!settingsPanelBar.contains(e.target)&&!settingsBtnBar.contains(e.target)) settingsPanelBar.style.display='none';
     });
-    settingsBtnBar.addEventListener('click', () => {
-        settingsPanelBar.style.display = settingsPanelBar.style.display === 'block' ? 'none' : 'block';
-    });
-    document.addEventListener('click', (e) => {
-        if (!settingsPanel?.contains(e.target) && !settingsBtn?.contains(e.target)) settingsPanel && (settingsPanel.style.display = 'none');
-        if (!settingsPanelBar.contains(e.target) && !settingsBtnBar.contains(e.target)) settingsPanelBar.style.display = 'none';
-    });
+    function scheduleHide(){ clearTimeout(hideTimeout); if(!autoHideEnabled||!autoHideActivated) return; hideTimeout=setTimeout(()=>bottomBar.classList.add('hidden'),2500); }
+    function showBar(){ bottomBar.classList.remove('hidden'); scheduleHide(); }
+    document.addEventListener('mousemove',(e)=>{ if(!autoHideEnabled||!autoHideActivated) return; if(e.clientY>=window.innerHeight-100) showBar(); });
+    autohideToggle?.addEventListener('change',()=>{ autoHideEnabled=!autohideToggle.checked; if(autoHideEnabled&&autoHideActivated) scheduleHide(); else { bottomBar.classList.remove('hidden'); clearTimeout(hideTimeout);} });
+    autohideToggleBar.addEventListener('change',()=>{ autoHideEnabled=!autohideToggleBar.checked; if(autoHideEnabled&&autoHideActivated) scheduleHide(); else { bottomBar.classList.remove('hidden'); clearTimeout(hideTimeout);} });
 
-    function scheduleHide() {
-        clearTimeout(hideTimeout);
-        if (!autoHideEnabled || !autoHideActivated) return;
-        hideTimeout = setTimeout(() => bottomBar.classList.add('hidden'), 2500);
-    }
-    function showBar(){
-        bottomBar.classList.remove('hidden');
-        scheduleHide();
-    }
-    document.addEventListener('mousemove', (e) => {
-        if (!autoHideEnabled || !autoHideActivated) return;
-        if (e.clientY >= window.innerHeight - 100) showBar();
-    });
-    autohideToggle?.addEventListener('change', () => {
-        autoHideEnabled = !autohideToggle.checked;
-        if (autoHideEnabled && autoHideActivated) scheduleHide(); else { bottomBar.classList.remove('hidden'); clearTimeout(hideTimeout); }
-    });
-    autohideToggleBar.addEventListener('change', () => {
-        autoHideEnabled = !autohideToggleBar.checked;
-        if (autoHideEnabled && autoHideActivated) scheduleHide(); else { bottomBar.classList.remove('hidden'); clearTimeout(hideTimeout); }
-    });
-
-    /* ===================== Mirror (Desktop header <-> Mobile bar) ===================== */
+    /* ===== mirror for bar ===== */
     function wireBarMirrors(){
-        // Round panel toggle (bar)
-        document.getElementById('round-selector-bar').addEventListener('click', () => togglePanelBar('round-panel-bar', 'unit-panel-bar'));
-        document.getElementById('unit-selector-bar').addEventListener('click', () => togglePanelBar('unit-panel-bar', 'round-panel-bar'));
-
-        document.getElementById('round-confirm-bar').addEventListener('click', () => confirmRounds('bar'));
-        document.getElementById('round-reset-bar').addEventListener('click', () => resetRounds('bar'));
-        document.getElementById('unit-confirm-bar').addEventListener('click', () => confirmUnits('bar'));
-        document.getElementById('unit-reset-bar').addEventListener('click', () => resetUnits('bar'));
-
-        // Subject dropdown (bar) closes other panels
-        const subjectBtnBar = document.getElementById('subjectDropdownBar');
-        subjectBtnBar.addEventListener('show.bs.dropdown', () => {
-            document.getElementById('round-panel-bar').style.display = 'none';
-            document.getElementById('unit-panel-bar').style.display = 'none';
-        });
+        document.getElementById('round-selector-bar').addEventListener('click',()=>togglePanelBar('round-panel-bar','unit-panel-bar'));
+        document.getElementById('unit-selector-bar').addEventListener('click',()=>togglePanelBar('unit-panel-bar','round-panel-bar'));
+        document.getElementById('round-confirm-bar').addEventListener('click',()=>confirmRounds('bar'));
+        document.getElementById('round-reset-bar').addEventListener('click',()=>resetRounds('bar'));
+        document.getElementById('unit-confirm-bar').addEventListener('click',()=>confirmUnits('bar'));
+        document.getElementById('unit-reset-bar').addEventListener('click',()=>resetUnits('bar'));
+        const subjectBtnBar=document.getElementById('subjectDropdownBar');
+        subjectBtnBar.addEventListener('show.bs.dropdown',()=>{ document.getElementById('round-panel-bar').style.display='none'; document.getElementById('unit-panel-bar').style.display='none'; });
     }
     function togglePanelBar(showId, hideId){
-        const showEl = document.getElementById(showId);
-        const hideEl = document.getElementById(hideId);
-        if(hideEl) hideEl.style.display = 'none';
-        showEl.style.display = (showEl.style.display === 'block') ? 'none' : 'block';
+        const showEl=document.getElementById(showId), hideEl=document.getElementById(hideId);
+        if(hideEl) hideEl.style.display='none';
+        showEl.style.display=(showEl.style.display==='block')?'none':'block';
     }
 </script>
 </body>

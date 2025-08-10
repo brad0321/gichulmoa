@@ -1,29 +1,202 @@
+<!-- src/main/resources/templates/members/find-username.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-    <title>아이디 찾기</title>
     <meta charset="UTF-8">
+    <title>아이디 찾기 | 공인중개사 기출모아</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root{
+            /* 브랜드 팔레트 (로그인/대시보드와 통일) */
+            --color-main:#2F4858; --color-sub:#4F7CAC; --color-point:#F5CD90;
+            --text-main:#2C3E3F; --text-sub:#7A746E; --bg:#F4F3F1; --white:#ffffff;
+            --radius:18px; --shadow:0 10px 24px rgba(47,72,88,.15);
+        }
+        body{
+            background: var(--bg); color: var(--text-main);
+            font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; letter-spacing:.1px;
+        }
+        .page-wrap{ max-width: 480px; margin: clamp(32px,6vh,72px) auto; padding: 0 14px; }
+        .brand{text-align:center; margin-bottom:18px;}
+        .brand img{ height:60px; margin-bottom:8px; }
+        .brand .title{ font-weight:800; font-size:22px; }
+        .brand .subtitle{ font-size:12px; color:var(--text-sub); }
+
+        .card-auth{ border:0; background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; }
+        .form-label{ font-weight:700; }
+        .form-control{ border-radius:12px; padding:10px 12px; border:1px solid #d9d6d1; background:#fff; }
+        .form-control:focus{ border-color:var(--color-sub); box-shadow:0 0 0 .2rem rgba(79,124,172,.15); }
+        .help{ font-size:12px; color:var(--text-sub); margin-top:6px; }
+
+        .btn-uniform{ padding:10px 14px; min-height:44px; border-radius:12px; font-weight:700; font-size:1rem; }
+        .btn-main{ background: var(--color-main); border-color: var(--color-main); color:#fff; }
+        .btn-main:hover{ background:#243946; border-color:#243946; }
+        .btn-sub{ background: var(--color-sub); border-color: var(--color-sub); color:#fff; }
+        .btn-sub:hover{ background:#426d96; border-color:#426d96; }
+        .btn-ghost{ border:1px solid #c9c4bd; background:transparent; color: var(--text-main); }
+        .btn-ghost:hover{ background:#f0efec; }
+
+        .modal-header.primary{ background:var(--color-main); color:#fff; }
+        .modal-header.error{ background:#a33a3a; color:#fff; }
+    </style>
 </head>
 <body>
-<div class="container mt-5" style="max-width: 500px;">
-    <h1 class="mb-4 text-center">아이디 찾기</h1>
 
-    <form th:action="@{/members/find-username}" method="post">
-        <div class="mb-3">
-            <label for="email" class="form-label">가입 시 사용한 이메일</label>
-            <input type="email" class="form-control" id="email" name="email" placeholder="example@example.com" required>
-        </div>
-        <button type="submit" class="btn btn-primary w-100">아이디 찾기</button>
-    </form>
-
-    <div th:if="${notFound}" class="alert alert-danger mt-3 text-center">
-        해당 이메일로 가입된 계정이 없습니다.
+<main class="page-wrap">
+    <!-- 브랜드 -->
+    <div class="brand">
+        <img src="/img/brandLogo.png" alt="공인중개사 기출모아 로고">
+        <div class="title">공인중개사 기출모아</div>
+        <span class="subtitle">아이디 찾기</span>
     </div>
 
-    <div class="text-center mt-4">
-        <a th:href="@{/login}" class="text-secondary">← 로그인으로 돌아가기</a>
+    <!-- 카드 -->
+    <section class="card-auth">
+        <h2 class="h5 mb-3 fw-bold" style="color:var(--color-main)">이메일로 아이디 찾기</h2>
+
+        <form th:action="@{/members/find-username}" method="post" id="findIdForm" novalidate>
+            <!-- CSRF (시큐리티 켜질 경우 렌더) -->
+            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">가입 시 사용한 이메일</label>
+                <input type="email" id="email" name="email" class="form-control"
+                       placeholder="example@example.com" autocomplete="email"
+                       th:value="${email}" required>
+                <div class="help">해당 이메일로 가입된 계정의 아이디를 안내합니다.</div>
+            </div>
+
+            <button type="submit" class="btn btn-main btn-uniform w-100" id="submitBtn">아이디 찾기</button>
+        </form>
+
+        <div class="d-grid gap-2 mt-3">
+            <a th:href="@{/login}" class="btn btn-ghost btn-uniform">← 로그인으로 돌아가기</a>
+        </div>
+    </section>
+
+    <p class="text-center mt-3" style="color:var(--text-sub); font-size:12px">© 공인중개사 기출모아</p>
+</main>
+
+<!-- =================== 모달들 =================== -->
+
+<!-- 성공 모달: 아이디 안내 -->
+<div class="modal fade" id="modalSuccess" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header primary">
+                <h5 class="modal-title">아이디 안내</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <div class="small" style="color:var(--text-sub)">이메일</div>
+                    <div id="successEmail" class="fw-bold"></div>
+                </div>
+                <div>
+                    <div class="small" style="color:var(--text-sub)">아이디</div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="successUsername" readonly>
+                        <button class="btn btn-ghost" type="button" id="copyUserBtn">복사</button>
+                    </div>
+                    <div class="help">확인 후 로그인 페이지로 이동해 주세요.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a th:href="@{/login}" class="btn btn-sub btn-uniform">로그인으로</a>
+                <button type="button" class="btn btn-main btn-uniform" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- 에러 모달 -->
+<div class="modal fade" id="modalError" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header error">
+                <h5 class="modal-title">계정을 찾을 수 없습니다</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="errorText">
+                해당 이메일로 가입된 계정이 없습니다.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost btn-uniform" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- 모달 로직 & 폼 UX -->
+<script th:inline="javascript">
+    // 서버 바인딩 값
+    const EMAIL    = /*[[${email}    ?: '']]*/ '';
+    const USERNAME = /*[[${username} ?: '']]*/ '';
+
+    const $ = (s, p=document) => p.querySelector(s);
+
+    function openModal(id){
+        const el = $(id);
+        if (!el) return;
+        bootstrap.Modal.getOrCreateInstance(el).show();
+    }
+
+    // 성공/실패 자동 모달 오픈
+    if (USERNAME) {
+        const emailEl = $('#successEmail');
+        const userEl  = $('#successUsername');
+        if (emailEl) emailEl.textContent = EMAIL || '(이메일 미전달)';
+        if (userEl)  userEl.value = USERNAME;
+        openModal('#modalSuccess');
+    } else if (EMAIL) {
+        // 이메일은 있지만 username이 비어있다면 "미가입" 케이스로 간주
+        openModal('#modalError');
+    }
+
+    // 폼 UX: 검증 & 제출 중 버튼 잠금
+    (function(){
+        const form = $('#findIdForm');
+        const btn  = $('#submitBtn');
+        const email = $('#email');
+
+        form?.addEventListener('submit', (e) => {
+            const v = (email?.value || '').trim();
+            if (!v) {
+                e.preventDefault();
+                const err = $('#errorText');
+                if (err) err.textContent = '이메일을 입력해주세요.';
+                openModal('#modalError');
+                return;
+            }
+            btn?.setAttribute('disabled','disabled');
+            if (btn) btn.textContent = '처리 중…';
+        });
+    })();
+
+    // 아이디 복사
+    (function(){
+        const copyBtn = $('#copyUserBtn');
+        copyBtn?.addEventListener('click', async () => {
+            const val = $('#successUsername')?.value || '';
+            if (!val) return;
+            try {
+                await navigator.clipboard.writeText(val);
+                const old = copyBtn.textContent;
+                copyBtn.textContent = '복사됨';
+                setTimeout(() => copyBtn.textContent = old, 1200);
+            } catch (_) {
+                const input = $('#successUsername');
+                input?.select();
+            }
+        });
+    })();
+</script>
 </body>
 </html>

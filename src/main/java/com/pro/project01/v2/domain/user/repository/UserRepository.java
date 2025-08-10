@@ -10,4 +10,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
+
+    // (선택) 자기 자신 제외 중복 체크가 필요할 때 사용
+    boolean existsByEmailAndIdNot(String email, Long id);
 }

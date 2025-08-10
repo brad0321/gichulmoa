@@ -1,38 +1,258 @@
+<!-- src/main/resources/templates/edit-myinfo.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-    <title>마이페이지</title>
     <meta charset="UTF-8">
+    <title>마이페이지 | 공인중개사 기출모아</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root{
+            --color-main:#2F4858; --color-sub:#4F7CAC; --color-point:#F5CD90;
+            --text-main:#2C3E3F; --text-sub:#7A746E; --bg:#F4F3F1; --white:#ffffff;
+            --radius:18px; --shadow:0 10px 24px rgba(47,72,88,.15);
+        }
+        body{ background:var(--bg); color:var(--text-main);
+            font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; letter-spacing:.1px; }
+        .page-wrap{ max-width: 720px; margin: clamp(24px,5vh,72px) auto; padding: 0 14px; }
+        .brand{ text-align:center; margin-bottom:18px; }
+        .brand img{ height:56px; margin-bottom:8px; }
+        .brand .title{ font-weight:800; font-size:22px; }
+        .brand .subtitle{ font-size:12px; color:var(--text-sub); }
+
+        .card-profile{ border:0; background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; }
+        .section-title{ color:var(--color-main); font-weight:800; font-size:18px; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+        .form-label{ font-weight:700; }
+        .form-control{ border-radius:12px; padding:10px 12px; border:1px solid #d9d6d1; }
+        .form-control:focus{ border-color:var(--color-sub); box-shadow:0 0 0 .2rem rgba(79,124,172,.15); }
+        .help{ font-size:12px; color:var(--text-sub); margin-top:6px; }
+
+        .btn-uniform{ padding:10px 14px; min-height:44px; border-radius:12px; font-weight:700; font-size:1rem; }
+        .btn-main{ background:var(--color-main); border-color:var(--color-main); color:#fff; }
+        .btn-main:hover{ background:#243946; border-color:#243946; }
+        .btn-sub{ background:var(--color-sub); border-color:var(--color-sub); color:#fff; }
+        .btn-sub:hover{ background:#426d96; border-color:#426d96; }
+        .btn-ghost{ border:1px solid #c9c4bd; background:transparent; color:var(--text-main); }
+        .btn-ghost:hover{ background:#f0efec; }
+        .btn-danger-soft{ border:1px solid #f3c9c9; background:#fff5f5; color:#a33a3a; }
+        .btn-danger-soft:hover{ background:#ffecec; }
+
+        /* 모달 헤더 톤 맞춤 */
+        .modal-header.primary{ background:var(--color-main); color:#fff; }
+        .modal-header.error{ background:#a33a3a; color:#fff; }
+    </style>
 </head>
 <body>
-<div class="container mt-5" style="max-width: 500px;">
-    <h1 class="mb-4 text-center">내 정보 수정</h1>
 
-    <form th:action="@{/members/mypage}" method="post">
-        <div class="mb-3">
-            <label class="form-label">아이디</label>
-            <input type="text" class="form-control" th:value="${user.username}" readonly>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">이메일</label>
-            <input type="email" class="form-control" th:value="${user.email}" readonly>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">새 비밀번호</label>
-            <input type="password" class="form-control" name="password" placeholder="새 비밀번호" required>
-        </div>
+<main class="page-wrap">
+    <!-- 브랜드 -->
+    <div class="brand">
+        <img src="/img/brandLogo.png" alt="공인중개사 기출모아 로고">
+        <div class="title">공인중개사 기출모아</div>
+        <span class="subtitle">마이페이지</span>
+    </div>
 
-        <button type="submit" class="btn btn-primary w-100">비밀번호 수정</button>
-    </form>
+    <!-- 프로필 카드 -->
+    <section class="card-profile">
+        <!-- 섹션: 기본 정보 -->
+        <h2 class="section-title">계정 정보</h2>
 
-    <div class="d-flex justify-content-between mt-3">
-        <form th:action="@{/members/delete}" method="post">
-            <input type="hidden" name="id" th:value="${user.id}" />
-            <button type="submit" class="btn btn-outline-danger">회원탈퇴</button>
+        <!-- ✅ 업데이트 폼 (중첩 폼 금지) -->
+        <form th:action="@{/members/mypage}" method="post" id="updateForm" novalidate>
+            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">아이디</label>
+                    <input type="text" class="form-control" th:value="${user.username}" readonly>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">등급</label>
+                    <input type="text" class="form-control" th:value="${user.grade}" readonly>
+                </div>
+
+                <div class="col-12">
+                    <label for="email" class="form-label">이메일</label>
+                    <input type="email" id="email" name="email" class="form-control"
+                           th:value="${user.email}" placeholder="이메일 주소" autocomplete="email">
+                    <div class="help">이메일을 변경하면 로그인 자격에 영향을 줄 수 있어요.</div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- 섹션: 보안 -->
+            <h2 class="section-title">보안</h2>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label for="newPassword" class="form-label">새 비밀번호</label>
+                    <div class="input-group">
+                        <input type="password" id="newPassword" name="newPassword" class="form-control"
+                               placeholder="새 비밀번호(선택, 6자 이상)" minlength="6" autocomplete="new-password">
+                        <button class="btn btn-ghost" type="button" id="togglePw">보기</button>
+                    </div>
+                    <div class="help">비워두면 변경하지 않습니다.</div>
+                </div>
+            </div>
+
+            <div class="d-grid d-md-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-main btn-uniform" id="saveBtn">변경 사항 저장</button>
+                <a th:href="@{/dashboard}" class="btn btn-ghost btn-uniform">대시보드로</a>
+            </div>
         </form>
-        <a th:href="@{/dashboard}" class="btn btn-outline-secondary">대시보드</a>
+
+        <hr class="my-4">
+
+        <!-- 위험 영역 -->
+        <h2 class="section-title">계정 관리</h2>
+        <div class="d-flex justify-content-between flex-wrap gap-2">
+            <a th:href="@{/dashboard}" class="btn btn-ghost btn-uniform">취소</a>
+
+            <!-- ✅ 탈퇴 폼은 별도 (중첩 금지) -->
+            <form th:action="@{/members/delete}" method="post" id="deleteForm">
+                <input type="hidden" name="id" th:value="${user.id}">
+                <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="button" class="btn btn-danger-soft btn-uniform" data-bs-toggle="modal" data-bs-target="#modalConfirmDelete">
+                    회원 탈퇴
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <div class="d-flex justify-content-end mt-3 gap-2">
+        <form th:action="@{/logout}" method="post" class="m-0">
+            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn btn-sub btn-uniform">로그아웃</button>
+        </form>
+    </div>
+
+    <p class="text-center" style="color:var(--text-sub); font-size:12px">© 공인중개사 기출모아</p>
+</main>
+
+<!-- =================== 모달들 =================== -->
+
+<!-- 1) 일반 알림 모달 (성공/정보) -->
+<div class="modal fade" id="modalMsg" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header primary">
+                <h5 class="modal-title">알림</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modalMsgText">처리가 완료되었습니다.</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-main btn-uniform" data-bs-dismiss="modal">확인</button>
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- 2) 에러 모달 -->
+<div class="modal fade" id="modalError" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header error">
+                <h5 class="modal-title">오류</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modalErrorText">오류가 발생했습니다. 다시 시도해주세요.</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger btn-uniform" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3) 회원탈퇴 확인 모달 -->
+<div class="modal fade" id="modalConfirmDelete" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header" style="background:linear-gradient(135deg,var(--color-main),var(--color-sub)); color:#fff;">
+                <h5 class="modal-title">회원 탈퇴</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                탈퇴 시 학습 기록과 출석 정보가 삭제될 수 있습니다. 정말로 진행할까요?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost btn-uniform" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-danger btn-uniform" id="confirmDeleteBtn">탈퇴하기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- 모달 로직 및 폼 검증 -->
+<script th:inline="javascript">
+    // 서버 메시지 → 모달로
+    const SERVER_MSG   = /*[[${msg}   ?: '']]*/ '';
+    const SERVER_ERROR = /*[[${error} ?: '']]*/ '';
+
+    const $ = (sel, p=document) => p.querySelector(sel);
+
+    function openModal(modalSel, textSel, text) {
+        const modalEl = document.querySelector(modalSel);
+        if (!modalEl) return;
+
+        if (textSel && typeof text === 'string') {
+            const textEl = document.querySelector(textSel);
+            if (textEl) textEl.textContent = text;
+        }
+
+        const m = bootstrap.Modal.getOrCreateInstance(modalEl);
+        m.show();
+    }
+
+
+    if (SERVER_MSG)   openModal('#modalMsg',   '#modalMsgText',   SERVER_MSG);
+    if (SERVER_ERROR) openModal('#modalError', '#modalErrorText', SERVER_ERROR);
+
+    // 비밀번호 보기/숨기기
+    (function(){
+        const btn = $('#togglePw');
+        const pw  = $('#newPassword');
+        btn?.addEventListener('click', () => {
+            if (!pw) return;
+            const showing = pw.getAttribute('type') === 'text';
+            pw.setAttribute('type', showing ? 'password' : 'text');
+            btn.textContent = showing ? '보기' : '숨기기';
+        });
+    })();
+
+    // 저장 폼: 클라이언트 검증 실패도 모달로 안내
+    (function(){
+        const form = $('#updateForm');
+        const saveBtn = $('#saveBtn');
+
+        form?.addEventListener('submit', (e) => {
+            const newPw = $('#newPassword');
+            if (newPw.value && newPw.value.length < 6) {
+                e.preventDefault();
+                openModal('#modalError', '#modalErrorText', '비밀번호는 6자 이상이어야 합니다.');
+                return;
+            }
+            // 제출 중 버튼 잠금
+            saveBtn?.setAttribute('disabled','disabled');
+            if (saveBtn) saveBtn.textContent = '저장 중…';
+        });
+    })();
+
+    // 회원탈퇴: 모달에서 최종 제출
+    (function(){
+        const btn = $('#confirmDeleteBtn');
+        btn?.addEventListener('click', () => {
+            $('#deleteForm')?.submit();
+        });
+    })();
+</script>
 </body>
 </html>

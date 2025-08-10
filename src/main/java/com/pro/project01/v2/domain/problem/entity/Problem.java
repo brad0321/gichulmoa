@@ -51,6 +51,8 @@ public class Problem {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private String explanation;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

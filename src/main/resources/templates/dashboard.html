@@ -1,3 +1,4 @@
+<!-- src/main/resources/templates/dashboard.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
@@ -41,7 +42,7 @@
         .sb-link{ display:flex; align-items:center; gap:10px; color:#e7eef3; text-decoration:none; font-weight:700; padding:12px; border-radius:14px; }
         .sb-link:hover{ background:rgba(255,255,255,.08); }
         .sb-link.active{ background:rgba(255,255,255,.14); }
-        .sb-link.locked-link{ position:relative; opacity:.75; }
+        .sb-link.locked-link{ position:relative; opacity:.8; }
         .sb-link.locked-link::after{ content:"🔒"; margin-left:6px; font-size:14px; }
         .sb-link.locked-link:hover{ background:rgba(255,255,255,.08); }
 
@@ -104,9 +105,21 @@
         <nav class="sb-nav">
             <a class="sb-link active" th:href="@{/dashboard}">홈</a>
             <a class="sb-link" th:href="@{/problems/solve}">기출문제 풀이</a>
-            <a class="sb-link locked-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">회차별 시험</a>
-            <a class="sb-link locked-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">오답노트</a>
-            <a class="sb-link locked-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">통계</a>
+
+            <!-- 게스트 전용 (잠금) -->
+            <a class="sb-link locked-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal" th:if="${isGuest}">회차별 시험</a>
+            <a class="sb-link locked-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal" th:if="${isGuest}">오답노트</a>
+            <a class="sb-link locked-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal" th:if="${isGuest}">통계</a>
+
+            <!-- 회원 전용 (실제 링크) -->
+            <a class="sb-link" th:href="@{/exams}"      th:if="${!isGuest}">회차별 시험</a>
+            <a class="sb-link" th:href="@{/wrong-note}" th:if="${!isGuest}">오답노트</a>
+            <a class="sb-link" th:href="@{/stats}"      th:if="${!isGuest}">통계</a>
+
+            <!-- 관리자 전용: 문제등록 -->
+            <a class="sb-link"
+               th:href="@{/problems/new}"
+               th:if="${!isGuest and loginUser.role.name() == 'ADMIN'}">문제등록</a>
         </nav>
     </aside>
 
@@ -117,9 +130,9 @@
             <div class="title">공인중개사 기출모아</div>
         </div>
         <div class="top-right">
-            <span class="hello">안녕하세요, <strong th:text="${loginUser != null ? loginUser.username : '게스트'}">사용자</strong>님</span>
+            <span class="hello">안녕하세요, <strong th:text="${displayName}">사용자</strong>님</span>
             <span class="pill">대시보드</span>
-            <a class="avatar-link" th:href="@{/members/mypage}">
+            <a class="avatar-link" th:href="${isGuest} ? '/login' : '/members/mypage'">
                 <img class="avatar-img" src="/img/profile.png" alt="프로필">
             </a>
         </div>
@@ -128,22 +141,26 @@
     <!-- Main -->
     <main class="main">
         <div class="wrap">
-            <section class="top-grid lockable" id="lock-kpi">
-                <article class="card-count">
+            <section class="top-grid" id="lock-kpi">
+                <!-- 남은 시험기간: 항상 오픈 -->
+                <article class="card-count" id="countdown-card">
                     <div class="dhuge">
                         <span class="label" id="dBadge">D-00</span>
                         <span class="big" id="dBig">D-00</span>
                     </div>
                     <div class="count-detail" id="countText">00일 00시간 00분 00초 남았습니다.</div>
                 </article>
+
+                <!-- KPI: 게스트는 잠금 -->
                 <div class="kpi-row">
-                    <div class="card-kpi"><div class="kpi-value" th:text="${todaySolved}">null</div><div class="kpi-label">오늘 푼 문제</div></div>
-                    <div class="card-kpi"><div class="kpi-value" th:text="${accuracy + '%'}">null%</div><div class="kpi-label">정답률</div></div>
-                    <div class="card-kpi"><div class="kpi-value" th:text="${streakDays + '일'}">null일</div><div class="kpi-label">연속 출석일</div></div>
+                    <div class="card-kpi"><div class="kpi-value" th:text="${todaySolved}">0</div><div class="kpi-label">오늘 푼 문제</div></div>
+                    <div class="card-kpi"><div class="kpi-value" th:text="${accuracy + '%'}">0%</div><div class="kpi-label">정답률</div></div>
+                    <div class="card-kpi"><div class="kpi-value" th:text="${streakDays + '일'}">0일</div><div class="kpi-label">연속 출석일</div></div>
                 </div>
             </section>
 
-            <section class="bottom-grid lockable" id="lock-charts">
+            <!-- 하단 카드들: 게스트는 잠금 -->
+            <section class="bottom-grid" id="lock-charts">
                 <article class="cardx"><div class="card-title">출석 현황</div><div id="calDays"></div></article>
                 <article class="cardx"><div class="card-title">과목별 정답률</div><div class="chart-box"><svg id="barChart"></svg></div></article>
                 <article class="cardx"><div class="card-title">주간 풀이 추이</div><div class="chart-box"><svg id="lineChart"></svg></div></article>
@@ -163,30 +180,79 @@
             <div class="modal-body">회원만 이용할 수 있는 기능입니다. 로그인 또는 회원가입을 진행해주세요.</div>
             <div class="modal-footer">
                 <a th:href="@{/login}" class="btn btn-primary">로그인</a>
-                <a th:href="@{/signup}" class="btn btn-outline-secondary">회원가입</a>
+                <a th:href="@{/members/new}" class="btn btn-outline-secondary">회원가입</a>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script th:inline="javascript">
-    const IS_GUEST = /*[[${loginUser == null}]]*/ true;
-    function attachLock(selector){
-        if(!IS_GUEST) return;
-        const host = document.querySelector(selector);
-        if(!host) return;
-        host.classList.add('lockable');
-        host.querySelectorAll('.card-count, .card-kpi, .cardx, .chart-box, #calDays')
-            .forEach(el=> el.classList.add('locked-dim'));
+    // ===== 0) 로그인 상태(서버 판별 결과 사용) =====
+    const IS_GUEST = /*[[${isGuest}]]*/ false; // 안전한 기본값 false
+
+    // ===== 1) D-Day 카운트다운 (KST, 2025-10-25 09:30 시작) =====
+    const EXAM_DATE_KST = new Date('2025-10-25T09:30:00+09:00');
+    const msPerSec = 1000, msPerMin = 60*msPerSec, msPerHour = 60*msPerMin, msPerDay = 24*msPerHour;
+
+    function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+    function updateCountdown(){
+        const now = new Date();
+        const diff = EXAM_DATE_KST.getTime() - now.getTime();
+
+        // D-표시는 날짜 기준(당일 0시는 D-0), 본문 카운트다운은 09:30까지 초단위
+        const dToday  = startOfDay(now);
+        const dTarget = startOfDay(EXAM_DATE_KST);
+        const dGap    = Math.ceil((dTarget - dToday) / msPerDay); // 음수면 D+N
+        const dText   = dGap > 0 ? `D-${dGap}` : (dGap === 0 ? 'D-0' : `D+${Math.abs(dGap)}`);
+
+        const $badge = document.getElementById('dBadge');
+        const $big   = document.getElementById('dBig');
+        const $text  = document.getElementById('countText');
+
+        if ($badge) $badge.textContent = dText;
+        if ($big)   $big.textContent   = dText;
+
+        if (diff <= 0){
+            if ($text) $text.textContent = dGap === 0 ? '오늘 09:30 시험이 시작됩니다.' : '시험이 종료되었습니다.';
+            return;
+        }
+
+        const days  = Math.floor(diff / msPerDay);
+        const hours = Math.floor((diff % msPerDay) / msPerHour);
+        const mins  = Math.floor((diff % msPerHour) / msPerMin);
+        const secs  = Math.floor((diff % msPerMin) / msPerSec);
+
+        if ($text) $text.textContent = `${days}일 ${String(hours).padStart(2,'0')}시간 ${String(mins).padStart(2,'0')}분 ${String(secs).padStart(2,'0')}초 남았습니다.`;
+    }
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // ===== 2) 게스트 잠금 (카운트다운 제외) =====
+    function makeLockOverlay(cardEl){
+        if (!cardEl) return;
+        cardEl.classList.add('locked-dim');
+        cardEl.style.position = cardEl.style.position || 'relative';
         const ov = document.createElement('div');
         ov.className = 'locked-overlay';
         ov.innerHTML = `<span class="badge">회원 전용 · 로그인 필요 🔒</span>`;
         ov.onclick = ()=> new bootstrap.Modal(document.getElementById('loginModal')).show();
-        host.appendChild(ov);
+        cardEl.appendChild(ov);
     }
-    attachLock('#lock-kpi');
-    attachLock('#lock-charts');
+
+    function lockForGuest(){
+        if (!IS_GUEST) return;
+
+        // 2-1) KPI 카드 잠금 (카운트다운 카드 제외)
+        document.querySelectorAll('#lock-kpi .card-kpi').forEach(makeLockOverlay);
+
+        // 2-2) 하단 카드 전체 잠금
+        document.querySelectorAll('#lock-charts .cardx').forEach(makeLockOverlay);
+    }
+    lockForGuest();
 </script>
 </body>
 </html>

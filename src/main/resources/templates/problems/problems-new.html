@@ -1,143 +1,321 @@
+<!-- src/main/resources/templates/problems/new.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>문제 등록</title>
+    <title>문제 등록 | 공인중개사 기출모아</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Axios -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <style>
+        :root{
+            --color-main:#2F4858; --color-sub:#4F7CAC; --color-point:#F5CD90;
+            --text-main:#2C3E3F; --text-sub:#7A746E; --bg:#F4F3F1; --white:#ffffff;
+            --radius:18px; --shadow:0 10px 24px rgba(47,72,88,.15);
+        }
+        body{ background:var(--bg); color:var(--text-main);
+            font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; letter-spacing:.1px; }
+        .page-wrap{ max-width: 960px; margin: clamp(24px,5vh,72px) auto; padding: 0 14px; }
+
+        .brand{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+        .brand img{ height:36px; }
+        .brand .title{ font-weight:900; font-size:18px; }
+        .muted{ color:var(--text-sub); }
+
+        .card-box{ border:0; background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; }
+        .section-title{ color:var(--color-main); font-weight:800; font-size:18px; margin-bottom:12px; }
+
+        .form-label{ font-weight:700; }
+        .form-control, .form-select{ border-radius:12px; border:1px solid #d9d6d1; padding:10px 12px; }
+        .form-control:focus, .form-select:focus{ border-color:var(--color-sub); box-shadow:0 0 0 .2rem rgba(79,124,172,.15); }
+        .help{ font-size:12px; color:var(--text-sub); margin-top:6px; }
+
+        .img-wrap{ border:1px solid #e6e3df; background:#fff; border-radius:12px; padding:10px; display:inline-block; }
+
+        .btn-uniform{ padding:10px 14px; min-height:44px; border-radius:12px; font-weight:700; font-size:1rem; }
+        .btn-main{ background:var(--color-main); border-color:var(--color-main); color:#fff; }
+        .btn-main:hover{ background:#243946; border-color:#243946; }
+        .btn-sub{ background:var(--color-sub); border-color:var(--color-sub); color:#fff; }
+        .btn-sub:hover{ background:#426d96; border-color:#426d96; }
+        .btn-ghost{ border:1px solid #c9c4bd; background:transparent; color: var(--text-main); }
+        .btn-ghost:hover{ background:#f0efec; }
+
+        .modal-header.primary{ background:var(--color-main); color:#fff; }
+        .modal-header.error{ background:#a33a3a; color:#fff; }
+    </style>
 </head>
 <body>
-<div class="container mt-5" style="max-width: 900px;">
-    <h1 class="mb-4">문제 등록</h1>
 
-    <form th:action="@{/problems/new}" method="post" enctype="multipart/form-data">
+<main class="page-wrap">
+    <!-- 헤더 -->
+    <div class="brand">
+        <img src="/img/brandLogo.png" alt="로고">
+        <div class="title">공인중개사 기출모아</div>
+        <div class="muted">문제 등록</div>
+    </div>
 
-        <!-- ✅ 질문 -->
-        <div class="mb-3">
-            <label class="form-label">문제 질문</label>
-            <input type="text" class="form-control" name="title" placeholder="문제 질문 입력" required>
-        </div>
+    <!-- 카드 -->
+    <section class="card-box">
+        <h2 class="section-title">문항 기본정보</h2>
 
-        <!-- ✅ 지문 -->
-        <div class="mb-3">
-            <label class="form-label">문제 지문</label>
-            <textarea class="form-control" name="viewContent" rows="3" placeholder="문제 지문을 입력하세요."></textarea>
-        </div>
+        <form th:action="@{/problems/new}" method="post" enctype="multipart/form-data" id="createForm" novalidate>
+            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-        <!-- ✅ 이미지 업로드 -->
-        <div class="mb-3">
-            <label class="form-label">이미지 업로드</label>
-            <input type="file" class="form-control" name="imageFile">
-        </div>
+            <!-- 질문 -->
+            <div class="mb-3">
+                <label for="title" class="form-label">문제 질문</label>
+                <input type="text" id="title" name="title" class="form-control" placeholder="문제 질문 입력" required>
+            </div>
 
-        <!-- ✅ 보기 입력 -->
-        <div class="mb-3">
-            <label class="form-label">보기 1</label>
-            <input type="text" class="form-control" name="choice1">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">보기 2</label>
-            <input type="text" class="form-control" name="choice2">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">보기 3</label>
-            <input type="text" class="form-control" name="choice3">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">보기 4</label>
-            <input type="text" class="form-control" name="choice4">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">보기 5</label>
-            <input type="text" class="form-control" name="choice5">
-        </div>
+            <!-- 지문 -->
+            <div class="mb-3">
+                <label for="viewContent" class="form-label">문제 지문</label>
+                <textarea id="viewContent" name="viewContent" class="form-control" rows="5" placeholder="<p>문제 지문을 입력하세요.</p>"></textarea>
+                <div class="help">HTML 입력 가능. 위험한 스크립트는 백엔드에서 필터링하세요.</div>
+            </div>
 
-        <!-- ✅ 정답 -->
-        <div class="mb-3">
-            <label class="form-label">정답</label>
-            <select class="form-select" name="answer" required>
-                <option value="">정답 선택</option>
-                <option value="1">1번</option>
-                <option value="2">2번</option>
-                <option value="3">3번</option>
-                <option value="4">4번</option>
-                <option value="5">5번</option>
-            </select>
+            <!-- 이미지 업로드 -->
+            <div class="mb-3">
+                <label class="form-label">이미지 업로드</label>
+                <input type="file" id="imageFile" name="imageFile" class="form-control" accept="image/*">
+                <div class="img-wrap mt-2" id="previewWrap" style="display:none;">
+                    <img id="previewImg" class="img-fluid" style="max-height:160px;" alt="미리보기">
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- 보기 -->
+            <h2 class="section-title">선택 문항</h2>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="choice1">보기 1</label>
+                    <input id="choice1" type="text" class="form-control" name="choice1">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="choice2">보기 2</label>
+                    <input id="choice2" type="text" class="form-control" name="choice2">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="choice3">보기 3</label>
+                    <input id="choice3" type="text" class="form-control" name="choice3">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="choice4">보기 4</label>
+                    <input id="choice4" type="text" class="form-control" name="choice4">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="choice5">보기 5</label>
+                    <input id="choice5" type="text" class="form-control" name="choice5">
+                </div>
+                <div class="col-md-6">
+                    <label for="answer" class="form-label">정답</label>
+                    <select id="answer" class="form-select" name="answer" required>
+                        <option value="">정답 선택</option>
+                        <option value="1">1번</option>
+                        <option value="2">2번</option>
+                        <option value="3">3번</option>
+                        <option value="4">4번</option>
+                        <option value="5">5번</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- 분류: 과목/회차/목차 -->
+            <h2 class="section-title">분류 정보</h2>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="subject-select" class="form-label">과목</label>
+                    <select class="form-select" name="subjectId" id="subject-select" required>
+                        <option value="">과목 선택</option>
+                        <option th:each="subject : ${subjects}" th:value="${subject.id}" th:text="${subject.name}"></option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="round-select" class="form-label">회차</label>
+                    <select class="form-select" name="roundId" id="round-select" required>
+                        <option value="">회차 선택</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="unit-select" class="form-label">목차</label>
+                    <select class="form-select" name="unitId" id="unit-select" required>
+                        <option value="">목차 선택</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- (옵션) 문제 유형: types 전달 시 렌더 -->
+            <div class="row g-3 mt-1" th:if="${types != null}">
+                <div class="col-md-4">
+                    <label for="type" class="form-label">문제 유형</label>
+                    <select id="type" name="type" class="form-select">
+                        <option value="">문제 유형 선택</option>
+                        <option th:each="t : ${types}" th:value="${t.name()}" th:text="${t.description}"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 justify-content-end mt-4">
+                <a th:href="@{/problems}" class="btn btn-ghost btn-uniform">목록</a>
+                <a th:href="@{/dashboard}" class="btn btn-sub btn-uniform">대시보드</a>
+                <button type="submit" class="btn btn-main btn-uniform" id="submitBtn">등록하기</button>
+            </div>
+        </form>
+    </section>
+
+    <p class="text-center mt-3 muted" style="font-size:12px">© 공인중개사 기출모아</p>
+</main>
+
+<!-- ===== 모달들 ===== -->
+
+<!-- 알림 모달 -->
+<div class="modal fade" id="modalMsg" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header primary">
+                <h5 class="modal-title">알림</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalMsgText">처리가 완료되었습니다.</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-main btn-uniform" data-bs-dismiss="modal">확인</button>
+            </div>
         </div>
-
-        <!-- ✅ 과목 -->
-        <div class="mb-3">
-            <label class="form-label">과목</label>
-            <select class="form-select" name="subjectId" id="subject-select" required>
-                <option value="">과목 선택</option>
-                <option th:each="subject : ${subjects}" th:value="${subject.id}" th:text="${subject.name}"></option>
-            </select>
-        </div>
-
-
-
-        <!-- ✅ 회차 -->
-        <div class="mb-3">
-            <label class="form-label">회차</label>
-            <select class="form-select" name="roundId" id="round-select" required>
-                <option value="">회차 선택</option>
-            </select>
-        </div>
-
-        <!-- ✅ 목차 -->
-        <div class="mb-3">
-            <label class="form-label">목차</label>
-            <select class="form-select" name="unitId" id="unit-select" required>
-                <option value="">목차 선택</option>
-            </select>
-        </div>
-
-        <!-- ✅ 버튼 -->
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">등록하기</button>
-            <a th:href="@{/dashboard}" class="btn btn-secondary">대시보드</a>
-            <a th:href="@{/problems}" class="btn btn-outline-success">문제 목록</a>
-        </div>
-    </form>
+    </div>
 </div>
 
-<!-- ✅ Axios로 동적 로딩 -->
-<script>
-    document.getElementById('subject-select').addEventListener('change', function() {
-        const subjectId = this.value;
+<!-- 에러 모달 -->
+<div class="modal fade" id="modalError" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header error">
+                <h5 class="modal-title">입력 오류</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalErrorText">필수 항목을 확인해주세요.</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost btn-uniform" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        // 회차 & 목차 초기화
-        const roundSelect = document.getElementById('round-select');
-        const unitSelect = document.getElementById('unit-select');
-        roundSelect.innerHTML = '<option value="">회차 선택</option>';
-        unitSelect.innerHTML = '<option value="">목차 선택</option>';
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-        if (!subjectId) return;
+<!-- 페이지 스크립트 -->
+<script th:inline="javascript">
+    const SERVER_MSG   = /*[[${msg}   ?: '']]*/ '';
+    const SERVER_ERROR = /*[[${error} ?: '']]*/ '';
 
-        // ✅ 회차 불러오기
-        axios.get(`/problems/api/rounds?subjectId=${subjectId}`)
-            .then(response => {
-                const rounds = response.data;
-                const roundSelect = document.getElementById('round-select');
-                roundSelect.innerHTML = '<option value="">회차 선택</option>';
-                rounds.forEach(round => {
-                    roundSelect.innerHTML += `<option value="${round.id}">${round.roundNumber}</option>`;
+    const $  = (s, p=document) => p.querySelector(s);
+
+    function openModal(id, textSel, text){
+        const el = $(id);
+        if (!el) return;
+        if (textSel && text){
+            const t = $(textSel);
+            if (t) t.textContent = text;
+        }
+        bootstrap.Modal.getOrCreateInstance(el).show();
+    }
+
+    if (SERVER_MSG)   openModal('#modalMsg',   '#modalMsgText',   SERVER_MSG);
+    if (SERVER_ERROR) openModal('#modalError', '#modalErrorText', SERVER_ERROR);
+
+    // 이미지 미리보기
+    (function(){
+        const input = $('#imageFile');
+        const wrap  = $('#previewWrap');
+        const img   = $('#previewImg');
+        input?.addEventListener('change', e => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) { if (wrap) wrap.style.display = 'none'; return; }
+            const reader = new FileReader();
+            reader.onload = ev => {
+                if (img) img.src = ev.target.result;
+                if (wrap) wrap.style.display = 'inline-block';
+            };
+            reader.readAsDataURL(file);
+        });
+    })();
+
+    // 과목 선택 → 회차/목차 로딩
+    (function(){
+        const subj = $('#subject-select');
+        const round = $('#round-select');
+        const unit  = $('#unit-select');
+
+        function resetSelect(sel, label){
+            if (!sel) return;
+            sel.innerHTML = `<option value="">${label} 선택</option>`;
+        }
+
+        subj?.addEventListener('change', async function(){
+            const subjectId = this.value;
+            resetSelect(round, '회차');
+            resetSelect(unit, '목차');
+            if (!subjectId) return;
+
+            try{
+                // 회차
+                const r = await axios.get(`/problems/api/rounds`, { params: { subjectId }});
+                resetSelect(round, '회차');
+                (r.data || []).forEach(it => {
+                    const opt = document.createElement('option');
+                    opt.value = it.id;
+                    opt.textContent = it.roundNumber ?? it.name ?? it.id;
+                    round.appendChild(opt);
                 });
-            })
-            .catch(error => console.error('회차 로드 실패:', error.message));
+            }catch(e){
+                openModal('#modalError', '#modalErrorText', '회차 목록을 불러오지 못했습니다.');
+            }
 
-// ✅ 목차 불러오기
-        axios.get(`/problems/api/units?subjectId=${subjectId}`)
-            .then(response => {
-                const units = response.data;
-                const unitSelect = document.getElementById('unit-select');
-                unitSelect.innerHTML = '<option value="">목차 선택</option>';
-                units.forEach(unit => {
-                    unitSelect.innerHTML += `<option value="${unit.id}">${unit.name}</option>`;
+            try{
+                // 목차
+                const u = await axios.get(`/problems/api/units`, { params: { subjectId }});
+                resetSelect(unit, '목차');
+                (u.data || []).forEach(it => {
+                    const opt = document.createElement('option');
+                    opt.value = it.id;
+                    opt.textContent = it.name ?? it.id;
+                    unit.appendChild(opt);
                 });
-            })
-            .catch(error => console.error('목차 로드 실패:', error.message));
-    });
+            }catch(e){
+                openModal('#modalError', '#modalErrorText', '목차 목록을 불러오지 못했습니다.');
+            }
+        });
+    })();
+
+    // 간단 검증 & 제출 중 버튼 잠금
+    (function(){
+        const form = $('#createForm');
+        const btn  = $('#submitBtn');
+
+        form?.addEventListener('submit', (e) => {
+            const title   = $('#title')?.value.trim();
+            const answer  = $('#answer')?.value;
+            const subject = $('#subject-select')?.value;
+            const round   = $('#round-select')?.value;
+            const unit    = $('#unit-select')?.value;
+
+            if (!title || !answer || !subject || !round || !unit) {
+                e.preventDefault();
+                openModal('#modalError', '#modalErrorText', '필수 항목을 모두 입력/선택해주세요.');
+                return;
+            }
+
+            btn?.setAttribute('disabled','disabled');
+            if (btn) btn.textContent = '등록 중…';
+        });
+    })();
 </script>
 </body>
 </html>

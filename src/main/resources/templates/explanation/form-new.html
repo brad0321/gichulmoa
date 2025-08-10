@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>해설 등록</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root{ --color-main:#2F4858; --color-sub:#4F7CAC; --color-point:#F5CD90;
+            --text-main:#2C3E3F; --text-sub:#7A746E; --bg:#F4F3F1; --white:#ffffff;
+            --radius:18px; --shadow:0 10px 24px rgba(47,72,88,.15); }
+        body{ background:var(--bg); color:var(--text-main); font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
+        .page{ max-width: 840px; margin: clamp(20px,5vh,64px) auto; padding: 0 14px; }
+        .card{ border:0; border-radius:var(--radius); box-shadow:var(--shadow); }
+        .btn-main{ background:var(--color-main); border-color:var(--color-main); color:#fff; }
+        .btn-main:hover{ background:#243946; border-color:#243946; }
+    </style>
+</head>
+<body>
+<main class="page">
+    <h1 class="h4 mb-3">해설 등록</h1>
+    <div class="card bg-white p-4">
+
+        <form th:action="@{/explanations/new}" method="post" th:object="${explanation}" id="createForm">
+            <input type="hidden" th:field="*{problemId}">
+            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">제목</label>
+                <input type="text" class="form-control" th:field="*{title}" placeholder="해설 제목" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">내용</label>
+                <textarea class="form-control" th:field="*{content}" rows="10"
+                          placeholder="해설 내용을 입력하세요 (HTML 허용 시 서버에서 sanitize 권장)"></textarea>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a class="btn btn-outline-secondary"
+                   th:href="@{|/explanations/problem/${explanation.problemId}|}">취소</a>
+                <button type="submit" class="btn btn-main">등록</button>
+            </div>
+        </form>
+
+    </div>
+</main>
+</body>
+</html>

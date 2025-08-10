@@ -13,6 +13,18 @@ spring:
       properties:
         hibernate.format_sql: true
 
+  thymeleaf:
+    cache: false
+    # 템플릿을 클래스패스가 아닌 실제 파일 경로에서 바로 읽도록 (수정 즉시 반영)
+    prefix: file:src/main/resources/templates/
+  web:
+    resources:
+      cache:
+        period: 0
+      chain:
+        cache: false
+
+
 server:
   port: 8080
   error:

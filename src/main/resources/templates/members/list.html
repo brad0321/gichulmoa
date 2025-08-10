@@ -1,45 +1,211 @@
+<!-- src/main/resources/templates/members/list.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-    <title>회원 목록</title>
     <meta charset="UTF-8">
+    <title>회원 목록 | 공인중개사 기출모아</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
+
+    <style>
+        :root{
+            --color-main:#2F4858; --color-sub:#4F7CAC; --color-point:#F5CD90;
+            --text-main:#2C3E3F; --text-sub:#7A746E; --bg:#F4F3F1; --white:#ffffff;
+            --radius:18px; --shadow:0 10px 24px rgba(47,72,88,.15);
+        }
+        body{ background:var(--bg); color:var(--text-main);
+            font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; letter-spacing:.1px; }
+        .page-wrap{ max-width: 1040px; margin: clamp(28px,5vh,72px) auto; padding: 0 14px; }
+
+        .brand{ text-align:center; margin-bottom:18px; }
+        .brand img{ height:56px; margin-bottom:8px; }
+        .brand .title{ font-weight:800; font-size:22px; }
+
+        .card-box{ border:0; background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; }
+        .card-head{ display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:12px; }
+        .card-title{ margin:0; color:var(--color-main); font-weight:800; font-size:18px; }
+
+        .btn-uniform{ padding:10px 14px; min-height:44px; border-radius:12px; font-weight:700; font-size:1rem; }
+        .btn-main{ background:var(--color-main); border-color:var(--color-main); color:#fff; }
+        .btn-main:hover{ background:#243946; border-color:#243946; }
+        .btn-sub{ background:var(--color-sub); border-color:var(--color-sub); color:#fff; }
+        .btn-sub:hover{ background:#426d96; border-color:#426d96; }
+        .btn-ghost{ border:1px solid #c9c4bd; background:transparent; color: var(--text-main); }
+        .btn-ghost:hover{ background:#f0efec; }
+        .btn-danger-soft{ border:1px solid #f3c9c9; background:#fff5f5; color:#a33a3a; }
+        .btn-danger-soft:hover{ background:#ffecec; }
+
+        .table thead th{ font-weight:800; }
+        .muted{ color:var(--text-sub); }
+
+        /* 모달 헤더 */
+        .modal-header.primary{ background:var(--color-main); color:#fff; }
+        .modal-header.error{ background:#a33a3a; color:#fff; }
+    </style>
 </head>
 <body>
-<div class="container mt-5">
-    <h1 class="mb-4 text-center">회원 목록</h1>
 
-    <table class="table table-bordered text-center align-middle">
-        <thead class="table-light">
-        <tr>
-            <th>ID</th>
-            <th>아이디</th>
-            <th>이메일</th>
-            <th>액션</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="member : ${members}">
-            <td th:text="${member.id}"></td>
-            <td th:text="${member.username}"></td>
-            <td th:text="${member.email}"></td>
-            <td>
-                <div class="d-flex justify-content-center gap-2">
-                    <a th:href="@{'/members/' + ${member.id}}" class="btn btn-outline-primary btn-sm">상세</a>
-                    <a th:href="@{'/members/' + ${member.id} + '/edit'}" class="btn btn-outline-secondary btn-sm">수정</a>
-                    <form th:action="@{'/members/' + ${member.id} + '/delete'}" method="post">
-                        <button type="submit" class="btn btn-outline-danger btn-sm">삭제</button>
-                    </form>
-                </div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+<main class="page-wrap">
+    <!-- 브랜드 -->
+    <div class="brand">
+        <img src="/img/brandLogo.png" alt="공인중개사 기출모아 로고">
+        <div class="title">공인중개사 기출모아</div>
+        <div class="muted" style="font-size:12px">회원 관리</div>
+    </div>
 
-    <div class="text-center mt-4">
-        <a th:href="@{/members/new}" class="btn btn-success">+ 회원 등록</a>
+    <!-- 목록 카드 -->
+    <section class="card-box">
+        <div class="card-head">
+            <h2 class="card-title">
+                회원 목록
+                <span class="badge text-bg-light ms-2" th:text="${#lists.size(members)} + '명'">0명</span>
+            </h2>
+            <a th:href="@{/members/new}" class="btn btn-sub btn-uniform">+ 회원 등록</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th style="width:90px;">ID</th>
+                    <th>아이디</th>
+                    <th>이메일</th>
+                    <th style="width:280px;">액션</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="member : ${members}">
+                    <td th:text="${member.id}">1</td>
+                    <td th:text="${member.username}">sample</td>
+                    <td th:text="${member.email}">sample@example.com</td>
+                    <td>
+                        <div class="d-flex justify-content-center flex-wrap gap-2">
+                            <a class="btn btn-outline-primary btn-sm"
+                               th:href="@{|/members/${member.id}|}">상세</a>
+
+                            <a class="btn btn-outline-secondary btn-sm"
+                               th:href="@{|/members/${member.id}/edit|}">수정</a>
+
+                            <!-- 삭제: 확인 모달에서 최종 제출 -->
+                            <form th:action="@{|/members/${member.id}/delete|}" method="post"
+                                  th:id="'delForm-' + ${member.id}" class="m-0">
+                                <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="button"
+                                        class="btn btn-outline-danger btn-sm btn-open-delete"
+                                        th:attr="data-form-id=${'delForm-' + member.id}, data-username=${member.username}">
+                                    삭제
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- empty case -->
+                <tr th:if="${#lists.isEmpty(members)}">
+                    <td colspan="4" class="text-center muted py-4">등록된 회원이 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <p class="text-center mt-3 muted" style="font-size:12px">© 공인중개사 기출모아</p>
+</main>
+
+<!-- =================== 모달들 =================== -->
+
+<!-- 삭제 확인 모달 -->
+<div class="modal fade" id="modalConfirmDelete" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header" style="background:linear-gradient(135deg,var(--color-main),var(--color-sub)); color:#fff;">
+                <h5 class="modal-title">회원 삭제</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div>정말로 삭제하시겠습니까?</div>
+                <div class="small muted mt-1">계정: <span id="delTargetName" class="fw-bold">-</span></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost btn-uniform" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-danger btn-uniform" id="confirmDeleteBtn">삭제</button>
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- 일반 알림 모달 -->
+<div class="modal fade" id="modalMsg" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header primary">
+                <h5 class="modal-title">알림</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalMsgText">처리가 완료되었습니다.</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-main btn-uniform" data-bs-dismiss="modal">확인</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 에러 모달 -->
+<div class="modal fade" id="modalError" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header error">
+                <h5 class="modal-title">오류</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalErrorText">오류가 발생했습니다. 다시 시도해주세요.</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost btn-uniform" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- 페이지 스크립트 -->
+<script th:inline="javascript">
+    // 서버 메시지 수신 시 자동 모달 오픈 (선택)
+    const SERVER_MSG   = /*[[${msg}   ?: '']]*/ '';
+    const SERVER_ERROR = /*[[${error} ?: '']]*/ '';
+
+    const $ = (s, p=document) => p.querySelector(s);
+    const $$ = (s, p=document) => Array.from(p.querySelectorAll(s));
+
+    function openModal(id){ const el = $(id); if (!el) return; bootstrap.Modal.getOrCreateInstance(el).show(); }
+
+    if (SERVER_MSG)   { const t=$('#modalMsgText'); if (t) t.textContent = SERVER_MSG; openModal('#modalMsg'); }
+    if (SERVER_ERROR) { const t=$('#modalErrorText'); if (t) t.textContent = SERVER_ERROR; openModal('#modalError'); }
+
+    // 삭제 모달 로직
+    (function(){
+        let targetFormId = null;
+
+        $$('.btn-open-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                targetFormId = btn.getAttribute('data-form-id');
+                const name = btn.getAttribute('data-username') || '-';
+                const nameEl = $('#delTargetName');
+                if (nameEl) nameEl.textContent = name;
+                openModal('#modalConfirmDelete');
+            });
+        });
+
+        const confirmBtn = $('#confirmDeleteBtn');
+        confirmBtn?.addEventListener('click', () => {
+            if (!targetFormId) return;
+            const form = document.getElementById(targetFormId);
+            if (form) form.submit();
+        });
+    })();
+</script>
 </body>
 </html>

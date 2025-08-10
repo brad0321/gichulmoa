@@ -22,7 +22,8 @@ public record ProblemResponse(
         Long unitId,
         String unitName,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        String explanation
 ) {
     public static ProblemResponse fromEntity(Problem problem) {
         return new ProblemResponse(
@@ -43,7 +44,8 @@ public record ProblemResponse(
                 problem.getUnit() != null ? problem.getUnit().getId() : null,
                 problem.getUnit() != null ? problem.getUnit().getName() : null,
                 problem.getCreatedAt(),
-                problem.getUpdatedAt()
+                problem.getUpdatedAt(),
+                problem.getExplanation()
         );
     }
 }

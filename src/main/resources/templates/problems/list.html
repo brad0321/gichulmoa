@@ -1,95 +1,258 @@
+<!-- src/main/resources/templates/problems/list.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>문제 목록</title>
+    <title>문제 목록 | 공인중개사 기출모아</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
+        :root{
+            --color-main:#2F4858; --color-sub:#4F7CAC; --color-point:#F5CD90;
+            --text-main:#2C3E3F; --text-sub:#7A746E; --bg:#F4F3F1; --white:#ffffff;
+            --radius:18px; --shadow:0 10px 24px rgba(47,72,88,.15);
         }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 6px;
-            text-align: center;
+        body{ background:var(--bg); color:var(--text-main);
+            font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; letter-spacing:.1px; }
+        .page-wrap{ max-width: 1200px; margin: clamp(24px,5vh,72px) auto; padding: 0 14px; }
+
+        /* 맨 위 고정 액션 */
+        .top-actions{
+            position: sticky; top: 8px; z-index: 20;
+            display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;
         }
-        td.view-content {
-            max-width: 200px;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
+        .top-actions .btn{ box-shadow: 0 6px 16px rgba(47,72,88,.12); }
+
+        .brand{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+        .brand img{ height:36px; }
+        .brand .title{ font-weight:900; font-size:18px; }
+        .muted{ color:var(--text-sub); }
+
+        .card-box{ border:0; background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; }
+        .card-head{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:12px; }
+        .card-title{ margin:0; color:var(--color-main); font-weight:800; font-size:18px; }
+
+        .btn-uniform{ padding:10px 14px; min-height:44px; border-radius:12px; font-weight:700; font-size:1rem; }
+        .btn-sub{ background:var(--color-sub); border-color:var(--color-sub); color:#fff; }
+        .btn-sub:hover{ background:#426d96; border-color:#426d96; }
+
+        /* 리스트 압축 + 스크롤 */
+        .table-scroll{ max-height: 68vh; overflow:auto; border-radius:12px; }
+        .table-sticky thead th{ position: sticky; top: 0; z-index: 1; background: #f8f9fa; }
+        .table thead th{ font-weight:800; }
+        .truncate{ max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .truncate-sm{ max-width: 96px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* 아이콘 액션 */
+        .actions{ display:flex; gap:8px; justify-content:center; align-items:center; white-space:nowrap; }
+        .btn-icon{ width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; }
+        .btn-icon.view{ border:1px solid #c9c4bd; background:#fff; color:#2F4858; }
+        .btn-icon.view:hover{ background:#f0efec; }
+        .btn-icon.edit{ border:1px solid #c9c4bd; background:#fff; color:#4F7CAC; }
+        .btn-icon.edit:hover{ background:#eef3f9; }
+        .btn-icon.del{ border:1px solid #f3c9c9; background:#fff5f5; color:#a33a3a; }
+        .btn-icon.del:hover{ background:#ffecec; }
+
+        /* 모바일 FAB */
+        .fab{
+            position: fixed; right: 16px; bottom: 20px; z-index: 50;
+            width:56px; height:56px; border-radius:50%;
+            display:none; align-items:center; justify-content:center;
+            background: var(--color-sub); color:#fff; box-shadow:0 10px 24px rgba(47,72,88,.25);
+            text-decoration:none;
         }
-        td.choice {
-            max-width: 80px;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
-        .btn-group {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-        }
-        .btn-group a {
-            padding: 4px 8px;
-            font-size: 13px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #f2f2f2;
-            text-decoration: none;
-            color: #333;
-        }
-        .btn-group a:hover {
-            background-color: #ddd;
+        .fab:hover{ background:#426d96; color:#fff; }
+        @media (max-width: 768px){
+            .top-actions{ display:none; }
+            .fab{ display:flex; }
         }
     </style>
 </head>
 <body>
-<h1>문제 목록</h1>
-<a th:href="@{/problems/new}" class="btn btn-outline-success">문제등록</a>
-<table>
-    <thead>
-    <tr>
-        <th>제목</th>
-        <th>보기항목(텍스트)</th>
-        <th>선택1</th>
-        <th>선택2</th>ㅁ
-        <th>선택3</th>
-        <th>선택4</th>
-        <th>선택5</th>
-        <th>작업</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="problem : ${problems}">
-        <!-- 제목: 앞 2단어 -->
-        <td th:text="${#strings.arrayJoin(#strings.listSplit(problem.title, ' ').subList(0, T(java.lang.Math).min(2, #strings.listSplit(problem.title, ' ').size())).toArray(), ' ')}">제목</td>
 
-        <!-- 보기 항목: 앞 2단어 -->
-        <td class="view-content"
-            th:text="${#strings.arrayJoin(#strings.listSplit(problem.viewContent, ' ').subList(0, T(java.lang.Math).min(2, #strings.listSplit(problem.viewContent, ' ').size())).toArray(), ' ')}">
-            보기항목
-        </td>
+<main class="page-wrap">
+    <!-- 맨 위 고정: 문제등록 (관리자만) -->
+    <div class="top-actions">
+        <a class="btn btn-sub btn-uniform"
+           th:if="${loginUser != null and loginUser.role.name() == 'ADMIN'}"
+           th:href="@{/problems/new}">
+            <i class="bi bi-plus-lg me-1"></i>문제등록
+        </a>
+    </div>
 
-        <!-- 선택 1~5: 앞 1단어 (짧게) -->
-        <td class="choice" th:text="${#strings.listSplit(problem.choice1, ' ').get(0)}">선택1</td>
-        <td class="choice" th:text="${#strings.listSplit(problem.choice2, ' ').get(0)}">선택2</td>
-        <td class="choice" th:text="${#strings.listSplit(problem.choice3, ' ').get(0)}">선택3</td>
-        <td class="choice" th:text="${#strings.listSplit(problem.choice4, ' ').get(0)}">선택4</td>
-        <td class="choice" th:text="${#strings.listSplit(problem.choice5, ' ').get(0)}">선택5</td>
+    <!-- 헤더 -->
+    <div class="brand">
+        <img src="/img/brandLogo.png" alt="로고">
+        <div class="title">공인중개사 기출모아</div>
+        <div class="muted">문제 목록</div>
+    </div>
 
-        <!-- 버튼: 상세, 수정, 삭제 -->
-        <td class="btn-group">
-            <a th:href="@{/problems/{id}(id=${problem.id})}">상세</a>
-            <a th:href="@{/problems/{id}/edit(id=${problem.id})}">수정</a>
-            <form th:action="@{/problems/{id}/delete(id=${problem.id})}" method="post" style="display:inline;">
-                <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
+    <!-- 목록 카드 -->
+    <section class="card-box">
+        <div class="card-head">
+            <h2 class="card-title">
+                전체 문제
+                <span class="badge text-bg-light ms-2" th:text="${#lists.size(problems)} + '건'">0건</span>
+            </h2>
 
+            <a class="btn btn-sub btn-sm" th:href="@{/problems/new}">
+                <i class="bi bi-plus-lg me-1"></i>문제등록
+            </a>
+
+        </div>
+
+        <div class="table-scroll">
+            <table class="table table-bordered table-sm align-middle text-center mb-0 table-sticky">
+                <thead class="table-light">
+                <tr>
+                    <th style="width:72px;">ID</th>
+                    <th>제목</th>
+                    <th>지문</th>
+                    <th>선택1</th>
+                    <th>선택2</th>
+                    <th>선택3</th>
+                    <th>선택4</th>
+                    <th>선택5</th>
+                    <th style="width:140px;">작업</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="problem : ${problems}">
+                    <td th:text="${problem.id}">1</td>
+
+                    <td class="truncate" th:title="${problem.title}"       th:text="${problem.title       ?: ''}">제목</td>
+                    <td class="truncate" th:title="${problem.viewContent}" th:text="${problem.viewContent ?: ''}">지문</td>
+                    <td class="truncate-sm" th:title="${problem.choice1}"  th:text="${problem.choice1    ?: ''}">선택1</td>
+                    <td class="truncate-sm" th:title="${problem.choice2}"  th:text="${problem.choice2    ?: ''}">선택2</td>
+                    <td class="truncate-sm" th:title="${problem.choice3}"  th:text="${problem.choice3    ?: ''}">선택3</td>
+                    <td class="truncate-sm" th:title="${problem.choice4}"  th:text="${problem.choice4    ?: ''}">선택4</td>
+                    <td class="truncate-sm" th:title="${problem.choice5}"  th:text="${problem.choice5    ?: ''}">선택5</td>
+
+                    <td>
+                        <div class="actions">
+                            <a class="btn btn-icon view" th:href="@{|/problems/${problem.id}|}" title="상세" data-bs-toggle="tooltip">
+                                <i class="bi bi-box-arrow-up-right"></i>
+                                <span class="visually-hidden">상세</span>
+                            </a>
+                            <a class="btn btn-icon edit" th:href="@{|/problems/${problem.id}/edit|}" title="수정" data-bs-toggle="tooltip">
+                                <i class="bi bi-pencil"></i>
+                                <span class="visually-hidden">수정</span>
+                            </a>
+                            <form th:action="@{|/problems/${problem.id}/delete|}" method="post"
+                                  th:id="'delForm-' + ${problem.id}" class="m-0 p-0">
+                                <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="button" class="btn btn-icon del btn-open-delete"
+                                        th:attr="data-form-id=${'delForm-' + problem.id}, data-title=${problem.title}"
+                                        title="삭제" data-bs-toggle="tooltip">
+                                    <i class="bi bi-trash"></i>
+                                    <span class="visually-hidden">삭제</span>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(problems)}">
+                    <td colspan="9" class="text-center muted py-4">등록된 문제가 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <p class="text-center mt-3 muted" style="font-size:12px">© 공인중개사 기출모아</p>
+</main>
+
+<!-- 모바일 FAB (관리자만) -->
+<a class="fab" th:if="${loginUser != null and loginUser.role.name() == 'ADMIN'}"
+   th:href="@{/problems/new}" title="문제등록" data-bs-toggle="tooltip">
+    <i class="bi bi-plus-lg"></i>
+</a>
+
+<!-- 모달들/JS는 이전과 동일 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+    const SERVER_MSG   = /*[[${msg}   ?: '']]*/ '';
+    const SERVER_ERROR = /*[[${error} ?: '']]*/ '';
+    const $  = (s, p=document) => p.querySelector(s);
+    const $$ = (s, p=document) => Array.from(p.querySelectorAll(s));
+    function openModal(id){ const el = $(id); if (!el) return; bootstrap.Modal.getOrCreateInstance(el).show(); }
+    if (SERVER_MSG)   { const t=$('#modalMsgText');   if (t) t.textContent = SERVER_MSG;   openModal('#modalMsg'); }
+    if (SERVER_ERROR) { const t=$('#modalErrorText'); if (t) t.textContent = SERVER_ERROR; openModal('#modalError'); }
+
+    (function(){
+        let targetFormId = null;
+        $$('.btn-open-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                targetFormId = btn.getAttribute('data-form-id');
+                const title = btn.getAttribute('data-title') || '-';
+                const nameEl = document.getElementById('delTargetTitle');
+                if (nameEl) nameEl.textContent = title;
+                openModal('#modalConfirmDelete');
+            });
+        });
+        document.getElementById('confirmDeleteBtn')?.addEventListener('click', () => {
+            if (!targetFormId) return;
+            document.getElementById(targetFormId)?.submit();
+        });
+        // 툴팁
+        [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).forEach(el => new bootstrap.Tooltip(el));
+    })();
+</script>
+
+<!-- 삭제 확인 모달 -->
+<div class="modal fade" id="modalConfirmDelete" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header" style="background:linear-gradient(135deg,var(--color-main),var(--color-sub)); color:#fff;">
+                <h5 class="modal-title">문제 삭제</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div>정말로 이 문제를 삭제하시겠습니까?</div>
+                <div class="small muted mt-1">제목: <span id="delTargetTitle" class="fw-bold">-</span></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost btn-uniform" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-danger btn-uniform" id="confirmDeleteBtn">삭제</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 알림/오류 모달 (생략: 기존 동일) -->
+<div class="modal fade" id="modalMsg" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header" style="background:var(--color-main); color:#fff;">
+                <h5 class="modal-title">알림</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalMsgText">처리가 완료되었습니다.</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-main btn-uniform" data-bs-dismiss="modal">확인</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalError" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header" style="background:#a33a3a; color:#fff;">
+                <h5 class="modal-title">오류</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalErrorText">오류가 발생했습니다. 다시 시도해주세요.</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost btn-uniform" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

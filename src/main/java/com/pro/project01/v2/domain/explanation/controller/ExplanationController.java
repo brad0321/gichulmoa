@@ -13,7 +13,7 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/v2/explanations")
+@RequestMapping("/explanations")
 public class ExplanationController {
 
     private final ExplanationService explanationService;
@@ -24,7 +24,7 @@ public class ExplanationController {
         List<ExplanationResponse> explanations = explanationService.findByProblemId(problemId);
         model.addAttribute("explanations", explanations);
         model.addAttribute("problemId", problemId);
-        return "v2/explanations/list";
+        return "explanations/list";
     }
 
     // ✅ 해설 등록 폼
@@ -32,14 +32,14 @@ public class ExplanationController {
     public String showCreateForm(@RequestParam Long problemId, Model model) {
         ExplanationCreateRequest request = new ExplanationCreateRequest(problemId, null, null);
         model.addAttribute("explanation", request);
-        return "v2/explanations/form-new";
+        return "explanations/form-new";
     }
 
     // ✅ 해설 등록 처리
     @PostMapping("/new")
     public String create(@ModelAttribute ExplanationCreateRequest request) {
         explanationService.create(request);
-        return "redirect:/v2/explanations/problem/" + request.problemId();
+        return "redirect:/explanations/problem/" + request.problemId();
     }
 
     // ✅ 해설 수정 폼
@@ -47,7 +47,7 @@ public class ExplanationController {
     public String editForm(@PathVariable Long id, Model model) {
         ExplanationResponse explanation = explanationService.findById(id);
         model.addAttribute("explanation", explanation);
-        return "v2/explanations/form-edit";
+        return "explanations/form-edit";
     }
 
     // ✅ 해설 수정 처리
@@ -56,7 +56,7 @@ public class ExplanationController {
                          @ModelAttribute ExplanationUpdateRequest request,
                          @RequestParam Long problemId) {
         explanationService.update(id, request);
-        return "redirect:/v2/explanations/problem/" + problemId;
+        return "redirect:/explanations/problem/" + problemId;
     }
 
     // ✅ 해설 삭제
@@ -64,6 +64,6 @@ public class ExplanationController {
     public String delete(@PathVariable Long id,
                          @RequestParam Long problemId) {
         explanationService.delete(id);
-        return "redirect:/v2/explanations/problem/" + problemId;
+        return "redirect:/explanations/problem/" + problemId;
     }
 }

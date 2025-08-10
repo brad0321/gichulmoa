@@ -1,5 +1,7 @@
 package com.pro.project01.v2.domain.user.controller;
 
+import com.pro.project01.v2.domain.user.dto.UserResponse;
+import com.pro.project01.v2.global.session.GuestSessionUser;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -15,24 +17,34 @@ public class DashboardController {
 
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
-        // ✅ 회원(UserResponse) 또는 게스트(GuestSessionUser) 모두 허용
         Object principal = session.getAttribute("loginUser");
-        if (principal == null) {
-            return "redirect:/login";
+        if (principal == null) return "redirect:/login";
+
+        model.addAttribute("loginUser", principal);
+
+        boolean isGuest;
+        String displayName;
+
+        if (principal instanceof UserResponse user) {
+            isGuest = false;
+            displayName = user.username();
+        } else if (principal instanceof GuestSessionUser guest) {
+            isGuest = true;
+            displayName = guest.getUsername(); // ✅ 필드명에 맞춰 변경
+        } else {
+            isGuest = true;
+            displayName = "게스트";
         }
-        model.addAttribute("loginUser", principal); // 캐스팅 금지
 
-        // ✅ 시험일: 2025-10-25 09:00 (음수 방지)
+        model.addAttribute("isGuest", isGuest);
+        model.addAttribute("displayName", displayName);
+
+        // 시험일: 2025-10-25 09:30
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime examDate = LocalDateTime.of(2025, 10, 25, 9, 0);
-
-        Duration duration = Duration.between(now, examDate);
-        long totalSecs = Math.max(0, duration.getSeconds()); // 음수 방지
-        long daysLeft  = totalSecs / 86_400;
-        long hoursLeft = (totalSecs % 86_400) / 3_600;
-
-        model.addAttribute("daysLeft", daysLeft);
-        model.addAttribute("hoursLeft", hoursLeft);
+        LocalDateTime examDate = LocalDateTime.of(2025, 10, 25, 9, 30);
+        long totalSecs = Math.max(0, Duration.between(now, examDate).getSeconds());
+        model.addAttribute("daysLeft",  totalSecs / 86_400);
+        model.addAttribute("hoursLeft", (totalSecs % 86_400) / 3_600);
 
         return "dashboard";
     }
