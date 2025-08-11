@@ -27,19 +27,18 @@ public class ExplanationController {
         return "explanations/list";
     }
 
-    // ✅ 해설 등록 폼
-    @GetMapping("/new")
-    public String showCreateForm(@RequestParam Long problemId, Model model) {
-        ExplanationCreateRequest request = new ExplanationCreateRequest(problemId, null, null);
-        model.addAttribute("explanation", request);
-        return "explanations/form-new";
+    // ✅ 해설 작성 폼
+    @GetMapping("/new/{problemId}")
+    public String createForm(@PathVariable Long problemId, Model model) {
+        model.addAttribute("problemId", problemId);
+        return "explanations/create";
     }
 
-    // ✅ 해설 등록 처리
-    @PostMapping("/new")
+    // ✅ 해설 저장
+    @PostMapping
     public String create(@ModelAttribute ExplanationCreateRequest request) {
         explanationService.create(request);
-        return "redirect:/explanations/problem/" + request.problemId();
+        return "redirect:/explanations/problem/" + request.getProblemId();
     }
 
     // ✅ 해설 수정 폼
@@ -47,22 +46,19 @@ public class ExplanationController {
     public String editForm(@PathVariable Long id, Model model) {
         ExplanationResponse explanation = explanationService.findById(id);
         model.addAttribute("explanation", explanation);
-        return "explanations/form-edit";
+        return "explanations/edit";
     }
 
-    // ✅ 해설 수정 처리
-    @PostMapping("/{id}/edit")
-    public String update(@PathVariable Long id,
-                         @ModelAttribute ExplanationUpdateRequest request,
-                         @RequestParam Long problemId) {
+    // ✅ 해설 수정
+    @PostMapping("/{id}")
+    public String update(@PathVariable Long id, @ModelAttribute ExplanationUpdateRequest request) {
         explanationService.update(id, request);
-        return "redirect:/explanations/problem/" + problemId;
+        return "redirect:/explanations/problem/" + request.getProblemId();
     }
 
     // ✅ 해설 삭제
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Long id,
-                         @RequestParam Long problemId) {
+    public String delete(@PathVariable Long id, @RequestParam Long problemId) {
         explanationService.delete(id);
         return "redirect:/explanations/problem/" + problemId;
     }

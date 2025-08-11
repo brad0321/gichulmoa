@@ -112,7 +112,7 @@
             <a class="sb-link locked-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal" th:if="${isGuest}">통계</a>
 
             <!-- 회원 전용 (실제 링크) -->
-            <a class="sb-link" th:href="@{/exams}"      th:if="${!isGuest}">회차별 시험</a>
+            <a class="sb-link" th:href="@{/problems/play}" th:if="${!isGuest}">회차별 시험</a>
             <a class="sb-link" th:href="@{/wrong-note}" th:if="${!isGuest}">오답노트</a>
             <a class="sb-link" th:href="@{/stats}"      th:if="${!isGuest}">통계</a>
 

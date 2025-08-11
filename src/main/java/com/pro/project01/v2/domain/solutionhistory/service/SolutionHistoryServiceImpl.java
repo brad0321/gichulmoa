@@ -49,14 +49,12 @@ public class SolutionHistoryServiceImpl implements SolutionHistoryService {
 
     @Override
     public List<SolutionHistoryResponse> findByUser(Long userId) {
-        return historyRepository.findByUserId(userId)
-                .stream().map(this::toResponse).collect(toList());
+        return historyRepository.findByUserId(userId);
     }
 
     @Override
     public List<SolutionHistoryResponse> findByProblem(Long problemId) {
-        return historyRepository.findByProblemId(problemId)
-                .stream().map(this::toResponse).collect(toList());
+        return historyRepository.findByProblemId(problemId);
     }
 
     @Override

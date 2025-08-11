@@ -7,16 +7,16 @@ import com.pro.project01.v2.domain.scorestat.dto.ScoreStatUpdateRequest;
 import java.util.List;
 
 public interface ScoreStatService {
-
-    Long create(ScoreStatCreateRequest request);
-
-    void update(Long id, ScoreStatUpdateRequest request);
-
+    // 대시보드/관리용 조회
+    List<ScoreStatResponse> findAll();
+    List<ScoreStatResponse> findByUserId(Long userId);
     ScoreStatResponse findById(Long id);
 
-    List<ScoreStatResponse> findByUserId(Long userId);
-
-    List<ScoreStatResponse> findAll();
-
+    // 생성/수정/삭제
+    void create(ScoreStatCreateRequest request);
+    void update(Long id, ScoreStatUpdateRequest request);
     void delete(Long id);
+
+    // 즉답 기록(문제 풀이 시 매 제출마다 호출)
+    void record(Long userId, Long subjectId, Long roundId, boolean correct);
 }

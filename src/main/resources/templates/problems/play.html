@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>회차별 시험 | 공인중개사 기출모아</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/favicon.ico">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --color-main:#2F4858; --color-sub:#4F7CAC; --color-point:#F5CD90;
+      --text-main:#2C3E3F; --text-sub:#7A746E; --bg:#F4F3F1; --white:#fff;
+      --radius-lg:20px; --radius-md:14px;
+      --shadow-sm:0 6px 18px rgba(47,72,88,.10); --shadow-xs:0 3px 10px rgba(47,72,88,.08);
+      --maxw:1100px;
+    }
+    html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--text-main);font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;letter-spacing:.2px}
+    .wrap{max-width:var(--maxw); margin:18px auto; padding:0 12px}
+    .cardx{background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:20px}
+    .btn-main{background:var(--color-main);color:#fff;border:none}.btn-main:hover{filter:brightness(.95)}
+    .btn-sub{color:var(--color-sub);border:1.5px solid var(--color-sub);background:transparent}.btn-sub:hover{background:rgba(79,124,172,.08)}
+    .badge-pill{border-radius:999px;padding:6px 10px;font-weight:800}
+    .timer{display:flex;align-items:center;gap:10px}
+    .timer .time{font-weight:900;font-size:clamp(20px,4vw,28px);color:var(--color-main)}
+    .progress{height:10px}
+    .qbox{background:#fff;border:1px solid #e5e7ea;border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow-xs)}
+    #choices .list-group-item{border:1px solid #e6eaee;border-radius:14px;margin-bottom:10px;padding:10px 12px}
+    .form-check.custom-radio .form-check-input{display:none}
+    .form-check.custom-radio .form-check-label{position:relative;padding-left:40px;cursor:pointer;width:100%}
+    .form-check.custom-radio .form-check-label:before{content:attr(data-number);position:absolute;left:0;top:50%;transform:translateY(-50%);width:28px;height:28px;border:2px solid var(--color-sub);border-radius:50%;text-align:center;line-height:24px;font-weight:800;color:var(--color-sub);background:#fff}
+    .form-check.custom-radio .form-check-input:checked + .form-check-label:before{background:var(--color-main);color:#fff;border-color:var(--color-main)}
+    .grid{display:grid; gap:14px; grid-template-columns: 260px 1fr}
+    @media (max-width:900px){ .grid{ grid-template-columns: 1fr } }
+    .sheet{background:#fff;border-radius:18px;border:1px solid #e6e9ed;padding:14px}
+    .sheet .title{font-weight:900;color:var(--color-main)}
+    .nums{display:grid; grid-template-columns: repeat(5,1fr); gap:8px; margin-top:10px}
+    .nums button{border:1px solid #d9dde2; background:#fff; border-radius:10px; padding:8px 0; font-weight:800}
+    .nums button.marked{background:#eef3f9;border-color:#cfd9e7}
+    .nums button.answered{background:#2F4858;color:#fff;border-color:#2F4858}
+    .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <!-- 시작 카드 -->
+  <section class="cardx" id="start-card">
+    <h3 class="mb-3" style="font-weight:900;color:var(--color-main)">회차별 시험 시작</h3>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">과목</label>
+        <select class="form-select" id="exam-subject"></select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">회차</label>
+        <select class="form-select" id="exam-round"></select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">시간제한(분)</label>
+        <input type="number" class="form-control" id="exam-limit" placeholder="예: 80" min="10" max="180">
+        <div class="form-text">비워두면 서버 기본값 사용</div>
+      </div>
+    </div>
+    <div class="d-flex justify-content-end mt-3">
+      <button class="btn btn-main" id="start-exam-btn">시험 시작</button>
+    </div>
+  </section>
+
+  <!-- 시험 화면 -->
+  <section id="exam-card" class="grid" style="display:none;">
+    <!-- 좌: 네비/타이머 -->
+    <aside class="sheet">
+      <div class="title mb-2">시험 진행</div>
+      <div class="timer mb-2">
+        <span class="badge-pill" style="background:var(--color-point);color:#4d3a16">남은시간</span>
+        <span class="time" id="time-remaining">00:00</span>
+      </div>
+      <div class="progress mb-2">
+        <div class="progress-bar" id="time-progress" role="progressbar" style="width:100%"></div>
+      </div>
+      <div class="toolbar mb-2">
+        <button class="btn btn-sub btn-sm" id="mark-btn">표시</button>
+        <button class="btn btn-ghost btn-sm" id="clear-btn">선택 지우기</button>
+      </div>
+      <div class="nums" id="number-grid"></div>
+      <div class="d-grid gap-2 mt-3">
+        <button class="btn btn-main" id="submit-btn">제출하기</button>
+      </div>
+    </aside>
+
+    <!-- 우: 문제 -->
+    <main>
+      <div class="qbox mb-2">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="badge bg-light text-dark fw-bold" id="q-position">1 / 0</div>
+          <div class="fw-bold" id="round-label"></div>
+        </div>
+        <h5 class="mt-2" id="q-title"></h5>
+        <div id="q-stem" class="mb-3"></div>
+        <ul class="list-group" id="choices"></ul>
+      </div>
+      <div class="d-flex justify-content-between">
+        <button class="btn btn-sub" id="prev-q">이전</button>
+        <button class="btn btn-sub" id="next-q">다음</button>
+      </div>
+    </main>
+  </section>
+</div>
+
+<!-- 제출 결과 모달 -->
+<div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content" style="border-radius:16px;">
+      <div class="modal-header" style="background:var(--color-main);color:#fff;">
+        <h5 class="modal-title">시험 결과</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex gap-3 align-items-end flex-wrap mb-3">
+          <div class="display-5 fw-bold" id="score-main">0 / 0</div>
+          <div class="badge-pill" style="background:#e9eef3;color:var(--color-main)" id="score-acc">정답률 0%</div>
+          <div class="badge-pill" style="background:var(--color-point);color:#4d3a16" id="time-used">소요시간 00:00</div>
+        </div>
+        <div>
+          <div class="fw-bold mb-2">틀린 문항</div>
+          <div id="wrong-list" class="d-flex flex-wrap gap-2 small"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-secondary" href="/dashboard">대시보드로</a>
+        <button class="btn btn-main" data-bs-dismiss="modal">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ===== states =====
+  let subjects=[], rounds=[], examId=null, problems=[], choiceMap={}, markSet=new Set();
+  let limitMin=null, remainSec=0, timer=null, startedAt=null;
+
+  // ===== init =====
+  document.addEventListener('DOMContentLoaded', async ()=>{
+    await loadSubjects();
+    document.getElementById('exam-subject').addEventListener('change', onSubjectChange);
+    document.getElementById('start-exam-btn').addEventListener('click', startExam);
+    document.getElementById('prev-q').addEventListener('click', ()=>gotoRel(-1));
+    document.getElementById('next-q').addEventListener('click', ()=>gotoRel(1));
+    document.getElementById('submit-btn').addEventListener('click', submitExam);
+    document.getElementById('clear-btn').addEventListener('click', clearChoice);
+    document.getElementById('mark-btn').addEventListener('click', toggleMark);
+  });
+
+  async function loadSubjects(){
+    const res = await axios.get('/problems/api/subjects');
+    subjects = res.data || [];
+    const sel = document.getElementById('exam-subject');
+    sel.innerHTML = '<option value="">과목 선택</option>';
+    subjects.forEach(s=> sel.insertAdjacentHTML('beforeend', `<option value="${s.id}">${s.name}</option>`));
+  }
+  async function onSubjectChange(e){
+    const id = e.target.value;
+    const res = await axios.get('/problems/api/rounds',{ params:{ subjectId:id }});
+    rounds = res.data || [];
+    const rsel = document.getElementById('exam-round');
+    rsel.innerHTML = '<option value="">회차 선택</option>';
+    rounds.sort((a,b)=>a.roundNumber-b.roundNumber)
+            .forEach(r=> rsel.insertAdjacentHTML('beforeend', `<option value="${r.id}">${r.roundNumber||r.name}</option>`));
+  }
+
+  // ===== start exam =====
+  async function startExam(){
+    const subjectId = +document.getElementById('exam-subject').value || null;
+    const roundId   = +document.getElementById('exam-round').value || null;
+    limitMin = +document.getElementById('exam-limit').value || null;
+    if(!subjectId || !roundId){ alert('과목과 회차를 선택하세요.'); return; }
+
+    try{
+      // 서버: timeLimitMinutes는 null이면 기본값 사용
+      const res = await axios.post(`/exams/round/${roundId}/start`, { timeLimitMinutes: limitMin, subjectId });
+      examId   = res.data.examId;
+      problems = res.data.problems || [];
+      limitMin = res.data.timeLimitMinutes;
+      remainSec = limitMin * 60;
+      startedAt = new Date();
+
+      // UI 전환
+      document.getElementById('start-card').style.display='none';
+      document.getElementById('exam-card').style.display='grid';
+
+      // 타이머
+      renderTimer(); timer = setInterval(tick, 1000);
+
+      // 번호 그리드
+      buildNumberGrid(problems.length);
+
+      // 첫 문항
+      goto(0);
+
+      // 라벨
+      const round = rounds.find(r=>r.id===roundId);
+      document.getElementById('round-label').textContent = (round?.roundNumber || round?.name) ? `${round.roundNumber}회차` : '';
+    }catch(e){
+      console.error(e); alert('시험 시작 실패: 로그인 필요 또는 서버 오류');
+    }
+  }
+
+  function buildNumberGrid(n){
+    const g = document.getElementById('number-grid');
+    g.innerHTML=''; choiceMap={}; markSet.clear();
+    for(let i=0;i<n;i++){
+      const btn = document.createElement('button');
+      btn.type='button'; btn.textContent= i+1;
+      btn.addEventListener('click', ()=>goto(i));
+      g.appendChild(btn);
+    }
+  }
+
+  // ===== render question =====
+  function goto(idx){
+    idx = Math.max(0, Math.min(idx, problems.length-1));
+    const p = problems[idx];
+
+    document.getElementById('q-position').textContent = `${idx+1} / ${problems.length}`;
+    document.getElementById('q-title').textContent = p.title || '';
+    document.getElementById('q-stem').innerHTML = (p.viewContent||'') + (p.imageUrl?`<div class="mt-2"><img src="${p.imageUrl}" style="max-width:100%;border-radius:12px"/></div>`:'');
+    const ul = document.getElementById('choices'); ul.innerHTML='';
+
+    (p.choices||[]).forEach((content,i)=>{
+      const no = i+1;
+      const li = document.createElement('li'); li.className='list-group-item';
+      li.innerHTML = `<div class="form-check custom-radio">
+          <input class="form-check-input" type="radio" name="choice" id="c-${idx}-${no}" value="${no}">
+          <label class="form-check-label" for="c-${idx}-${no}" data-number="${no}">
+            <span class="choice-text">${content||''}</span>
+          </label>
+        </div>`;
+      const input=li.querySelector('input');
+      input.addEventListener('change', ()=> saveTemp(idx, no));
+      ul.appendChild(li);
+    });
+
+    // 기존 선택 표시
+    const sel = choiceMap[idx];
+    if(sel){
+      const radio = document.getElementById(`c-${idx}-${sel}`);
+      if(radio) radio.checked = true;
+    }
+
+    // 표시에 따른 버튼 스타일
+    refreshNumberButtons();
+    current = idx;
+  }
+
+  let current = 0;
+  function gotoRel(delta){ goto(current + delta); }
+
+  async function saveTemp(idx, choiceNo){
+    try{
+      choiceMap[idx] = choiceNo;
+      refreshNumberButtons();
+      await axios.post('/exams/save', { examId, problemId: problems[idx].id, choiceNo });
+    }catch(e){ console.log('임시저장 실패(무시 가능)', e); }
+  }
+
+  function clearChoice(){
+    delete choiceMap[current];
+    const radios = document.querySelectorAll('input[name="choice"]');
+    radios.forEach(r=> r.checked=false);
+    refreshNumberButtons();
+  }
+
+  function toggleMark(){
+    if(markSet.has(current)) markSet.delete(current);
+    else markSet.add(current);
+    refreshNumberButtons();
+  }
+
+  function refreshNumberButtons(){
+    const g = document.getElementById('number-grid');
+    [...g.children].forEach((btn, i)=>{
+      btn.classList.toggle('answered', !!choiceMap[i]);
+      btn.classList.toggle('marked', markSet.has(i));
+    });
+  }
+
+  // ===== timer =====
+  function tick(){
+    remainSec = Math.max(0, remainSec-1);
+    renderTimer();
+    if(remainSec<=0){ clearInterval(timer); submitExam(true); }
+  }
+  function renderTimer(){
+    const m = Math.floor(remainSec/60), s = remainSec%60;
+    document.getElementById('time-remaining').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const pct = Math.max(0, Math.min(100, remainSec / (limitMin*60) * 100));
+    document.getElementById('time-progress').style.width = `${pct}%`;
+  }
+
+  // ===== submit =====
+  async function submitExam(auto=false){
+    if(!auto && !confirm('제출 후에는 정답 확인이 가능합니다. 제출할까요?')) return;
+    try{
+      const res = await axios.post('/exams/submit', { examId });
+      // expected: { total, correct, accuracy, timeUsedSec, wrongNumbers: [] }
+      document.getElementById('score-main').textContent = `${res.data.correct} / ${res.data.total}`;
+      document.getElementById('score-acc').textContent  = `정답률 ${res.data.accuracy}%`;
+      document.getElementById('time-used').textContent  = `소요시간 ${formatTime(res.data.timeUsedSec)}`;
+      const wl = document.getElementById('wrong-list'); wl.innerHTML='';
+      (res.data.wrongNumbers||[]).forEach(n=>{
+        const b=document.createElement('span'); b.className='badge bg-danger-subtle text-danger fw-bold'; b.textContent=n;
+        wl.appendChild(b);
+      });
+      new bootstrap.Modal('#resultModal').show();
+    }catch(e){
+      console.error(e); alert('제출 실패');
+    }
+  }
+  function formatTime(sec){ const m=Math.floor(sec/60), s=sec%60; return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+</script>
+</body>
+</html>

@@ -15,7 +15,8 @@ public class Explanation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Integer choiceNo; // 보기 번호
+    // ✅ 보기 번호(1~5)
+    private Integer choiceNo;
 
     @Lob
     private String content;
@@ -23,4 +24,9 @@ public class Explanation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_id", nullable = false)
     private Problem problem;
+
+    // ✅ 내용 수정용 도메인 메서드
+    public void setContent(String content) {
+        this.content = content;
+    }
 }

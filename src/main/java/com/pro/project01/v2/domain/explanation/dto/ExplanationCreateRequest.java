@@ -1,7 +1,12 @@
 package com.pro.project01.v2.domain.explanation.dto;
 
-public record ExplanationCreateRequest(
-        Long problemId,
-        Integer choiceNo,
-        String content
-) {}
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class ExplanationCreateRequest {
+    private Long problemId;
+    private String content;
+    private Integer choiceNo;
+}
