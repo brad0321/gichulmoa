@@ -230,7 +230,11 @@
     let items=[], currentIndex=0, selectedSubject=null, selectedRounds=[], selectedUnits=[];
     let userAnswers=[], checkedStates=[], markMode=null, sessionId=null;
 
-    document.addEventListener("DOMContentLoaded", () => { loadSubjects(); wireBarMirrors(); });
+    document.addEventListener("DOMContentLoaded", () => {
+        initPanelControls();
+        loadSubjects();
+        wireBarMirrors();
+    });
 
     function syncCounts(current,total){
         const a=`${current} / ${total}`;
@@ -310,13 +314,20 @@
     }
 
     /* ===== panels ===== */
-    const subjectDropdownBtn=document.getElementById('subjectDropdown');
-    subjectDropdownBtn.addEventListener('show.bs.dropdown', ()=>{
-        document.getElementById('round-panel').style.display='none';
-        document.getElementById('unit-panel').style.display='none';
-    });
-    document.getElementById('round-selector').addEventListener('click',()=>togglePanel('round-panel','unit-panel'));
-    document.getElementById('unit-selector').addEventListener('click',()=>togglePanel('unit-panel','round-panel'));
+    let subjectDropdownBtn;
+    function initPanelControls(){
+        subjectDropdownBtn=document.getElementById('subjectDropdown');
+        subjectDropdownBtn?.addEventListener('show.bs.dropdown',()=>{
+            document.getElementById('round-panel').style.display='none';
+            document.getElementById('unit-panel').style.display='none';
+        });
+        document.getElementById('round-selector')?.addEventListener('click',()=>togglePanel('round-panel','unit-panel'));
+        document.getElementById('unit-selector')?.addEventListener('click',()=>togglePanel('unit-panel','round-panel'));
+        document.getElementById('round-confirm')?.addEventListener('click',()=>confirmRounds());
+        document.getElementById('round-reset')?.addEventListener('click',()=>resetRounds());
+        document.getElementById('unit-confirm')?.addEventListener('click',()=>confirmUnits());
+        document.getElementById('unit-reset')?.addEventListener('click',()=>resetUnits());
+    }
     function togglePanel(showId, hideId){
         const showEl=document.getElementById(showId), hideEl=document.getElementById(hideId);
         if(hideEl) hideEl.style.display='none';
@@ -344,8 +355,6 @@
         selectedRounds=[]; const label=document.getElementById(scope?`round-selector-${scope}`:'round-selector');
         if(label) label.textContent='회차 선택'; updateQuestionCount();
     }
-    document.getElementById('round-confirm').addEventListener('click',()=>confirmRounds());
-    document.getElementById('round-reset').addEventListener('click',()=>resetRounds());
 
     function confirmUnits(scope=''){
         const boxSel=scope?`#unit-checkboxes-${scope}`:'#unit-checkboxes';
@@ -367,8 +376,6 @@
         selectedUnits=[]; const label=document.getElementById(scope?`unit-selector-${scope}`:'unit-selector');
         if(label) label.textContent='목차 선택'; updateQuestionCount();
     }
-    document.getElementById('unit-confirm').addEventListener('click',()=>confirmUnits());
-    document.getElementById('unit-reset').addEventListener('click',()=>resetUnits());
 
     /* ===== count ===== */
     async function updateQuestionCount(){

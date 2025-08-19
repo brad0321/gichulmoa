@@ -1,33 +1,21 @@
 spring:
   datasource:
-    url: jdbc:mysql://brad0321.c9y26kamyq64.ap-southeast-2.rds.amazonaws.com:3306/brad
+    url: jdbc:mysql://brad0321.c9y26kamyq64.ap-southeast-2.rds.amazonaws.com:3306/brad?sslMode=REQUIRED&serverTimezone=Asia/Seoul&characterEncoding=utf8
     username: brad0321
-    password: totty8302##
+    password: totty8302##     # ← 비번은 곧 바꾸는 걸 권장
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: update          # ★ RDS 데이터 보호 (create/update 금지)
     show-sql: true
     properties:
-      properties:
-        hibernate.format_sql: true
+      hibernate:
+        format_sql: true
 
   thymeleaf:
     cache: false
-    # 템플릿을 클래스패스가 아닌 실제 파일 경로에서 바로 읽도록 (수정 즉시 반영)
     prefix: file:src/main/resources/templates/
-  web:
-    resources:
-      cache:
-        period: 0
-      chain:
-        cache: false
-
 
 server:
   port: 8080
-  error:
-    whitelabel:
-      enabled: false
-    include-message: always
