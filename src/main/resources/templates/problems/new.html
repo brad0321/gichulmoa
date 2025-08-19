@@ -271,25 +271,55 @@
         }
 
         if (subj) {
-            subj.addEventListener('change', async function(){
-                const subjectId = this.value;
+            const defaultUnits = [
+                {id:1, name:'부동산의 개념과 분류'},
+                {id:2, name:'부동산의 특성(속성)'},
+                {id:3, name:'부동산 경제론'},
+                {id:4, name:'부동산 시장론'},
+                {id:5, name:'부동산입지론과 공간구조론'},
+                {id:6, name:'부동산 정책론'},
+                {id:7, name:'부동산 투자론'},
+                {id:8, name:'부동산 금융론'},
+                {id:9, name:'부동산 개발론'},
+                {id:10, name:'부동산 관리론'},
+                {id:11, name:'부동산 마케팅론'},
+                {id:12, name:'감정평가의 기초이론'},
+                {id:13, name:'감정평가 3방식 7방법'},
+                {id:14, name:'부동산가격 공시제도'}
+            ];
+
+            async function loadUnits(subjectId){
                 resetSelect(unit, '단원');
                 if (!subjectId) return;
-
                 try{
-                    // 단원
                     const u = await axios.get('/problems/api/units', { params: { subjectId }});
                     resetSelect(unit, '단원');
-                    (u.data || []).forEach(it => {
+                    const units = (u.data && u.data.length ? u.data : defaultUnits);
+                    units.forEach(it => {
                         const opt = document.createElement('option');
                         opt.value = it.id;
                         opt.textContent = (it.name !== undefined && it.name !== null) ? it.name : it.id;
                         unit.appendChild(opt);
                     });
                 }catch(e){
-                    openModal('#modalError', '#modalErrorText', '단원 목록을 불러오지 못했습니다.');
+                    resetSelect(unit, '단원');
+                    defaultUnits.forEach(it => {
+                        const opt = document.createElement('option');
+                        opt.value = it.id;
+                        opt.textContent = it.name;
+                        unit.appendChild(opt);
+                    });
                 }
+            }
+
+            subj.addEventListener('change', function(){
+                loadUnits(this.value);
             });
+
+            // 페이지 로드시 기본 과목이 선택되어 있다면 단원 목록을 미리 로드
+            if (subj.value) {
+                loadUnits(subj.value);
+            }
         }
     })();
 
