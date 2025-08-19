@@ -39,7 +39,7 @@ public class PracticeService {
         if (problems.isEmpty()) return new StartRes(null, List.of());
 
         var session = sRepo.save(PracticeSession.builder()
-                .user(User.builder().id(userId).build())
+                .user(userId == null ? null : User.builder().id(userId).build())
                 .status(SessionStatus.ACTIVE)
                 .currentIndex(0)
                 .subjectId(subjectId)
@@ -69,16 +69,18 @@ public class PracticeService {
         item.setIsCorrect(correct);
         item.getSession().setLastAccessedAt(LocalDateTime.now());
 
-        // 풀이 기록 (selectedChoiceNo 컬럼 존재해야 함)
-        hRepo.save(SolutionHistory.builder()
-                .user(User.builder().id(userId).build())
-                .problem(p)
-                .selectedChoiceNo(selected)
-                .isCorrect(correct)
-                .build());
+        if (userId != null) {
+            // 풀이 기록 (selectedChoiceNo 컬럼 존재해야 함)
+            hRepo.save(SolutionHistory.builder()
+                    .user(User.builder().id(userId).build())
+                    .problem(p)
+                    .selectedChoiceNo(selected)
+                    .isCorrect(correct)
+                    .build());
 
-        // 통계
-        scoreService.record(userId, p.getSubject().getId(), p.getRound().getId(), correct);
+            // 통계
+            scoreService.record(userId, p.getSubject().getId(), p.getRound().getId(), correct);
+        }
 
         // 보기별 해설 (정답이면 정답 보기에 대한 해설, 오답이면 사용자가 고른 보기에 대한 해설)
         String exp = expRepo.findByProblem_IdAndChoiceNo(p.getId(), correct ? p.getAnswer() : selected)

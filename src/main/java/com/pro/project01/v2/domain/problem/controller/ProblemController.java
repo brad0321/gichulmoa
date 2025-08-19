@@ -13,6 +13,7 @@ import com.pro.project01.v2.domain.subject.repository.SubjectRepository;
 import com.pro.project01.v2.domain.unit.dto.UnitDto;
 import com.pro.project01.v2.domain.unit.repository.UnitRepository;
 import com.pro.project01.v2.domain.user.dto.UserResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -20,7 +21,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -48,13 +48,15 @@ public class ProblemController {
 
     /** ✅ 문제 목록 */
     @GetMapping
-    public String list(Model model,
-                       @SessionAttribute(value = "loginUser", required = false) UserResponse loginUser) {
+    public String list(HttpSession session, Model model) {
         List<ProblemResponse> problems = problemService.findAll();
         log.info("[GET] 문제 목록 요청, size={}", problems.size());
         model.addAttribute("problems", problems);
-        // 로그인 여부와 관계없이 모델에 loginUser를 추가하여 템플릿에서 안전하게 참조할 수 있도록 한다.
-        model.addAttribute("loginUser", loginUser);
+        Object principal = session.getAttribute("loginUser");
+        UserResponse loginUser = (principal instanceof UserResponse user) ? user : null;
+        if (loginUser != null) {
+            model.addAttribute("loginUser", loginUser);
+        }
         return "problems/list";
     }
 
@@ -150,12 +152,14 @@ public class ProblemController {
 
     /** ✅ 문제 상세 */
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Model model,
-                         @SessionAttribute(value = "loginUser", required = false) UserResponse loginUser) {
+    public String detail(@PathVariable Long id, HttpSession session, Model model) {
         log.info("[GET] 문제 상세 요청: id={}", id);
         ProblemResponse problem = problemService.findById(id);
         model.addAttribute("problem", problem);
-        if (loginUser != null) model.addAttribute("loginUser", loginUser);
+        Object principal = session.getAttribute("loginUser");
+        if (principal instanceof UserResponse user) {
+            model.addAttribute("loginUser", user);
+        }
         return "problems/detail";
     }
 
@@ -169,12 +173,15 @@ public class ProblemController {
 
     /** ✅ 문제 풀이 페이지 */
     @GetMapping("/solve")
-    public String solvePage(@SessionAttribute(value="loginUser", required=false) UserResponse loginUser,
-                            Model model) {
+    public String solvePage(HttpSession session, Model model) {
         log.info("[GET] 문제 풀이 페이지 요청");
+        Object principal = session.getAttribute("loginUser");
+        UserResponse loginUser = (principal instanceof UserResponse user) ? user : null;
         Long userId = (loginUser != null ? loginUser.id() : 0L);
         model.addAttribute("userId", userId);
-        model.addAttribute("loginUser", loginUser);
+        if (loginUser != null) {
+            model.addAttribute("loginUser", loginUser);
+        }
         return "problems/solve";
     }
 
@@ -247,10 +254,10 @@ public class ProblemController {
     // 연습 세션 시작
     @PostMapping(value="/practice/start", consumes=MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public PracticeStartResponse startPractice(@RequestBody StartReq req,
-                                               @SessionAttribute(value="loginUser", required=false) UserResponse user){
-        if (user == null) throw new IllegalStateException("로그인 후 이용해주세요.");
-        var r = practiceService.start(user.id(), req.subjectId(), nullIfEmpty(req.roundIds()), nullIfEmpty(req.unitIds()));
+    public PracticeStartResponse startPractice(@RequestBody StartReq req, HttpSession session){
+        Object principal = session.getAttribute("loginUser");
+        Long userId = (user != null) ? user.id() : null;
+        var r = practiceService.start(userId, req.subjectId(), nullIfEmpty(req.roundIds()), nullIfEmpty(req.unitIds()));
 
         // ★ 여기서 서비스 DTO → 컨트롤러 DTO로 매핑
         var mapped = r.firstPage().stream()
@@ -269,11 +276,14 @@ public class ProblemController {
     }
 
     @GetMapping("/play")
-    public String playPage(@SessionAttribute(value = "loginUser", required = false) UserResponse loginUser,
-                           Model model) {
+    public String playPage(HttpSession session, Model model) {
+        Object principal = session.getAttribute("loginUser");
+        UserResponse loginUser = (principal instanceof UserResponse user) ? user : null;
         Long userId = (loginUser != null) ? loginUser.id() : 0L;
         model.addAttribute("userId", userId);
-        model.addAttribute("loginUser", loginUser);
+        if (loginUser != null) {
+            model.addAttribute("loginUser", loginUser);
+        }
         return "problems/play"; // -> templates/problems/play.html
     }
 
@@ -286,10 +296,10 @@ public class ProblemController {
     /** ✅ 연습 즉시 채점 */
     @PostMapping(value="/practice/answer", consumes=MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public AnswerResponse practiceAnswer(@RequestBody PracticeAnswerReq req,
-                                         @SessionAttribute(value="loginUser", required=false) UserResponse user){
-        if (user == null) throw new IllegalStateException("로그인 후 이용해주세요.");
-        var r = practiceService.answer(req.sessionId(), req.itemId(), req.selected(), user.id());
+    public AnswerResponse practiceAnswer(@RequestBody PracticeAnswerReq req, HttpSession session){
+        Object principal = session.getAttribute("loginUser");
+        Long userId = (user != null) ? user.id() : null;
+        var r = practiceService.answer(req.sessionId(), req.itemId(), req.selected(), userId);
         return new AnswerResponse(r.correct(), r.answer(), r.explanation());
     }
 
