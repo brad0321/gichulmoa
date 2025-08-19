@@ -166,11 +166,14 @@
             </div>
 
             <div class="d-flex flex-wrap gap-2 justify-content-end mt-4">
-                <a th:href="@{/problems}" class="btn btn-ghost btn-uniform">목록</a>
-                <a th:href="@{/dashboard}" class="btn btn-sub btn-uniform">대시보드</a>
-                <button type="submit" class="btn btn-main btn-uniform" id="submitBtn">등록하기</button>
+                <!-- 폼 외부 이동 시에도 정상 동작하도록 제출 버튼만 폼에 연결 -->
+                <button type="button" th:onclick="|location.href='@{/problems}'|" class="btn btn-ghost btn-uniform">목록</button>
+                <button type="button" th:onclick="|location.href='@{/dashboard}'|" class="btn btn-sub btn-uniform">대시보드</button>
             </div>
         </form>
+        <div class="d-flex flex-wrap gap-2 justify-content-end mt-4">
+            <button type="submit" form="createForm" class="btn btn-main btn-uniform" id="submitBtn">등록하기</button>
+        </div>
     </section>
 
     <p class="text-center mt-3 muted" style="font-size:12px">© 공인중개사 기출모아</p>

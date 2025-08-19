@@ -22,6 +22,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -78,13 +79,23 @@ public class ProblemController {
                          @RequestParam(value="exp2", required=false) String exp2,
                          @RequestParam(value="exp3", required=false) String exp3,
                          @RequestParam(value="exp4", required=false) String exp4,
-                         @RequestParam(value="exp5", required=false) String exp5) throws IOException {
+                         @RequestParam(value="exp5", required=false) String exp5,
+                         RedirectAttributes redirectAttributes) throws IOException {
         log.info("[POST] 문제 등록 요청: {}", safeLog(request));
+
+        // 필수 입력값 누락 시 다시 폼으로 이동
+        if (request.title() == null || request.answer() == null ||
+                request.subjectId() == null || request.roundId() == null || request.unitId() == null) {
+            redirectAttributes.addFlashAttribute("error", "필수 항목을 모두 입력/선택해주세요.");
+            return "redirect:/problems/new";
+        }
+
         String imagePath = storeImageIfPresent(imageFile);
         // List.of(...) 는 null 요소를 허용하지 않아 expX 가 비어있을 때 NPE가 발생한다.
         // Arrays.asList(...) 를 사용하여 null을 포함한 목록을 전달한다.
         problemService.create(request, imagePath, Arrays.asList(exp1,exp2,exp3,exp4,exp5));
         log.info("문제 등록 완료");
+        redirectAttributes.addFlashAttribute("msg", "문제가 등록되었습니다.");
         return "redirect:/problems";
     }
 
