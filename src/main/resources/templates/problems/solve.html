@@ -77,7 +77,7 @@
             </div>
 
             <!-- 회차 -->
-            <div class="dropdown" data-bs-auto-close="outside">
+            <div class="dropdown" data-bs-auto-close="false">
                 <button class="btn btn-ghost dropdown-toggle" type="button" id="roundDropdown" data-bs-toggle="dropdown" aria-expanded="false">회차 선택</button>
                 <ul class="dropdown-menu" id="round-menu"></ul>
             </div>
@@ -219,8 +219,8 @@
 
         const liBtn=document.createElement('li');
         liBtn.innerHTML=`<div class="d-flex justify-content-between px-3 py-2 border-top">
-                <button id="round-reset" class="btn btn-sm btn-ghost">초기화</button>
                 <button id="round-confirm" class="btn btn-sm btn-main">확인</button>
+                <button id="round-close" class="btn btn-sm btn-ghost">닫기</button>
             </div>`;
         menu.appendChild(liBtn);
 
@@ -233,21 +233,31 @@
                     const all=document.getElementById('round-all');
                     if(!cb.checked && all) all.checked=false;
                 }
-                selectedRounds=[...menu.querySelectorAll('input[type="checkbox"]:not(#round-all)')].filter(x=>x.checked).map(x=>x.value);
-                updateRoundText();
-                updateQuestionCount();
             });
         });
 
         document.getElementById('round-confirm').addEventListener('click',()=>{
+            const checked=[...menu.querySelectorAll('input[type="checkbox"]:not(#round-all)')].filter(cb=>cb.checked).map(cb=>cb.value);
+            selectedRounds=checked;
+            const total=menu.querySelectorAll('input[type="checkbox"]:not(#round-all)').length;
+            const all=document.getElementById('round-all');
+            if(all) all.checked=checked.length===total;
+            updateRoundText();
+            updateQuestionCount();
             const dd=bootstrap.Dropdown.getInstance(document.getElementById('roundDropdown'));
             dd && dd.hide();
         });
-        document.getElementById('round-reset').addEventListener('click',()=>{
-            menu.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=false);
-            selectedRounds=[];
-            updateRoundText();
-            updateQuestionCount();
+        document.getElementById('round-close').addEventListener('click',()=>{
+            menu.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+                if(cb.id==='round-all'){
+                    const total=menu.querySelectorAll('input[type="checkbox"]:not(#round-all)').length;
+                    cb.checked=selectedRounds.length===total && total>0;
+                }else{
+                    cb.checked=selectedRounds.includes(cb.value);
+                }
+            });
+            const dd=bootstrap.Dropdown.getInstance(document.getElementById('roundDropdown'));
+            dd && dd.hide();
         });
 
         updateRoundText();
