@@ -127,7 +127,7 @@
 
             <hr class="my-4">
 
-            <!-- 분류: 과목/회차/목차 -->
+            <!-- 분류: 과목/회차/단원 -->
             <h2 class="section-title">분류 정보</h2>
             <div class="row g-3">
                 <div class="col-md-4">
@@ -144,9 +144,9 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label for="unit-select" class="form-label">목차</label>
+                    <label for="unit-select" class="form-label">단원</label>
                     <select class="form-select" name="unitId" id="unit-select" required>
-                        <option value="">목차 선택</option>
+                        <option value="">단원 선택</option>
                     </select>
                 </div>
             </div>
@@ -235,19 +235,21 @@
         const input = $('#imageFile');
         const wrap  = $('#previewWrap');
         const img   = $('#previewImg');
-        input?.addEventListener('change', e => {
-            const file = e.target.files && e.target.files[0];
-            if (!file) { if (wrap) wrap.style.display = 'none'; return; }
-            const reader = new FileReader();
-            reader.onload = ev => {
-                if (img) img.src = ev.target.result;
-                if (wrap) wrap.style.display = 'inline-block';
-            };
-            reader.readAsDataURL(file);
-        });
+        if (input) {
+            input.addEventListener('change', e => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) { if (wrap) wrap.style.display = 'none'; return; }
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    if (img) img.src = ev.target.result;
+                    if (wrap) wrap.style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            });
+        }
     })();
 
-    // 과목 선택 → 회차/목차 로딩
+    // 과목 선택 → 회차/단원 로딩
     (function(){
         const subj = $('#subject-select');
         const round = $('#round-select');
@@ -255,43 +257,49 @@
 
         function resetSelect(sel, label){
             if (!sel) return;
-            sel.innerHTML = `<option value="">${label} 선택</option>`;
+            sel.innerHTML = '<option value="">' + label + ' 선택</option>';
+            sel.disabled = false;
         }
 
-        subj?.addEventListener('change', async function(){
-            const subjectId = this.value;
-            resetSelect(round, '회차');
-            resetSelect(unit, '목차');
-            if (!subjectId) return;
-
-            try{
-                // 회차
-                const r = await axios.get(`/problems/api/rounds`, { params: { subjectId }});
+        if (subj) {
+            subj.addEventListener('change', async function(){
+                const subjectId = this.value;
                 resetSelect(round, '회차');
-                (r.data || []).forEach(it => {
-                    const opt = document.createElement('option');
-                    opt.value = it.id;
-                    opt.textContent = it.roundNumber ?? it.name ?? it.id;
-                    round.appendChild(opt);
-                });
-            }catch(e){
-                openModal('#modalError', '#modalErrorText', '회차 목록을 불러오지 못했습니다.');
-            }
+                resetSelect(unit, '단원');
+                if (!subjectId) return;
 
-            try{
-                // 목차
-                const u = await axios.get(`/problems/api/units`, { params: { subjectId }});
-                resetSelect(unit, '목차');
-                (u.data || []).forEach(it => {
-                    const opt = document.createElement('option');
-                    opt.value = it.id;
-                    opt.textContent = it.name ?? it.id;
-                    unit.appendChild(opt);
-                });
-            }catch(e){
-                openModal('#modalError', '#modalErrorText', '목차 목록을 불러오지 못했습니다.');
-            }
-        });
+                try{
+                    // 회차
+                    const r = await axios.get('/problems/api/rounds', { params: { subjectId }});
+                    resetSelect(round, '회차');
+                    (r.data || []).forEach(it => {
+                        const opt = document.createElement('option');
+                        opt.value = it.id;
+                        let text = it.roundNumber;
+                        if (text === undefined || text === null) text = it.name;
+                        if (text === undefined || text === null) text = it.id;
+                        opt.textContent = text;
+                        round.appendChild(opt);
+                    });
+                }catch(e){
+                    openModal('#modalError', '#modalErrorText', '회차 목록을 불러오지 못했습니다.');
+                }
+
+                try{
+                    // 단원
+                    const u = await axios.get('/problems/api/units', { params: { subjectId }});
+                    resetSelect(unit, '단원');
+                    (u.data || []).forEach(it => {
+                        const opt = document.createElement('option');
+                        opt.value = it.id;
+                        opt.textContent = (it.name !== undefined && it.name !== null) ? it.name : it.id;
+                        unit.appendChild(opt);
+                    });
+                }catch(e){
+                    openModal('#modalError', '#modalErrorText', '단원 목록을 불러오지 못했습니다.');
+                }
+            });
+        }
     })();
 
     // 간단 검증 & 제출 중 버튼 잠금
@@ -299,22 +307,32 @@
         const form = $('#createForm');
         const btn  = $('#submitBtn');
 
-        form?.addEventListener('submit', (e) => {
-            const title   = $('#title')?.value.trim();
-            const answer  = $('#answer')?.value;
-            const subject = $('#subject-select')?.value;
-            const round   = $('#round-select')?.value;
-            const unit    = $('#unit-select')?.value;
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                const titleEl   = $('#title');
+                const answerEl  = $('#answer');
+                const subjectEl = $('#subject-select');
+                const roundEl   = $('#round-select');
+                const unitEl    = $('#unit-select');
 
-            if (!title || !answer || !subject || !round || !unit) {
-                e.preventDefault();
-                openModal('#modalError', '#modalErrorText', '필수 항목을 모두 입력/선택해주세요.');
-                return;
-            }
+                const title   = titleEl ? titleEl.value.trim() : '';
+                const answer  = answerEl ? answerEl.value : '';
+                const subject = subjectEl ? subjectEl.value : '';
+                const round   = roundEl ? roundEl.value : '';
+                const unit    = unitEl ? unitEl.value : '';
 
-            btn?.setAttribute('disabled','disabled');
-            if (btn) btn.textContent = '등록 중…';
-        });
+                if (!title || !answer || !subject || !round || !unit) {
+                    e.preventDefault();
+                    openModal('#modalError', '#modalErrorText', '필수 항목을 모두 입력/선택해주세요.');
+                    return;
+                }
+
+                if (btn) {
+                    btn.setAttribute('disabled','disabled');
+                    btn.textContent = '등록 중…';
+                }
+            });
+        }
     })();
 </script>
 </body>

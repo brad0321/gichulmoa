@@ -65,7 +65,7 @@ public class ProblemServiceImpl implements ProblemService {
                 .round(roundRepository.findById(request.roundId())
                         .orElseThrow(() -> new IllegalArgumentException("회차를 찾을 수 없습니다.")))
                 .unit(unitRepository.findById(request.unitId())
-                        .orElseThrow(() -> new IllegalArgumentException("목차를 찾을 수 없습니다.")))
+                        .orElseThrow(() -> new IllegalArgumentException("단원을 찾을 수 없습니다.")))
                 .build();
 
         problemRepository.save(problem);
@@ -106,7 +106,7 @@ public class ProblemServiceImpl implements ProblemService {
                 roundRepository.findById(request.roundId())
                         .orElseThrow(() -> new IllegalArgumentException("회차를 찾을 수 없습니다.")),
                 unitRepository.findById(request.unitId())
-                        .orElseThrow(() -> new IllegalArgumentException("목차를 찾을 수 없습니다."))
+                        .orElseThrow(() -> new IllegalArgumentException("단원을 찾을 수 없습니다."))
         );
     }
 

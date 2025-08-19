@@ -52,7 +52,8 @@ public class ProblemController {
         List<ProblemResponse> problems = problemService.findAll();
         log.info("[GET] 문제 목록 요청, size={}", problems.size());
         model.addAttribute("problems", problems);
-        if (loginUser != null) model.addAttribute("loginUser", loginUser);
+        // 로그인 여부와 관계없이 모델에 loginUser를 추가하여 템플릿에서 안전하게 참조할 수 있도록 한다.
+        model.addAttribute("loginUser", loginUser);
         return "problems/list";
     }
 
@@ -184,11 +185,11 @@ public class ProblemController {
                 .collect(Collectors.toList());
     }
 
-    /** ✅ 목차 리스트 API */
+    /** ✅ 단원 리스트 API */
     @ResponseBody
     @GetMapping("/api/units")
     public List<UnitDto> getUnits(@RequestParam("subjectId") Long subjectId) {
-        log.info("[API] 목차 리스트 요청: subjectId={}", subjectId);
+        log.info("[API] 단원 리스트 요청: subjectId={}", subjectId);
         return unitRepository.findBySubject_Id(subjectId)
                 .stream()
                 .map(u -> new UnitDto(u.getId(), u.getName()))

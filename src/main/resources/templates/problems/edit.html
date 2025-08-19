@@ -70,7 +70,7 @@
                 <input type="text" id="title" name="title" class="form-control" th:value="${problem.title}" placeholder="질문 제목" required>
             </div>
 
-            <!-- 분류: 과목/회차/목차 -->
+            <!-- 분류: 과목/회차/단원 -->
             <div class="row g-3">
                 <div class="col-md-4">
                     <label for="subjectId" class="form-label">과목</label>
@@ -93,9 +93,9 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label for="unitId" class="form-label">목차</label>
+                    <label for="unitId" class="form-label">단원</label>
                     <select id="unitId" name="unitId" class="form-select" required>
-                        <option value="">목차 선택</option>
+                        <option value="">단원 선택</option>
                         <option th:each="u : ${units}"
                                 th:value="${u.id}"
                                 th:text="${u.name}"
