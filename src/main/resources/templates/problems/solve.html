@@ -13,7 +13,7 @@
             --text-main:#2C3E3F; --text-sub:#7A746E; --bg:#F4F3F1; --white:#fff;
             --radius-lg:20px; --radius-md:14px;
             --shadow-sm:0 6px 18px rgba(47,72,88,.10); --shadow-xs:0 3px 10px rgba(47,72,88,.08);
-            --bar-h:72px; --maxw:1100px;
+            --maxw:1100px;
         }
         html,body{height:100%}
         body{margin:0;background:var(--bg);color:var(--text-main);font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;letter-spacing:.2px}
@@ -57,13 +57,6 @@
         #solution-area{background:#fff;border:1px solid #e5e7ea;border-radius:16px;padding:16px}
         #solution-area h5{color:var(--color-main);font-weight:900}
         .solution-pill{background:var(--color-point);color:#4d3a16;font-weight:900;padding:4px 10px;border-radius:999px;margin-left:8px}
-        .bottom-bar{position:fixed;bottom:0;left:0;right:0;height:var(--bar-h);background:#fff;border-top:1px solid #e6eaee;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;z-index:5;transition:transform .28s ease}
-        .bottom-bar.hidden{transform:translateY(100%)}
-        .bar-wrap{width:100%;max-width:var(--maxw);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 12px}
-        .bar-left,.bar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-        .bar-pop{position:relative}
-        .bar-pop .panel-box{bottom:calc(100% + 8px)}
-        @media (max-width:768px){.viewer-header{display:none}}
     </style>
 </head>
 <body>
@@ -120,8 +113,6 @@
             <div class="select-holder">
                 <button class="btn btn-ghost btn-sm" id="settings-btn">설정 ⚙</button>
                 <div id="settings-panel" class="panel-box" style="right:0;left:auto;">
-                    <label><input type="checkbox" id="autohide-toggle"> 자동숨기기 해제</label>
-
                     <a class="d-block mb-1 text-decoration-none" th:if="${userId > 0}" th:href="@{/wrong-notes(userId=${userId})}">오답노트</a>
                     <a class="d-block mb-1 text-decoration-none" th:if="${userId > 0}" th:href="@{/score-stats/user(userId=${userId})}">점수통계</a>
                     <a class="d-block mb-1 text-decoration-none" th:href="@{/guide}">사용설명</a>
@@ -171,58 +162,6 @@
     </div>
 </div>
 
-<!-- 모바일 하단 바 -->
-<nav class="bottom-bar">
-    <div class="bar-wrap">
-        <div class="bar-left">
-            <div class="dropdown">
-                <button class="btn btn-ghost btn-sm dropdown-toggle" type="button" id="subjectDropdownBar" data-bs-toggle="dropdown" aria-expanded="false">과목 선택</button>
-                <ul class="dropdown-menu" id="subject-menu-bar" style="max-height:260px;overflow-y:auto;"></ul>
-            </div>
-            <div class="bar-pop">
-                <button class="btn btn-ghost btn-sm" id="round-selector-bar">회차 선택</button>
-                <div id="round-panel-bar" class="panel-box">
-                    <div id="round-checkboxes-bar" class="mb-2"></div>
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-main btn-sm" id="round-confirm-bar">확인</button>
-                        <button class="btn btn-sub btn-sm" id="round-reset-bar">초기화</button>
-                    </div>
-                </div>
-            </div>
-            <div class="bar-pop">
-                <button class="btn btn-ghost btn-sm" id="unit-selector-bar">목차 선택</button>
-                <div id="unit-panel-bar" class="panel-box">
-                    <div id="unit-checkboxes-bar" class="mb-2"></div>
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-main btn-sm" id="unit-confirm-bar">확인</button>
-                        <button class="btn btn-sub btn-sm" id="unit-reset-bar">초기화</button>
-                    </div>
-                </div>
-            </div>
-            <span id="question-count-bar" class="btn counter-badge btn-sm disabled">0 / 0</span>
-            <button id="start-btn-bar" class="btn btn-main btn-sm">문제풀기</button>
-        </div>
-
-        <div class="bar-right">
-            <button class="btn btn-ghost btn-sm" id="zoom-in-btn-bar">+</button>
-            <button class="btn btn-ghost btn-sm" id="zoom-out-btn-bar">-</button>
-            <div class="bar-pop">
-                <button class="btn btn-ghost btn-sm" id="settings-btn-bar">설정 ⚙</button>
-                <div id="settings-panel-bar" class="panel-box" style="right:0;left:auto;">
-                    <label><input type="checkbox" id="autohide-toggle-bar"> 자동숨기기 해제</label>
-
-                    <a class="d-block mb-1 text-decoration-none" th:if="${userId > 0}" th:href="@{/wrong-notes(userId=${userId})}">오답노트</a>
-                    <a class="d-block mb-1 text-decoration-none" th:if="${userId > 0}" th:href="@{/score-stats/user(userId=${userId})}">점수통계</a>
-                    <a class="d-block mb-1 text-decoration-none" th:href="@{/guide}">사용설명</a>
-                    <a class="d-block mb-1 text-decoration-none" th:href="@{/exam-schedule}">시험일정</a>
-                    <a class="d-block mb-1 text-decoration-none" th:href="@{/members/mypage}">마이페이지</a>
-                    <a class="d-block mb-1 text-decoration-none" th:if="${userId == 0}" th:href="@{/login}">로그인</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</nav>
-
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -233,12 +172,11 @@
     document.addEventListener("DOMContentLoaded", () => {
         initPanelControls();
         loadSubjects();
-        wireBarMirrors();
     });
 
     function syncCounts(current,total){
         const a=`${current} / ${total}`;
-        ['question-count','question-count-top','question-count-bar','qc-top'].forEach(id=>{
+        ['question-count','question-count-top','qc-top'].forEach(id=>{
             const el=document.getElementById(id); if(el) el.textContent=a;
         });
     }
@@ -248,21 +186,19 @@
     async function loadSubjects(){
         try{
             const res=await axios.get('/problems/api/subjects');
-            const menus=[document.getElementById('subject-menu'), document.getElementById('subject-menu-bar')];
-            menus.forEach(m=>m.innerHTML='');
+            const menu=document.getElementById('subject-menu'); menu.innerHTML='';
 
             res.data.forEach(it=>{
                 const li=document.createElement('li');
                 li.innerHTML=`<a class="dropdown-item" href="#" data-id="${it.id}">${it.name}</a>`;
-                menus.forEach(m=>m.appendChild(li.cloneNode(true)));
+                menu.appendChild(li);
             });
 
-            [...document.querySelectorAll('#subject-menu .dropdown-item, #subject-menu-bar .dropdown-item')].forEach(a=>{
+            document.querySelectorAll('#subject-menu .dropdown-item').forEach(a=>{
                 a.addEventListener('click', async (e)=>{
                     e.preventDefault();
                     selectedSubject=e.target.dataset.id;
                     document.getElementById('subjectDropdown').textContent=e.target.textContent;
-                    document.getElementById('subjectDropdownBar').textContent=e.target.textContent;
                     await loadRounds(selectedSubject); await loadUnits(selectedSubject); updateQuestionCount();
                 });
             });
@@ -271,45 +207,37 @@
 
     /* ===== rounds ===== */
     async function loadRounds(subjectId){
-        const targets=[{box:'#round-checkboxes',all:'#round-all'},{box:'#round-checkboxes-bar',all:'#round-all-bar'}];
-        targets.forEach(t=>document.querySelector(t.box).innerHTML='');
+        document.querySelector('#round-checkboxes').innerHTML='';
         try{
             const res=await axios.get(`/problems/api/rounds?subjectId=${subjectId}`);
             res.data.sort((a,b)=>a.roundNumber-b.roundNumber);
-            const render=(boxSel, allSel)=>{
-                const c=document.querySelector(boxSel);
-                res.data.forEach(r=>{
-                    const year=makeYearByRound(r.roundNumber);
-                    c.insertAdjacentHTML('beforeend', `
+            const c=document.querySelector('#round-checkboxes');
+            res.data.forEach(r=>{
+                const year=makeYearByRound(r.roundNumber);
+                c.insertAdjacentHTML('beforeend', `
             <label class="d-block mb-1"><input type="checkbox" value="${r.id}" data-number="${r.roundNumber}"> ${r.roundNumber}회차 (${year}년)</label>
           `);
-                });
-                c.insertAdjacentHTML('beforeend', `<label class="d-block"><input type="checkbox" id="${allSel.slice(1)}"> 전체회차</label>`);
-                document.querySelector(allSel).addEventListener('change', function(){
-                    c.querySelectorAll('input[type="checkbox"]:not(' + allSel + ')').forEach(cb=>cb.checked=this.checked);
-                });
-            };
-            render('#round-checkboxes','#round-all'); render('#round-checkboxes-bar','#round-all-bar');
+            });
+            c.insertAdjacentHTML('beforeend', `<label class="d-block"><input type="checkbox" id="round-all"> 전체회차</label>`);
+            document.getElementById('round-all').addEventListener('change', function(){
+                c.querySelectorAll('input[type="checkbox"]:not(#round-all)').forEach(cb=>cb.checked=this.checked);
+            });
         }catch(err){ console.error('회차 로딩 실패:',err); }
     }
 
     /* ===== units ===== */
     async function loadUnits(subjectId){
-        const targets=[{box:'#unit-checkboxes',all:'#unit-all'},{box:'#unit-checkboxes-bar',all:'#unit-all-bar'}];
-        targets.forEach(t=>document.querySelector(t.box).innerHTML='');
+        document.querySelector('#unit-checkboxes').innerHTML='';
         try{
             const res=await axios.get(`/problems/api/units?subjectId=${subjectId}`);
-            const render=(boxSel, allSel)=>{
-                const c=document.querySelector(boxSel);
-                c.insertAdjacentHTML('beforeend', `<label class="d-block mb-1"><input type="checkbox" id="${allSel.slice(1)}"> 전체목차</label>`);
-                res.data.forEach(u=>{
-                    c.insertAdjacentHTML('beforeend', `<label class="d-block mb-1"><input type="checkbox" value="${u.id}"> ${u.name}</label>`);
-                });
-                document.querySelector(allSel).addEventListener('change', function(){
-                    c.querySelectorAll('input[type="checkbox"]:not(' + allSel + ')').forEach(cb=>cb.checked=this.checked);
-                });
-            };
-            render('#unit-checkboxes','#unit-all'); render('#unit-checkboxes-bar','#unit-all-bar');
+            const c=document.querySelector('#unit-checkboxes');
+            c.insertAdjacentHTML('beforeend', `<label class="d-block mb-1"><input type="checkbox" id="unit-all"> 전체목차</label>`);
+            res.data.forEach(u=>{
+                c.insertAdjacentHTML('beforeend', `<label class="d-block mb-1"><input type="checkbox" value="${u.id}"> ${u.name}</label>`);
+            });
+            document.getElementById('unit-all').addEventListener('change', function(){
+                c.querySelectorAll('input[type="checkbox"]:not(#unit-all)').forEach(cb=>cb.checked=this.checked);
+            });
         }catch(err){ console.error('목차 로딩 실패:',err); }
     }
 
@@ -331,69 +259,63 @@
     function togglePanel(showId, hideId){
         const showEl=document.getElementById(showId), hideEl=document.getElementById(hideId);
         if(hideEl) hideEl.style.display='none';
-        bootstrap.Dropdown.getOrCreateInstance(subjectDropdownBtn).hide();
+        if(subjectDropdownBtn) bootstrap.Dropdown.getOrCreateInstance(subjectDropdownBtn).hide();
         showEl.style.display=(showEl.style.display==='block')?'none':'block';
     }
 
-    function confirmRounds(scope=''){
-        const boxSel=scope?`#round-checkboxes-${scope}`:'#round-checkboxes';
-        const allSel=scope?`#round-all-${scope}`:'#round-all';
-        const labelSel=scope?`#round-selector-${scope}`:'#round-selector';
-        const panelSel=scope?`#round-panel-${scope}`:'#round-panel';
-        const allChecked=document.querySelector(allSel)?.checked;
-        const checked=[...document.querySelectorAll(`${boxSel} input[type="checkbox"]:not(${allSel})`)].filter(cb=>cb.checked);
+    function confirmRounds(){
+        const allChecked=document.getElementById('round-all')?.checked;
+        const checked=[...document.querySelectorAll('#round-checkboxes input[type="checkbox"]:not(#round-all)')].filter(cb=>cb.checked);
         selectedRounds=checked.map(cb=>cb.value);
         let text='회차 선택';
         if(allChecked) text='전체회차'; else if(checked.length>1) text='다중회차'; else if(checked.length===1) text=`${checked[0].dataset.number}회차`;
-        const label=document.querySelector(labelSel); if(label) label.textContent=text;
-        const panel=document.querySelector(panelSel); if(panel) panel.style.display='none';
+        document.getElementById('round-selector').textContent=text;
+        document.getElementById('round-panel').style.display='none';
         updateQuestionCount();
     }
-    function resetRounds(scope=''){
-        const boxSel=scope?`#round-checkboxes-${scope}`:'#round-checkboxes';
-        document.querySelectorAll(`${boxSel} input[type="checkbox"]`).forEach(cb=>cb.checked=false);
-        selectedRounds=[]; const label=document.getElementById(scope?`round-selector-${scope}`:'round-selector');
-        if(label) label.textContent='회차 선택'; updateQuestionCount();
+    function resetRounds(){
+        document.querySelectorAll('#round-checkboxes input[type="checkbox"]').forEach(cb=>cb.checked=false);
+        selectedRounds=[];
+        document.getElementById('round-selector').textContent='회차 선택';
+        updateQuestionCount();
     }
 
-    function confirmUnits(scope=''){
-        const boxSel=scope?`#unit-checkboxes-${scope}`:'#unit-checkboxes';
-        const allSel=scope?`#unit-all-${scope}`:'#unit-all';
-        const labelSel=scope?`#unit-selector-${scope}`:'#unit-selector';
-        const panelSel=scope?`#unit-panel-${scope}`:'#unit-panel';
-        const allChecked=document.querySelector(allSel)?.checked;
-        const checked=[...document.querySelectorAll(`${boxSel} input[type="checkbox"]:not(${allSel})`)].filter(cb=>cb.checked);
+    function confirmUnits(){
+        const allChecked=document.getElementById('unit-all')?.checked;
+        const checked=[...document.querySelectorAll('#unit-checkboxes input[type="checkbox"]:not(#unit-all)')].filter(cb=>cb.checked);
         selectedUnits=checked.map(cb=>cb.value);
         let text='목차 선택';
         if(allChecked) text='전체목차'; else if(checked.length>1) text='다중목차'; else if(checked.length===1) text=`${checked[0].parentElement.textContent.trim()}`;
-        const label=document.querySelector(labelSel); if(label) label.textContent=text;
-        const panel=document.querySelector(panelSel); if(panel) panel.style.display='none';
+        document.getElementById('unit-selector').textContent=text;
+        document.getElementById('unit-panel').style.display='none';
         updateQuestionCount();
     }
-    function resetUnits(scope=''){
-        const boxSel=scope?`#unit-checkboxes-${scope}`:'#unit-checkboxes';
-        document.querySelectorAll(`${boxSel} input[type="checkbox"]`).forEach(cb=>cb.checked=false);
-        selectedUnits=[]; const label=document.getElementById(scope?`unit-selector-${scope}`:'unit-selector');
-        if(label) label.textContent='목차 선택'; updateQuestionCount();
+    function resetUnits(){
+        document.querySelectorAll('#unit-checkboxes input[type="checkbox"]').forEach(cb=>cb.checked=false);
+        selectedUnits=[];
+        document.getElementById('unit-selector').textContent='목차 선택';
+        updateQuestionCount();
     }
 
     /* ===== count ===== */
     async function updateQuestionCount(){
-        if(!selectedSubject || selectedUnits.length===0){ syncCounts(0,0); return; }
-        const params={subjectId:selectedSubject, unitIds:selectedUnits.join(',')};
+        if(!selectedSubject){ syncCounts(0,0); return; }
+        const params={ subjectId:selectedSubject };
         if(selectedRounds.length>0) params.roundIds=selectedRounds.join(',');
-        const res=await axios.get('/problems/api/problems',{params}); syncCounts(0,res.data.length);
+        if(selectedUnits.length>0) params.unitIds=selectedUnits.join(',');
+        const res=await axios.get('/problems/api/problems',{params});
+        syncCounts(0,res.data.length);
     }
 
     /* ===== start & render ===== */
     async function startSolving(){
-        if(!selectedSubject || selectedUnits.length===0){ alert('과목과 목차를 선택하세요.'); return; }
+        if(!selectedSubject){ alert('과목을 선택하세요.'); return; }
         document.getElementById('main').style.display='none';
         document.getElementById('question-area').style.display='block';
 
         const payload={ subjectId:+selectedSubject,
-            roundIds:selectedRounds.map(Number),
-            unitIds:selectedUnits.map(Number) };
+            roundIds:selectedRounds.map(Number) };
+        if(selectedUnits.length>0) payload.unitIds=selectedUnits.map(Number);
 
         try{
             const res=await axios.post('/problems/practice/start', payload);
@@ -402,7 +324,6 @@
             if(items.length===0){ alert('문항이 없습니다.'); return; }
             currentIndex=0;
             showQuestion(currentIndex);
-            autoHideActivated=true; scheduleHide();
         }catch(e){
             console.error(e); alert('세션 시작 실패: 로그인 필요 또는 서버 오류');
             document.getElementById('main').style.display='block';
@@ -410,7 +331,6 @@
         }
     }
     document.getElementById('start-btn').addEventListener('click',startSolving);
-    document.getElementById('start-btn-bar').addEventListener('click',startSolving);
 
     function showQuestion(index){
         const q=items[index]; markMode=null;
@@ -519,41 +439,12 @@
     let baseFontSize=16; function applyZoom(){ document.documentElement.style.fontSize=baseFontSize+'px'; }
     document.getElementById('zoom-in-btn').addEventListener('click',()=>{ baseFontSize=Math.min(baseFontSize+1,32); applyZoom(); });
     document.getElementById('zoom-out-btn').addEventListener('click',()=>{ baseFontSize=Math.max(baseFontSize-1,10); applyZoom(); });
-    document.getElementById('zoom-in-btn-bar').addEventListener('click',()=>{ baseFontSize=Math.min(baseFontSize+1,32); applyZoom(); });
-    document.getElementById('zoom-out-btn-bar').addEventListener('click',()=>{ baseFontSize=Math.max(baseFontSize-1,10); applyZoom(); });
 
-    /* ===== bottom bar autohide ===== */
-    const bottomBar=document.querySelector('.bottom-bar'); let autoHideEnabled=true, autoHideActivated=false, hideTimeout;
-    const settingsBtn=document.getElementById('settings-btn'), settingsPanel=document.getElementById('settings-panel'), autohideToggle=document.getElementById('autohide-toggle');
-    const settingsBtnBar=document.getElementById('settings-btn-bar'), settingsPanelBar=document.getElementById('settings-panel-bar'), autohideToggleBar=document.getElementById('autohide-toggle-bar');
+    /* ===== settings ===== */
+    const settingsBtn=document.getElementById('settings-btn'), settingsPanel=document.getElementById('settings-panel');
     settingsBtn?.addEventListener('click',()=>{ settingsPanel.style.display=settingsPanel.style.display==='block'?'none':'block'; });
-    settingsBtnBar.addEventListener('click',()=>{ settingsPanelBar.style.display=settingsPanelBar.style.display==='block'?'none':'block'; });
-    document.addEventListener('click',(e)=>{
-        if(!settingsPanel?.contains(e.target)&&!settingsBtn?.contains(e.target)) settingsPanel&&(settingsPanel.style.display='none');
-        if(!settingsPanelBar.contains(e.target)&&!settingsBtnBar.contains(e.target)) settingsPanelBar.style.display='none';
-    });
-    function scheduleHide(){ clearTimeout(hideTimeout); if(!autoHideEnabled||!autoHideActivated) return; hideTimeout=setTimeout(()=>bottomBar.classList.add('hidden'),2500); }
-    function showBar(){ bottomBar.classList.remove('hidden'); scheduleHide(); }
-    document.addEventListener('mousemove',(e)=>{ if(!autoHideEnabled||!autoHideActivated) return; if(e.clientY>=window.innerHeight-100) showBar(); });
-    autohideToggle?.addEventListener('change',()=>{ autoHideEnabled=!autohideToggle.checked; if(autoHideEnabled&&autoHideActivated) scheduleHide(); else { bottomBar.classList.remove('hidden'); clearTimeout(hideTimeout);} });
-    autohideToggleBar.addEventListener('change',()=>{ autoHideEnabled=!autohideToggleBar.checked; if(autoHideEnabled&&autoHideActivated) scheduleHide(); else { bottomBar.classList.remove('hidden'); clearTimeout(hideTimeout);} });
 
-    /* ===== mirror for bar ===== */
-    function wireBarMirrors(){
-        document.getElementById('round-selector-bar').addEventListener('click',()=>togglePanelBar('round-panel-bar','unit-panel-bar'));
-        document.getElementById('unit-selector-bar').addEventListener('click',()=>togglePanelBar('unit-panel-bar','round-panel-bar'));
-        document.getElementById('round-confirm-bar').addEventListener('click',()=>confirmRounds('bar'));
-        document.getElementById('round-reset-bar').addEventListener('click',()=>resetRounds('bar'));
-        document.getElementById('unit-confirm-bar').addEventListener('click',()=>confirmUnits('bar'));
-        document.getElementById('unit-reset-bar').addEventListener('click',()=>resetUnits('bar'));
-        const subjectBtnBar=document.getElementById('subjectDropdownBar');
-        subjectBtnBar.addEventListener('show.bs.dropdown',()=>{ document.getElementById('round-panel-bar').style.display='none'; document.getElementById('unit-panel-bar').style.display='none'; });
-    }
-    function togglePanelBar(showId, hideId){
-        const showEl=document.getElementById(showId), hideEl=document.getElementById(hideId);
-        if(hideEl) hideEl.style.display='none';
-        showEl.style.display=(showEl.style.display==='block')?'none':'block';
-    }
+    document.addEventListener('click',(e)=>{ if(!settingsPanel.contains(e.target)&&!settingsBtn.contains(e.target)) settingsPanel.style.display='none';});
 </script>
 </body>
 </html>
