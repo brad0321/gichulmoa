@@ -81,7 +81,9 @@ public class ProblemController {
                          @RequestParam(value="exp5", required=false) String exp5) throws IOException {
         log.info("[POST] 문제 등록 요청: {}", safeLog(request));
         String imagePath = storeImageIfPresent(imageFile);
-        problemService.create(request, imagePath, List.of(exp1,exp2,exp3,exp4,exp5));
+        // List.of(...) 는 null 요소를 허용하지 않아 expX 가 비어있을 때 NPE가 발생한다.
+        // Arrays.asList(...) 를 사용하여 null을 포함한 목록을 전달한다.
+        problemService.create(request, imagePath, Arrays.asList(exp1,exp2,exp3,exp4,exp5));
         log.info("문제 등록 완료");
         return "redirect:/problems";
     }
@@ -129,7 +131,8 @@ public class ProblemController {
             imagePath = storeImageIfPresent(imageFile); // 없으면 null
         }
 
-        problemService.update(id, request, imagePath, List.of(exp1,exp2,exp3,exp4,exp5));
+        // 보기 해설 중 일부가 비어있을 경우 List.of(...) 가 NPE를 유발하므로 Arrays.asList 사용
+        problemService.update(id, request, imagePath, Arrays.asList(exp1,exp2,exp3,exp4,exp5));
         log.info("문제 수정 완료: id={}", id);
         return "redirect:/problems/" + id;
     }
