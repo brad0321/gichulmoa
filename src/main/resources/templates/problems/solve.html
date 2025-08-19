@@ -197,36 +197,60 @@
         selectedRounds=[];
         const menu=document.getElementById('round-menu');
         menu.innerHTML='';
+        let rounds=[];
         try{
             const res=await axios.get(`/problems/api/rounds?subjectId=${subjectId}`);
-            res.data.sort((a,b)=>a.roundNumber-b.roundNumber);
-            res.data.forEach(r=>{
-                const year=makeYearByRound(r.roundNumber);
-                const li=document.createElement('li');
-                li.innerHTML=`<label class="dropdown-item"><input type="checkbox" value="${r.id}" data-number="${r.roundNumber}"> ${r.roundNumber}회차 (${year}년)</label>`;
-                menu.appendChild(li);
-            });
-            const liAll=document.createElement('li');
-            liAll.innerHTML=`<label class="dropdown-item"><input type="checkbox" id="round-all"> 전체회차</label>`;
-            menu.appendChild(liAll);
+            rounds=res.data.length>0 ? res.data.map(r=>({id:r.id, number:r.roundNumber}))
+                : Array.from({length:10},(_,i)=>({id:String(26+i), number:26+i}));
+        }catch(err){
+            console.error('회차 로딩 실패:',err);
+            rounds=Array.from({length:10},(_,i)=>({id:String(26+i), number:26+i}));
+        }
+        rounds.sort((a,b)=>a.number-b.number).forEach(r=>{
+            const year=makeYearByRound(r.number);
+            const li=document.createElement('li');
+            li.innerHTML=`<label class="dropdown-item"><input type="checkbox" value="${r.id}" data-number="${r.number}"> ${r.number}회차 (${year}년)</label>`;
+            menu.appendChild(li);
+        });
 
-            menu.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
-                cb.addEventListener('change',()=>{
-                    if(cb.id==='round-all'){
-                        const checked=cb.checked;
-                        menu.querySelectorAll('input[type="checkbox"]:not(#round-all)').forEach(x=>x.checked=checked);
-                    }else{
-                        const all=document.getElementById('round-all');
-                        if(!cb.checked && all) all.checked=false;
-                    }
-                    selectedRounds=[...menu.querySelectorAll('input[type="checkbox"]:not(#round-all)')].filter(x=>x.checked).map(x=>x.value);
-                    updateRoundText();
-                    updateQuestionCount();
-                });
-            });
+        const liAll=document.createElement('li');
+        liAll.innerHTML=`<label class="dropdown-item"><input type="checkbox" id="round-all"> 전체회차</label>`;
+        menu.appendChild(liAll);
 
+        const liBtn=document.createElement('li');
+        liBtn.innerHTML=`<div class="d-flex justify-content-between px-3 py-2 border-top">
+                <button id="round-reset" class="btn btn-sm btn-ghost">초기화</button>
+                <button id="round-confirm" class="btn btn-sm btn-main">확인</button>
+            </div>`;
+        menu.appendChild(liBtn);
+
+        menu.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+            cb.addEventListener('change',()=>{
+                if(cb.id==='round-all'){
+                    const checked=cb.checked;
+                    menu.querySelectorAll('input[type="checkbox"]:not(#round-all)').forEach(x=>x.checked=checked);
+                }else{
+                    const all=document.getElementById('round-all');
+                    if(!cb.checked && all) all.checked=false;
+                }
+                selectedRounds=[...menu.querySelectorAll('input[type="checkbox"]:not(#round-all)')].filter(x=>x.checked).map(x=>x.value);
+                updateRoundText();
+                updateQuestionCount();
+            });
+        });
+
+        document.getElementById('round-confirm').addEventListener('click',()=>{
+            const dd=bootstrap.Dropdown.getInstance(document.getElementById('roundDropdown'));
+            dd && dd.hide();
+        });
+        document.getElementById('round-reset').addEventListener('click',()=>{
+            menu.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=false);
+            selectedRounds=[];
             updateRoundText();
-        }catch(err){ console.error('회차 로딩 실패:',err); }
+            updateQuestionCount();
+        });
+
+        updateRoundText();
     }
 
     function updateRoundText(){
