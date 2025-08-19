@@ -141,6 +141,16 @@
                     <label for="round-select" class="form-label">회차</label>
                     <select class="form-select" name="roundId" id="round-select" required>
                         <option value="">회차 선택</option>
+                        <option value="26">26회차 (2015년)</option>
+                        <option value="27">27회차 (2016년)</option>
+                        <option value="28">28회차 (2017년)</option>
+                        <option value="29">29회차 (2018년)</option>
+                        <option value="30">30회차 (2019년)</option>
+                        <option value="31">31회차 (2020년)</option>
+                        <option value="32">32회차 (2021년)</option>
+                        <option value="33">33회차 (2022년)</option>
+                        <option value="34">34회차 (2023년)</option>
+                        <option value="35">35회차 (2024년)</option>
                     </select>
                 </div>
                 <div class="col-md-4">
@@ -249,11 +259,10 @@
         }
     })();
 
-    // 과목 선택 → 회차/단원 로딩
+    // 과목 선택 → 단원 로딩
     (function(){
         const subj = $('#subject-select');
-        const round = $('#round-select');
-        const unit  = $('#unit-select');
+        const unit = $('#unit-select');
 
         function resetSelect(sel, label){
             if (!sel) return;
@@ -264,26 +273,8 @@
         if (subj) {
             subj.addEventListener('change', async function(){
                 const subjectId = this.value;
-                resetSelect(round, '회차');
                 resetSelect(unit, '단원');
                 if (!subjectId) return;
-
-                try{
-                    // 회차
-                    const r = await axios.get('/problems/api/rounds', { params: { subjectId }});
-                    resetSelect(round, '회차');
-                    (r.data || []).forEach(it => {
-                        const opt = document.createElement('option');
-                        opt.value = it.id;
-                        let text = it.roundNumber;
-                        if (text === undefined || text === null) text = it.name;
-                        if (text === undefined || text === null) text = it.id;
-                        opt.textContent = text;
-                        round.appendChild(opt);
-                    });
-                }catch(e){
-                    openModal('#modalError', '#modalErrorText', '회차 목록을 불러오지 못했습니다.');
-                }
 
                 try{
                     // 단원
