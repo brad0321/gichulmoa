@@ -120,6 +120,9 @@
             <a class="sb-link"
                th:href="@{/problems/new}"
                th:if="${!isGuest and loginUser.role.name() == 'ADMIN'}">문제등록</a>
+            <a class="sb-link"
+               th:href="@{/problems}"
+               th:if="${!isGuest and loginUser.role.name() == 'ADMIN'}">문제목록</a>
         </nav>
     </aside>
 
