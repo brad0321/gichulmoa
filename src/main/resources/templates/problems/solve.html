@@ -82,9 +82,9 @@
                 <ul class="dropdown-menu" id="round-menu"></ul>
             </div>
 
-            <!-- 목차 -->
+            <!-- 단원 -->
             <div class="dropdown" data-bs-auto-close="outside">
-                <button class="btn btn-ghost dropdown-toggle" type="button" id="unitDropdown" data-bs-toggle="dropdown" aria-expanded="false">목차 선택</button>
+                <button class="btn btn-ghost dropdown-toggle" type="button" id="unitDropdown" data-bs-toggle="dropdown" aria-expanded="false">단원 선택</button>
                 <ul class="dropdown-menu" id="unit-menu" style="max-height:260px;overflow-y:auto;"></ul>
             </div>
 
@@ -278,42 +278,85 @@
         selectedUnits=[];
         const menu=document.getElementById('unit-menu');
         menu.innerHTML='';
-        try{
-            const res=await axios.get(`/problems/api/units?subjectId=${subjectId}`);
-            const liAll=document.createElement('li');
-            liAll.innerHTML=`<label class="dropdown-item"><input type="checkbox" id="unit-all"> 전체목차</label>`;
-            menu.appendChild(liAll);
-            res.data.forEach(u=>{
-                const li=document.createElement('li');
-                li.innerHTML=`<label class="dropdown-item"><input type="checkbox" value="${u.id}"> ${u.name}</label>`;
-                menu.appendChild(li);
-            });
+        const units=[
+            {id:'1', name:'부동산의 개념과 분류'},
+            {id:'2', name:'부동산의 특성(속성)'},
+            {id:'3', name:'부동산 경제론'},
+            {id:'4', name:'부동산 시장론'},
+            {id:'5', name:'부동산입지론과 공간구조론'},
+            {id:'6', name:'부동산 정책론'},
+            {id:'7', name:'부동산 투자론'},
+            {id:'8', name:'부동산 금융론'},
+            {id:'9', name:'부동산 개발론'},
+            {id:'10', name:'부동산 관리론'},
+            {id:'11', name:'부동산 마케팅론'},
+            {id:'12', name:'감정평가의 기초이론'},
+            {id:'13', name:'감정평가 3방식 7방법'},
+            {id:'14', name:'부동산가격 공시제도'}
+        ];
 
-            menu.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
-                cb.addEventListener('change',()=>{
-                    if(cb.id==='unit-all'){
-                        const checked=cb.checked;
-                        menu.querySelectorAll('input[type="checkbox"]:not(#unit-all)').forEach(x=>x.checked=checked);
-                    }else{
-                        const all=document.getElementById('unit-all');
-                        if(!cb.checked && all) all.checked=false;
-                    }
-                    selectedUnits=[...menu.querySelectorAll('input[type="checkbox"]:not(#unit-all)')].filter(x=>x.checked).map(x=>x.value);
-                    updateUnitText();
-                    updateQuestionCount();
-                });
-            });
+        const liAll=document.createElement('li');
+        liAll.innerHTML=`<label class="dropdown-item"><input type="checkbox" id="unit-all"> 전체 단원</label>`;
+        menu.appendChild(liAll);
 
+        units.forEach(u=>{
+            const li=document.createElement('li');
+            li.innerHTML=`<label class="dropdown-item"><input type="checkbox" value="${u.id}"> ${u.name}</label>`;
+            menu.appendChild(li);
+        });
+
+        const liBtn=document.createElement('li');
+        liBtn.innerHTML=`<div class="d-flex justify-content-between px-3 py-2 border-top">
+                <button id="unit-confirm" class="btn btn-sm btn-main">확인</button>
+                <button id="unit-close" class="btn btn-sm btn-ghost">닫기</button>
+            </div>`;
+        menu.appendChild(liBtn);
+
+        menu.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+            cb.addEventListener('change',()=>{
+                if(cb.id==='unit-all'){
+                    const checked=cb.checked;
+                    menu.querySelectorAll('input[type="checkbox"]:not(#unit-all)').forEach(x=>x.checked=checked);
+                }else{
+                    const all=document.getElementById('unit-all');
+                    if(!cb.checked && all) all.checked=false;
+                }
+            });
+        });
+
+        document.getElementById('unit-confirm').addEventListener('click',()=>{
+            const checked=[...menu.querySelectorAll('input[type="checkbox"]:not(#unit-all)')].filter(cb=>cb.checked).map(cb=>cb.value);
+            selectedUnits=checked;
+            const total=menu.querySelectorAll('input[type="checkbox"]:not(#unit-all)').length;
+            const all=document.getElementById('unit-all');
+            if(all) all.checked=checked.length===total;
             updateUnitText();
-        }catch(err){ console.error('목차 로딩 실패:',err); }
+            updateQuestionCount();
+            const dd=bootstrap.Dropdown.getInstance(document.getElementById('unitDropdown'));
+            dd && dd.hide();
+        });
+        document.getElementById('unit-close').addEventListener('click',()=>{
+            menu.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+                if(cb.id==='unit-all'){
+                    const total=menu.querySelectorAll('input[type="checkbox"]:not(#unit-all)').length;
+                    cb.checked=selectedUnits.length===total && total>0;
+                }else{
+                    cb.checked=selectedUnits.includes(cb.value);
+                }
+            });
+            const dd=bootstrap.Dropdown.getInstance(document.getElementById('unitDropdown'));
+            dd && dd.hide();
+        });
+
+        updateUnitText();
     }
 
     function updateUnitText(){
         const allChecked=document.getElementById('unit-all')?.checked;
         const checked=[...document.querySelectorAll('#unit-menu input[type="checkbox"]:not(#unit-all)')].filter(cb=>cb.checked);
-        let text='목차 선택';
-        if(allChecked) text='전체목차';
-        else if(checked.length>1) text='다중목차';
+        let text='단원 선택';
+        if(allChecked) text='전체 단원';
+        else if(checked.length>1) text='다중 단원';
         else if(checked.length===1) text=`${checked[0].parentElement.textContent.trim()}`;
         document.getElementById('unitDropdown').textContent=text;
     }
