@@ -256,7 +256,8 @@ public class ProblemController {
     @ResponseBody
     public PracticeStartResponse startPractice(@RequestBody StartReq req, HttpSession session){
         Object principal = session.getAttribute("loginUser");
-        Long userId = (user != null) ? user.id() : null;
+        UserResponse loginUser = (principal instanceof UserResponse user) ? user : null;
+        Long userId = (loginUser != null) ? loginUser.id() : null;
         var r = practiceService.start(userId, req.subjectId(), nullIfEmpty(req.roundIds()), nullIfEmpty(req.unitIds()));
 
         // ★ 여기서 서비스 DTO → 컨트롤러 DTO로 매핑
@@ -298,7 +299,8 @@ public class ProblemController {
     @ResponseBody
     public AnswerResponse practiceAnswer(@RequestBody PracticeAnswerReq req, HttpSession session){
         Object principal = session.getAttribute("loginUser");
-        Long userId = (user != null) ? user.id() : null;
+        UserResponse loginUser = (principal instanceof UserResponse user) ? user : null;
+        Long userId = (loginUser != null) ? loginUser.id() : null;
         var r = practiceService.answer(req.sessionId(), req.itemId(), req.selected(), userId);
         return new AnswerResponse(r.correct(), r.answer(), r.explanation());
     }

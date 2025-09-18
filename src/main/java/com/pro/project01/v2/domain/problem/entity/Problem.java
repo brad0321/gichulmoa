@@ -13,7 +13,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Problem {
+public class
+Problem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
