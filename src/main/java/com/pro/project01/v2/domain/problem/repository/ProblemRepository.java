@@ -80,26 +80,29 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
        - 단, Projection 에 subjectProblemNo 추가
        ========================================================= */
     @Query("""
-        SELECT
-            p.id               AS id,
-            p.title            AS title,
-            s.name             AS subjectName,
-            r.name             AS roundName,
-            r.roundNumber      AS roundNumber,
-            u.name             AS unitName,
-            p.roundProblemNo   AS roundProblemNo,
-            p.subjectProblemNo AS subjectProblemNo
-        FROM Problem p
-            LEFT JOIN p.subject s
-            LEFT JOIN p.round   r
-            LEFT JOIN p.unit    u
-        WHERE (:subjectId IS NULL OR p.subject.id = :subjectId)
-          AND (:roundIds IS NULL OR p.round.id IN :roundIds)
-          AND (:unitIds  IS NULL OR p.unit.id  IN :unitIds)
-          AND (:q IS NULL OR p.title LIKE CONCAT('%', :q, '%'))
-          AND (:cursorId IS NULL OR p.id > :cursorId)
-        ORDER BY p.id ASC
-        """)
+    SELECT
+        p.id               AS id,
+        p.title            AS title,
+        s.name             AS subjectName,
+        r.name             AS roundName,
+        r.roundNumber      AS roundNumber,
+        u.name             AS unitName,
+        p.roundProblemNo   AS roundProblemNo,
+        p.subjectProblemNo AS subjectProblemNo
+    FROM Problem p
+        LEFT JOIN p.subject s
+        LEFT JOIN p.round   r
+        LEFT JOIN p.unit    u
+    WHERE (:subjectId IS NULL OR p.subject.id = :subjectId)
+      AND (:roundIds IS NULL OR p.round.id IN :roundIds)
+      AND (:unitIds  IS NULL OR p.unit.id  IN :unitIds)
+      AND (:q IS NULL OR p.title LIKE CONCAT('%', :q, '%'))
+      AND (
+            :cursorId IS NULL
+         OR (p.subjectProblemNo > :cursorId)
+      )
+    ORDER BY p.subjectProblemNo ASC, p.id ASC
+    """)
     List<ProblemListItemView> findNextPageForInfiniteScroll(
             @Param("subjectId") Long subjectId,
             @Param("roundIds") List<Long> roundIds,
@@ -108,6 +111,8 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
             @Param("cursorId") Long cursorId,
             Pageable pageable
     );
+
+
 
     /* =========================================================
        🔁 id DESC 버전 — 최신순 정렬 시 사용

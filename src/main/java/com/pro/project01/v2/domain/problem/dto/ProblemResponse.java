@@ -1,8 +1,13 @@
 // src/main/java/com/pro/project01/v2/domain/problem/dto/ProblemResponse.java
 package com.pro.project01.v2.domain.problem.dto;
 
+import com.pro.project01.v2.domain.explanation.dto.ExplanationResponse;
+import com.pro.project01.v2.domain.explanation.entity.Explanation;
 import com.pro.project01.v2.domain.problem.entity.Problem;
+
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public record ProblemResponse(
         Long id,
@@ -21,18 +26,20 @@ public record ProblemResponse(
         // 분류
         Long subjectId,
         String subjectName,
-        String subjectCode,     // SS (2자리) - Subject.code 또는 Problem.subjectCode
+        String subjectCode,     // SS (2자리)
         Long roundId,
         Integer roundNumber,    // RR (예: 35)
         String roundName,       // "35회차"
         Long unitId,
         String unitName,
-        String unitSeqCode,     // UUU (3자리) - Unit.seqCode 또는 Problem.unitSeqCode
+        String unitSeqCode,     // UUU (3자리)
 
         // 생성/수정
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
-        String explanation,
+
+        // ✅ 문제 전체 해설
+        String generalExplanation,
 
         // 편집용 숫자 필드(엔티티 Byte -> Integer)
         Integer roundProblemNo, // 1~40
@@ -41,8 +48,12 @@ public record ProblemResponse(
         // 💡 생성컬럼(읽기 전용)
         Integer subjectProblemNo, // 과목 내 고유번호 (29회 기준 시작)
         String roundCode,         // SS_RR_PP
-        String unitCode           // SS_UUU_PP
+        String unitCode,          // SS_UUU_PP
+
+        // ✅ 보기별 해설 (choiceNo → ExplanationResponse)
+        Map<Integer, ExplanationResponse> choiceExplanations
 ) {
+
     public static ProblemResponse fromEntity(Problem p) {
         // subject
         Long   subjectId   = p.getSubject() != null ? p.getSubject().getId()   : null;
@@ -74,6 +85,18 @@ public record ProblemResponse(
         // ✅ 과목 내 고유번호 (Generated Column)
         Integer subjectProblemNo = p.getSubjectProblemNo();
 
+        // ✅ 보기별 해설 Map (choiceNo → ExplanationResponse)
+        Map<Integer, ExplanationResponse> choiceExplanations =
+                p.getExplanations() == null ? Map.of()
+                        : p.getExplanations().stream()
+                        // 텍스트/이미지 둘 다 null인 경우는 스킵
+                        .filter(e -> e.getContent() != null
+                                || e.getImageExplanationUrl() != null)
+                        .collect(Collectors.toMap(
+                                Explanation::getChoiceNo,
+                                ExplanationResponse::from
+                        ));
+
         return new ProblemResponse(
                 p.getId(),
                 p.getTitle(),
@@ -98,14 +121,15 @@ public record ProblemResponse(
 
                 p.getCreatedAt(),
                 p.getUpdatedAt(),
-                p.getExplanation(),
+                p.getGeneralExplanation(),   // ✅ 변경 포인트
 
                 roundProblemNo,
                 unitProblemNo,
 
                 subjectProblemNo,
                 p.getRoundCode(),
-                p.getUnitCode()
+                p.getUnitCode(),
+                choiceExplanations
         );
     }
 }

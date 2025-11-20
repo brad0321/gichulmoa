@@ -146,20 +146,23 @@ public class ProblemController {
                 .map(ProblemListItemDto::from)
                 .collect(Collectors.toList());
 
-        Long nextId = null;
+        Long nextCursorId = null;
+
         List<ProblemListItemView> all = slice.getContent();
         if (!all.isEmpty()) {
             var last = all.get(all.size() - 1);
-            nextId = last.getId();
+            Integer spn = last.getSubjectProblemNo();
+            if (spn != null) {
+                nextCursorId = spn.longValue();
+            }
         }
-
         return ResponseEntity.ok(
                 new ProblemListSliceResponse3Cursor(
                         items,
                         slice.hasNext(),
-                        null,   // nextRoundNumber (단일 커서 기반이므로 null)
-                        null,   // nextRoundProblemNo (단일 커서 기반이므로 null)
-                        nextId  // 다음 커서 ID
+                        null,   // nextRoundNumber (안 쓰므로 그대로 null)
+                        null,   // nextRoundProblemNo (안 쓰므로 그대로 null)
+                        nextCursorId  // ✅ 이제 subject_problem_no 기반 커서
                 )
         );
     }

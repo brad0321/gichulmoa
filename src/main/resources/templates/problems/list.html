@@ -783,7 +783,9 @@ ${editorTemplate(it)}`;
             });
         }
         if(q) params.set('q', q);
-        if(nextId != null) params.set('cursorId', nextId);
+        if (typeof nextId === 'number' && !isNaN(nextId)) {
+            params.set('cursorId', nextId);
+        }
         params.set('size', size);
 
         try{

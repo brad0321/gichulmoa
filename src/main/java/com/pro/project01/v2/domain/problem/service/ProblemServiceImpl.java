@@ -301,9 +301,16 @@ public class ProblemServiceImpl implements ProblemService {
                 ? new ArrayList<>(rows.subList(0, pageSize))
                 : new ArrayList<>(rows);
 
-        Long lastId = rows.isEmpty() ? null : rows.get(rows.size() - 1).getId();
-        log.info("🧩 [getProblemList] subjectId={}, roundIds={}, unitIds={}, cursorId={}, lastId={}, total={}, hasNext={}",
-                safeSubjectId, safeRoundIds, safeUnitIds, cursorId, lastId, rows.size(), hasNext);
+        Long lastCursor = null;
+        if (!rows.isEmpty()) {
+            Integer spn = rows.get(rows.size() - 1).getSubjectProblemNo();
+            if (spn != null) {
+                lastCursor = spn.longValue();
+            }
+        }
+
+        log.info("🧩 [getProblemList] subjectId={}, roundIds={}, unitIds={}, cursor(spn)={}, lastCursor(spn)={}, total={}, hasNext={}",
+                safeSubjectId, safeRoundIds, safeUnitIds, cursorId, lastCursor, rows.size(), hasNext);
 
         return new SliceImpl<>(content, PageRequest.of(0, pageSize), hasNext);
     }

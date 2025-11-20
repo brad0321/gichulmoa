@@ -1,6 +1,7 @@
 // src/main/java/com/pro/project01/v2/domain/problem/entity/Problem.java
 package com.pro.project01.v2.domain.problem.entity;
 
+import com.pro.project01.v2.domain.explanation.entity.Explanation;
 import com.pro.project01.v2.domain.round.entity.Round;
 import com.pro.project01.v2.domain.subject.entity.Subject;
 import com.pro.project01.v2.domain.unit.entity.Unit;
@@ -8,6 +9,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -64,60 +67,53 @@ public class Problem {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    /** 전체 해설 (추후 Explanation 테이블로 이관 예정) */
-    private String explanation;
+    /** ✅ 문제 전체 해설 (1문제당 1개, null 허용)
+     *  - DB 컬럼 이름은 그대로 explanation 사용
+     */
+    @Lob
+    @Column(name = "explanation", columnDefinition = "LONGTEXT", nullable = true)
+    private String generalExplanation;
 
     /** ✅ 전체 정렬 순서 (DB에 order_no 컬럼 존재) */
     @Column(name = "order_no", nullable = false)
     private int orderNo;
 
     /* -------------------------------
-       코드/번호 관련 필드
-       - round_problem_no : 회차 내 문항번호(1~40)
-       - round_number     : 회차 표시 숫자 (예: 29, 30)
-       - subject_code     : 과목 코드(SS, 예: "01")
-       - unit_seq_code    : 단원 코드(UUU, 예: "003")
-       - unit_problem_no  : 단원 내 번호(1~99)
-       - round_code       : SS_RR_PP (예: 01_29_01)
-       - unit_code        : SS_UUU_PP(예: 01_001_01)
-       - subject_problem_no : (29회 기준) 과목 내 고유번호
-                              ( (round_number-29)*40 + round_problem_no )
+       코드/번호 관련 필드 (생략 주석 그대로 유지)
        -------------------------------- */
 
-    /** 회차 내 문항번호: 1~40 (NULL 허용 → Byte 래퍼) */
     @Column(name = "round_problem_no")
     private Byte roundProblemNo;
 
-    /** 회차 표시 숫자(RR) — round FK로부터 동기화 */
     @Column(name = "round_number")
     private Short roundNumber;
 
-    /** 과목 코드(SS: 2자리, 예: 01=민법) */
     @Column(name = "subject_code", length = 2)
     private String subjectCode;
 
-    /** 단원 코드(UUU: 3자리, 예: 001) */
     @Column(name = "unit_seq_code", length = 3)
     private String unitSeqCode;
 
-    /** 단원 내 문제번호: 1~99 → PP */
     @Column(name = "unit_problem_no")
     private Byte unitProblemNo;
 
-    /** 생성컬럼: SS_RR_PP (예: 01_35_12) → 길이 9 */
     @Column(name = "round_code", length = 9, insertable = false, updatable = false)
     private String roundCode;
 
-    /** 생성컬럼: SS_UUU_PP (예: 01_003_07) → 길이 10 */
     @Column(name = "unit_code", length = 10, insertable = false, updatable = false)
     private String unitCode;
 
-    /** ✅ 생성컬럼: 과목 내 고유번호 (29회 기준 시작)
-     *   subject_problem_no = (round_number - 29) * 40 + round_problem_no
-     *   - DB Generated Column 이므로 읽기 전용으로 매핑
-     */
     @Column(name = "subject_problem_no", insertable = false, updatable = false)
     private Integer subjectProblemNo;
+
+    /** ✅ 보기별 해설들 (1:N)
+     *  - 틀린 보기 중, 해설 있는 보기들만 Explanation row 생성
+     */
+    @Builder.Default
+    @OneToMany(mappedBy = "problem",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<Explanation> explanations = new ArrayList<>();
 
     /* ===============================
        라이프사이클 콜백
@@ -134,9 +130,7 @@ public class Problem {
     }
 
     /* ===============================
-       업데이트 메서드
-       - 생성컬럼(round_code, unit_code, subject_problem_no)은 직접 건드리지 않음
-       - 폼에서 채운 구성요소들만 반영
+       업데이트 메서드 (기존 그대로 유지)
        =============================== */
     public void update(
             String title, String viewContent, String imageUrl,
@@ -144,7 +138,6 @@ public class Problem {
             String choice4, String choice5, Integer answer,
             Subject subject, Round round, Unit unit,
 
-            // 코드/번호 관련 신규 필드
             Byte roundProblemNo,
             String subjectCode, String unitSeqCode, Byte unitProblemNo,
             Integer orderNo
@@ -172,7 +165,6 @@ public class Problem {
             this.orderNo = orderNo;
         }
 
-        // FK에서 코드/번호 다시 동기화 (필요 시)
         syncCodesFromFKs();
     }
 
@@ -181,7 +173,6 @@ public class Problem {
         this.orderNo = orderNo;
     }
 
-    /** 코드 구성요소만 따로 갱신 (생성컬럼은 DB에서 자동 생성) */
     public void updateCodes(Byte roundProblemNo, String subjectCode, String unitSeqCode, Byte unitProblemNo) {
         this.roundProblemNo = roundProblemNo;
         this.subjectCode    = subjectCode;    // 길이 2
@@ -189,20 +180,79 @@ public class Problem {
         this.unitProblemNo  = unitProblemNo;
     }
 
-    /** FK로부터 코드/번호 구성요소 동기화
-     *  - subject.code        → subjectCode
-     *  - round.roundNumber   → roundNumber
-     *  - unit.seqCode        → unitSeqCode
-     */
     public void syncCodesFromFKs() {
         if (this.subject != null && this.subject.getCode() != null) {
-            this.subjectCode = this.subject.getCode();      // 예: "01"
+            this.subjectCode = this.subject.getCode();
         }
         if (this.round != null && this.round.getRoundNumber() != null) {
-            this.roundNumber = this.round.getRoundNumber(); // 예: 29
+            this.roundNumber = this.round.getRoundNumber();
         }
         if (this.unit != null && this.unit.getSeqCode() != null) {
-            this.unitSeqCode = this.unit.getSeqCode();      // 예: "003"
+            this.unitSeqCode = this.unit.getSeqCode();
         }
+    }
+
+    /* ===============================
+       ✅ 해설 관련 도메인 메서드 (세터 X)
+       =============================== */
+
+    /** 문제 전체 해설 변경 */
+    public void changeGeneralExplanation(String generalExplanation) {
+        this.generalExplanation = generalExplanation;
+    }
+
+    /**
+     * 보기 해설 등록/수정 (Map 느낌으로 사용)
+     * - content가 null 또는 빈문자면 해당 보기 해설 삭제
+     * - 선택적으로 틀린 보기만 넣으면 됨
+     */
+    public void putChoiceExplanation(Integer choiceNo, String content) {
+        if (choiceNo == null) return;
+
+        Explanation existing = this.explanations.stream()
+                .filter(e -> Objects.equals(e.getChoiceNo(), choiceNo))
+                .findFirst()
+                .orElse(null);
+
+        // content 비어있으면 삭제
+        if (content == null || content.isBlank()) {
+            if (existing != null) {
+                this.explanations.remove(existing);
+            }
+            return;
+        }
+
+        // 수정
+        if (existing != null) {
+            existing.changeContent(content);
+            return;
+        }
+
+        // 신규 등록
+        Explanation explanation = Explanation.builder()
+                .choiceNo(choiceNo)
+                .content(content)
+                .problem(this)
+                .build();
+
+        this.explanations.add(explanation);
+    }
+
+    /** 보기 해설 전체 삭제 (예: 문제 해설 초기화 등) */
+    public void clearChoiceExplanations() {
+        this.explanations.clear();
+    }
+
+    /**
+     * 읽기용: 보기번호 → 해설내용 Map 으로 변환
+     * - 서비스/컨트롤러 단에서 map 방식으로 편하게 사용
+     */
+    public Map<Integer, String> getChoiceExplanationMap() {
+        return this.explanations.stream()
+                .filter(e -> e.getContent() != null && !e.getContent().isBlank())
+                .collect(Collectors.toMap(
+                        Explanation::getChoiceNo,
+                        Explanation::getContent
+                ));
     }
 }
