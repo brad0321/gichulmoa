@@ -9,17 +9,19 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Table(name = "round")
 public class Round {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Integer roundNumber; // 예: 36, 35 (회차)
+    /** 회차 번호(RR: 2~3자리, 예: 35, 36) */
+    @Column(name = "Round_number", nullable = false)
+    private Short roundNumber;
 
+    /** 36회차, 35회차 등 표시용 */
     @Column(name = "name")
-    private String name; // 36회차, 35회차 등 표시용
+    private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id", nullable = false)

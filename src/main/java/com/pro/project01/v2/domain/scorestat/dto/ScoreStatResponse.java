@@ -1,7 +1,6 @@
 package com.pro.project01.v2.domain.scorestat.dto;
 
 import com.pro.project01.v2.domain.scorestat.entity.ScoreStat;
-
 import java.time.LocalDateTime;
 
 public record ScoreStatResponse(
@@ -25,9 +24,9 @@ public record ScoreStatResponse(
     public static ScoreStatResponse fromEntity(ScoreStat s) {
         if (s == null) return null;
 
-        var user   = s.getUser();
-        var subj   = s.getSubject();
-        var round  = s.getRound();
+        var user  = s.getUser();
+        var subj  = s.getSubject();
+        var round = s.getRound();
 
         return new ScoreStatResponse(
                 s.getId(),
@@ -36,7 +35,8 @@ public record ScoreStatResponse(
                 subj != null ? subj.getId() : null,
                 subj != null ? subj.getName() : null,
                 round != null ? round.getId() : null,
-                round != null ? round.getRoundNumber() : null,
+                // ✅ 수정: round.getRoundNumber() → round.getNumber()
+                round != null && round.getRoundNumber() != null ? round.getRoundNumber().intValue() : null,
 
                 s.getTotalQuestions(),
                 s.getCorrectAnswers(),

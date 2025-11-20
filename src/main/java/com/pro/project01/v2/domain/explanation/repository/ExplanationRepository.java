@@ -3,6 +3,9 @@ package com.pro.project01.v2.domain.explanation.repository;
 import com.pro.project01.v2.domain.explanation.dto.ExplanationResponse;
 import com.pro.project01.v2.domain.explanation.entity.Explanation;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -35,4 +38,15 @@ public interface ExplanationRepository extends JpaRepository<Explanation, Long> 
                         .build())
         );
     }
+
+    @Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query(value = """
+    INSERT INTO explanation (problem_id, choice_no, content, created_at, updated_at)
+    VALUES (:problemId, :choiceNo, :content, NOW(), NOW())
+    ON DUPLICATE KEY UPDATE content = VALUES(content), updated_at = NOW()
+    """, nativeQuery = true)
+    void upsert(@Param("problemId") Long problemId,
+                @Param("choiceNo")  Integer choiceNo,
+                @Param("content")   String content);
 }

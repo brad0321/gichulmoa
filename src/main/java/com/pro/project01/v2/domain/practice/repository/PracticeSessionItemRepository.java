@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface PracticeSessionItemRepository extends JpaRepository<PracticeSessionItem, Long> {
     List<PracticeSessionItem> findBySession_IdOrderByOrderIndexAsc(Long sessionId);
+    void deleteByProblem_Id(Long problemId);
 }

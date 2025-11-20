@@ -19,6 +19,7 @@ public class Explanation {
     private Integer choiceNo;
 
     @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)

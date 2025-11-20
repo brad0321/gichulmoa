@@ -1,22 +1,24 @@
+// src/main/java/com/pro/project01/v2/domain/problem/controller/ProblemController.java
 package com.pro.project01.v2.domain.problem.controller;
 
 import com.pro.project01.v2.domain.practice.service.PracticeService;
-import com.pro.project01.v2.domain.problem.dto.ProblemRequest;
-import com.pro.project01.v2.domain.problem.dto.ProblemResponse;
-import com.pro.project01.v2.domain.problem.dto.ProblemResponseForSolve;
-import com.pro.project01.v2.domain.problem.repository.ProblemRepository;
+import com.pro.project01.v2.domain.problem.dto.*;
+import com.pro.project01.v2.domain.problem.dto.ProblemCodeDtos.*;
 import com.pro.project01.v2.domain.problem.service.ProblemService;
-import com.pro.project01.v2.domain.round.dto.RoundDto;
+import com.pro.project01.v2.domain.round.entity.Round;
 import com.pro.project01.v2.domain.round.repository.RoundRepository;
-import com.pro.project01.v2.domain.subject.entity.Subject;
 import com.pro.project01.v2.domain.subject.repository.SubjectRepository;
-import com.pro.project01.v2.domain.unit.dto.UnitDto;
+import com.pro.project01.v2.domain.unit.entity.Unit;
 import com.pro.project01.v2.domain.unit.repository.UnitRepository;
 import com.pro.project01.v2.domain.user.dto.UserResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -27,6 +29,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -37,55 +41,154 @@ public class ProblemController {
 
     private final ProblemService problemService;
     private final PracticeService practiceService;
-    private final ProblemRepository problemRepository;
     private final SubjectRepository subjectRepository;
     private final RoundRepository roundRepository;
     private final UnitRepository unitRepository;
 
     private static final Path UPLOAD_DIR = Paths.get("src/main/resources/static/uploads");
-    private static final Set<String> ALLOWED_IMG_EXT = Set.of("png","jpg","jpeg","gif","webp");
+    private static final Set<String> ALLOWED_IMG_EXT  = Set.of("png","jpg","jpeg","gif","webp");
     private static final Set<String> ALLOWED_IMG_MIME = Set.of("image/png","image/jpeg","image/gif","image/webp");
 
-    /** ✅ 문제 목록 */
+    /* =========================================================================
+       목록(무한스크롤) - 템플릿만 제공, 데이터는 /list/api 로드
+       ========================================================================= */
     @GetMapping
-    public String list(HttpSession session, Model model) {
-        List<ProblemResponse> problems = problemService.findAll();
-        log.info("[GET] 문제 목록 요청, size={}", problems.size());
-        model.addAttribute("problems", problems);
-        Object principal = session.getAttribute("loginUser");
-        UserResponse loginUser = (principal instanceof UserResponse user) ? user : null;
-        if (loginUser != null) {
-            model.addAttribute("loginUser", loginUser);
+    public String listPage(@RequestParam(required = false) Long subjectId,
+                           @RequestParam(required = false, name = "roundIds") List<Long> roundIds,
+                           @RequestParam(required = false, name = "unitIds") List<Long> unitIds,
+                           @RequestParam(required = false) String q,
+                           @RequestParam(defaultValue = "20") int size,
+                           HttpSession session,
+                           Model model) {
+
+        // 🔹 회차/단원: 0, null, 음수 제거 → 양수 ID만 남김
+        if (roundIds == null) {
+            roundIds = Collections.emptyList();
+        } else {
+            roundIds = roundIds.stream()
+                    .filter(id -> id != null && id > 0)
+                    .toList();
         }
+
+        if (unitIds == null) {
+            unitIds = Collections.emptyList();
+        } else {
+            unitIds = unitIds.stream()
+                    .filter(id -> id != null && id > 0)
+                    .toList();
+        }
+
+        log.info("[GET] 문제 목록 템플릿 subjectId={}, roundIds={}, unitIds={}, q={}",
+                subjectId, roundIds, unitIds, q);
+
+        // 로그인 사용자
+        Object principal = session.getAttribute("loginUser");
+        if (principal instanceof UserResponse user) {
+            model.addAttribute("loginUser", user);
+        }
+
+        // 🔹 필터 옵션(셀렉트박스에 뿌릴 목록)
+        model.addAttribute("subjects", subjectRepository.findAll());
+        if (subjectId != null && subjectId > 0) {
+            // 과목 선택 시: 해당 과목의 회차/단원만
+            model.addAttribute("rounds", roundRepository.findBySubject_Id(subjectId));
+            model.addAttribute("units", unitRepository.findBySubject_Id(subjectId));
+        } else {
+            // 과목 전체: 전체 회차/단원
+            model.addAttribute("rounds", roundRepository.findAll());
+            model.addAttribute("units", unitRepository.findAll());
+        }
+
+        // 🔹 템플릿/JS에서 쓸 초기 파라미터 전달
+        model.addAttribute("subjectId", subjectId);
+        model.addAttribute("selectedRoundIds", roundIds); // ✅ 다중 선택 유지용
+        model.addAttribute("selectedUnitIds", unitIds);   // ✅ 다중 선택 유지용
+        model.addAttribute("q", q);
+        model.addAttribute("size", size);
+
         return "problems/list";
     }
 
-    /** ✅ 문제 등록 폼 */
-    @GetMapping("/new")
-    public String createForm(Model model) {
-        log.info("[GET] 문제 등록 폼 요청");
-        model.addAttribute("problem", new ProblemRequest(
-                null, null, null, null, null, null, null, null, null, null, null
-        ));
-        model.addAttribute("subjects", subjectRepository.findAll());
-        model.addAttribute("rounds", roundRepository.findAll());
-        model.addAttribute("units", unitRepository.findAll());
-        return "problems/new"; // 경로 수정
+    /** ✅ 무한스크롤 JSON API (단일 커서 cursorId 기반, 필터는 복수 회차/단원) */
+    @GetMapping(value="/list/api", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<ProblemListSliceResponse3Cursor> listApi(
+            @RequestParam(required = false) Long subjectId,
+            @RequestParam(required = false, name = "roundIds") List<Long> roundIds,
+            @RequestParam(required = false, name = "unitIds") List<Long> unitIds,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        // 🔹 회차/단원 필터 정리
+        if (roundIds == null) {
+            roundIds = Collections.emptyList();
+        } else {
+            roundIds = roundIds.stream()
+                    .filter(id -> id != null && id > 0)
+                    .toList();
+        }
+
+        if (unitIds == null) {
+            unitIds = Collections.emptyList();
+        } else {
+            unitIds = unitIds.stream()
+                    .filter(id -> id != null && id > 0)
+                    .toList();
+        }
+
+        // ⚠️ ProblemService.getProblemList 시그니처를 List 기반으로 수정해야 함
+        Slice<ProblemListItemView> slice = problemService.getProblemList(
+                subjectId, roundIds, unitIds, q, cursorId, size
+        );
+
+        var items = slice.getContent().stream()
+                .map(ProblemListItemDto::from)
+                .collect(Collectors.toList());
+
+        Long nextId = null;
+        List<ProblemListItemView> all = slice.getContent();
+        if (!all.isEmpty()) {
+            var last = all.get(all.size() - 1);
+            nextId = last.getId();
+        }
+
+        return ResponseEntity.ok(
+                new ProblemListSliceResponse3Cursor(
+                        items,
+                        slice.hasNext(),
+                        null,   // nextRoundNumber (단일 커서 기반이므로 null)
+                        null,   // nextRoundProblemNo (단일 커서 기반이므로 null)
+                        nextId  // 다음 커서 ID
+                )
+        );
     }
 
-    /** ✅ 문제 등록 처리 (+ 보기별 해설 exp1~5 수신) */
+    /* =========================================================================
+       등록/수정/상세/삭제
+       ========================================================================= */
+    @GetMapping("/new")
+    public String createForm(Model model) {
+        model.addAttribute("problem", new ProblemRequest(
+                null, null, null, null, null, null, null,
+                null,
+                null, null, null,
+                null,
+                null,
+                null,
+                null
+        ));
+        model.addAttribute("subjects", subjectRepository.findAll());
+        model.addAttribute("rounds", Collections.emptyList());
+        model.addAttribute("units", Collections.emptyList());
+        return "problems/new";
+    }
+
     @PostMapping("/new")
     public String create(@ModelAttribute ProblemRequest request,
                          @RequestParam(value="imageFile", required=false) MultipartFile imageFile,
-                         @RequestParam(value="exp1", required=false) String exp1,
-                         @RequestParam(value="exp2", required=false) String exp2,
-                         @RequestParam(value="exp3", required=false) String exp3,
-                         @RequestParam(value="exp4", required=false) String exp4,
-                         @RequestParam(value="exp5", required=false) String exp5,
                          RedirectAttributes redirectAttributes) throws IOException {
-        log.info("[POST] 문제 등록 요청: {}", safeLog(request));
 
-        // 필수 입력값 누락 시 다시 폼으로 이동
         if (request.title() == null || request.answer() == null ||
                 request.subjectId() == null || request.roundId() == null || request.unitId() == null) {
             redirectAttributes.addFlashAttribute("error", "필수 항목을 모두 입력/선택해주세요.");
@@ -93,67 +196,50 @@ public class ProblemController {
         }
 
         String imagePath = storeImageIfPresent(imageFile);
-        // List.of(...) 는 null 요소를 허용하지 않아 expX 가 비어있을 때 NPE가 발생한다.
-        // Arrays.asList(...) 를 사용하여 null을 포함한 목록을 전달한다.
-        problemService.create(request, imagePath, Arrays.asList(exp1,exp2,exp3,exp4,exp5));
-        log.info("문제 등록 완료");
+
+        problemService.create(request, imagePath, List.of(
+                request.choice1(),
+                request.choice2(),
+                request.choice3(),
+                request.choice4(),
+                request.choice5()
+        ));
+
         redirectAttributes.addFlashAttribute("msg", "문제가 등록되었습니다.");
         return "redirect:/problems";
     }
 
-    /** ✅ 문제 수정 폼 */
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
-        log.info("[GET] 문제 수정 폼 요청: id={}", id);
         ProblemResponse problem = problemService.findById(id);
         model.addAttribute("problem", problem);
         model.addAttribute("subjects", subjectRepository.findAll());
-        model.addAttribute("rounds", roundRepository.findAll());
-        model.addAttribute("units", unitRepository.findAll());
+        model.addAttribute("rounds", Collections.emptyList());
+        model.addAttribute("units", Collections.emptyList());
         return "problems/edit";
     }
 
-    /**
-     * ✅ 문제 수정 처리
-     * - removeImage=true면 업로드 무시하고 이미지 제거 시그널 전달(여기선 ""로 약속)
-     * - 새 파일이 있으면 저장 후 경로 전달
-     * - 아무것도 없으면 imagePath=null 전달(이미지 변경 없음)
-     *
-     * ProblemService.update 시그니처 예시:
-     *   update(Long id, ProblemRequest req, String imagePath, List<String> expList)
-     *   - imagePath == null   : 이미지 변경 없음
-     *   - imagePath == ""     : 이미지 제거
-     *   - imagePath == "file" : 해당 파일명으로 교체
-     */
     @PostMapping("/{id}/edit")
     public String update(@PathVariable Long id,
                          @ModelAttribute ProblemRequest request,
                          @RequestParam(value="imageFile", required=false) MultipartFile imageFile,
-                         @RequestParam(value="removeImage", required=false) Boolean removeImage,
-                         @RequestParam(value="exp1", required=false) String exp1,
-                         @RequestParam(value="exp2", required=false) String exp2,
-                         @RequestParam(value="exp3", required=false) String exp3,
-                         @RequestParam(value="exp4", required=false) String exp4,
-                         @RequestParam(value="exp5", required=false) String exp5) throws IOException {
-        log.info("[POST] 문제 수정 요청: id={}, data={}", id, safeLog(request));
+                         @RequestParam(value="removeImage", required=false) Boolean removeImage) throws IOException {
 
-        String imagePath;
-        if (Boolean.TRUE.equals(removeImage)) {
-            imagePath = ""; // 제거 시그널
-        } else {
-            imagePath = storeImageIfPresent(imageFile); // 없으면 null
-        }
+        String imagePath = Boolean.TRUE.equals(removeImage) ? null : storeImageIfPresent(imageFile);
 
-        // 보기 해설 중 일부가 비어있을 경우 List.of(...) 가 NPE를 유발하므로 Arrays.asList 사용
-        problemService.update(id, request, imagePath, Arrays.asList(exp1,exp2,exp3,exp4,exp5));
-        log.info("문제 수정 완료: id={}", id);
+        problemService.update(id, request, imagePath, List.of(
+                request.choice1(),
+                request.choice2(),
+                request.choice3(),
+                request.choice4(),
+                request.choice5()
+        ));
+
         return "redirect:/problems/" + id;
     }
 
-    /** ✅ 문제 상세 */
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, HttpSession session, Model model) {
-        log.info("[GET] 문제 상세 요청: id={}", id);
         ProblemResponse problem = problemService.findById(id);
         model.addAttribute("problem", problem);
         Object principal = session.getAttribute("loginUser");
@@ -163,170 +249,160 @@ public class ProblemController {
         return "problems/detail";
     }
 
-    /** ✅ 문제 삭제 */
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Long id) {
-        log.info("[POST] 문제 삭제 요청: id={}", id);
-        problemService.delete(id);
-        return "redirect:/problems";
+    public String delete(@PathVariable Long id,
+                         HttpServletRequest request,
+                         RedirectAttributes redirectAttributes) {
+        try {
+            problemService.delete(id);
+            redirectAttributes.addFlashAttribute("msg", "문제가 삭제되었습니다.");
+        } catch (IllegalStateException e) {
+            // 위 delete() 에서 wrap 한 예외
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/problems");
     }
 
-    /** ✅ 문제 풀이 페이지 */
+
+    /* =========================================================================
+       풀이/정렬 이동
+       ========================================================================= */
     @GetMapping("/solve")
     public String solvePage(HttpSession session, Model model) {
-        log.info("[GET] 문제 풀이 페이지 요청");
         Object principal = session.getAttribute("loginUser");
-        UserResponse loginUser = (principal instanceof UserResponse user) ? user : null;
-        Long userId = (loginUser != null ? loginUser.id() : 0L);
-        model.addAttribute("userId", userId);
-        if (loginUser != null) {
-            model.addAttribute("loginUser", loginUser);
+        if (principal instanceof UserResponse user) {
+            model.addAttribute("loginUser", user);
+            model.addAttribute("userId", user.id());
+        } else {
+            model.addAttribute("userId", 0L);
         }
         return "problems/solve";
     }
 
-    // ---------- APIs (목록/필터) ----------
-
-    /** ✅ 과목 리스트 API */
-    @ResponseBody
-    @GetMapping("/api/subjects")
-    public List<Subject> getSubjects() {
-        log.info("[API] 과목 리스트 요청");
-        return subjectRepository.findAll();
+    @PostMapping("/{id}/moveUp")
+    public String moveUp(@PathVariable Long id, HttpServletRequest request) {
+        problemService.moveUp(id);
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/problems");
     }
 
-    /** ✅ 회차 리스트 API (정렬 ASC, 널가드) */
-    @ResponseBody
-    @GetMapping("/api/rounds")
-    public List<RoundDto> getRounds(@RequestParam("subjectId") Long subjectId) {
-        log.info("[API] 회차 리스트 요청: subjectId={}", subjectId);
-        return roundRepository.findBySubject_Id(subjectId).stream()
-                .sorted(Comparator.comparingInt(r -> Optional.ofNullable(r.getRoundNumber()).orElse(0)))
-                .map(r -> new RoundDto(r.getId(), r.getRoundNumber(), r.getName()))
-                .collect(Collectors.toList());
+    @PostMapping("/{id}/moveDown")
+    public String moveDown(@PathVariable Long id, HttpServletRequest request) {
+        problemService.moveDown(id);
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/problems");
     }
 
-    /** ✅ 단원 리스트 API */
+    /* =========================================================================
+       Ajax API - 과목/회차/단원/개수
+       ========================================================================= */
+    @GetMapping(value="/api/rounds", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @GetMapping("/api/units")
-    public List<UnitDto> getUnits(@RequestParam("subjectId") Long subjectId) {
-        log.info("[API] 단원 리스트 요청: subjectId={}", subjectId);
-        return unitRepository.findBySubject_Id(subjectId)
-                .stream()
-                .map(u -> new UnitDto(u.getId(), u.getName()))
-                .toList();
-    }
-
-    /**
-     * ✅ 문제 리스트 API (카운트/미리보기용)
-     * - 프론트에서 개수 집계 및 일부 미리보기(지문/보기/이미지 절대경로) 용도
-     */
-    @ResponseBody
-    @GetMapping("/api/problems")
-    public List<ProblemResponseForSolve> getProblems(
-            @RequestParam Long subjectId,
-            @RequestParam(required = false) List<Long> roundIds,
-            @RequestParam(required = false) List<Long> unitIds
-    ) {
-        log.info("[API] 문제 리스트 요청: subjectId={}, roundIds={}, unitIds={}", subjectId, roundIds, unitIds);
-
-        return problemRepository.findByFilters(subjectId, roundIds, unitIds)
-                .stream()
-                .map(problem -> new ProblemResponseForSolve(
-                        problem.getId(),
-                        problem.getTitle(),
-                        problem.getViewContent(),
-                        problem.getImageUrl() != null ? ("/uploads/" + problem.getImageUrl()) : null,
-                        List.of(
-                                new ProblemResponseForSolve.ChoiceDto(problem.getChoice1()),
-                                new ProblemResponseForSolve.ChoiceDto(problem.getChoice2()),
-                                new ProblemResponseForSolve.ChoiceDto(problem.getChoice3()),
-                                new ProblemResponseForSolve.ChoiceDto(problem.getChoice4()),
-                                new ProblemResponseForSolve.ChoiceDto(problem.getChoice5())
-                        ),
-                        problem.getAnswer()
-                ))
-                .toList();
-    }
-
-    // ---------- 연습(기출 조합) 모드 API ----------
-
-    // 연습 세션 시작
-    @PostMapping(value="/practice/start", consumes=MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public PracticeStartResponse startPractice(@RequestBody StartReq req, HttpSession session){
-        Object principal = session.getAttribute("loginUser");
-        UserResponse loginUser = (principal instanceof UserResponse user) ? user : null;
-        Long userId = (loginUser != null) ? loginUser.id() : null;
-        var r = practiceService.start(userId, req.subjectId(), nullIfEmpty(req.roundIds()), nullIfEmpty(req.unitIds()));
-
-        // ★ 여기서 서비스 DTO → 컨트롤러 DTO로 매핑
-        var mapped = r.firstPage().stream()
-                .map(q -> new QuestionDto(
-                        q.itemId(),
-                        q.problemId(),
-                        q.title(),
-                        q.viewContent(),
-                        q.imageUrl(),
-                        q.choices(),
-                        q.answer()
-                ))
-                .toList();
-
-        return new PracticeStartResponse(r.sessionId(), mapped);
-    }
-
-    @GetMapping("/play")
-    public String playPage(HttpSession session, Model model) {
-        Object principal = session.getAttribute("loginUser");
-        UserResponse loginUser = (principal instanceof UserResponse user) ? user : null;
-        Long userId = (loginUser != null) ? loginUser.id() : 0L;
-        model.addAttribute("userId", userId);
-        if (loginUser != null) {
-            model.addAttribute("loginUser", loginUser);
+    public List<Map<String, Object>> getRounds(@RequestParam Long subjectId) {
+        List<Round> rounds = roundRepository.findBySubject_Id(subjectId);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Round r : rounds) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", r.getId());
+            map.put("name", r.getName());
+            Integer roundNumber = null;
+            if (r.getRoundNumber() != null) {
+                roundNumber = r.getRoundNumber().intValue();
+            } else {
+                String text = Optional.ofNullable(r.getName()).orElse("");
+                Matcher m = Pattern.compile("(\\d{1,3})").matcher(text);
+                if (m.find()) roundNumber = Integer.parseInt(m.group(1));
+            }
+            map.put("roundNumber", roundNumber);
+            result.add(map);
         }
-        return "problems/play"; // -> templates/problems/play.html
+        return result;
     }
 
-    // (선택) 과거 링크 호환: /exams 로 들어오면 /problems/play 로 보냄
-    @GetMapping("/exams")
-    public String examsRedirect() {
-        return "redirect:/problems/play";
-    }
-
-    /** ✅ 연습 즉시 채점 */
-    @PostMapping(value="/practice/answer", consumes=MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value="/api/units", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public AnswerResponse practiceAnswer(@RequestBody PracticeAnswerReq req, HttpSession session){
-        Object principal = session.getAttribute("loginUser");
-        UserResponse loginUser = (principal instanceof UserResponse user) ? user : null;
-        Long userId = (loginUser != null) ? loginUser.id() : null;
-        var r = practiceService.answer(req.sessionId(), req.itemId(), req.selected(), userId);
-        return new AnswerResponse(r.correct(), r.answer(), r.explanation());
+    public List<Map<String, Object>> getUnits(@RequestParam Long subjectId) {
+        List<Unit> units = unitRepository.findBySubject_Id(subjectId);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Unit u : units) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", u.getId());
+            map.put("name", u.getName());
+            result.add(map);
+        }
+        return result;
     }
 
-    /** ✅ 소거법 토글 (세션 상태에 저장) */
-    @PatchMapping("/practice/eliminate")
+    @GetMapping(value="/api/subjects", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public void toggleEliminate(@RequestParam Long itemId, @RequestParam Integer choiceNo){
-        practiceService.toggleEliminate(itemId, choiceNo);
+    public List<Map<String, Object>> getSubjects() {
+        List<Map<String, Object>> result = new ArrayList<>();
+        subjectRepository.findAll().forEach(subject -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", subject.getId());
+            map.put("name", subject.getName());
+            result.add(map);
+        });
+        return result;
     }
 
-    // ---------- 내부 DTO (컨트롤러 전용) ----------
-    public record StartReq(Long subjectId, List<Long> roundIds, List<Long> unitIds) {}
-    public record PracticeAnswerReq(Long sessionId, Long itemId, Integer selected) {}
+    @GetMapping(value="/api/problems/count", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Map<String, Object> getProblemCount(@RequestParam(required = false) Long subjectId,
+                                               @RequestParam(required = false, name = "roundIds") List<Long> roundIds,
+                                               @RequestParam(required = false, name = "unitIds") List<Long> unitIds) {
 
-    /** 프론트에서 바로 쓰기 좋게 납작한 질문 DTO */
-    public record PracticeStartResponse(Long sessionId, List<QuestionDto> firstPage) {}
-    public record QuestionDto(Long itemId, Long problemId, String title, String viewContent,
-                              String imageUrl, List<String> choices, Integer answer) {}
-    public record AnswerResponse(boolean correct, Integer answer, String explanation) {}
+        // 🔹 과목: 0, null → 전체
+        Long safeSubjectId = (subjectId != null && subjectId > 0) ? subjectId : null;
 
-    // ---------- 유틸 ----------
-    private static List<Long> nullIfEmpty(List<Long> list){
-        return (list == null || list.isEmpty()) ? null : list;
+        // 🔹 회차/단원: 0, null, 음수 제거 → 비어 있으면 전체 취급(null)
+        List<Long> safeRounds = null;
+        if (roundIds != null) {
+            safeRounds = roundIds.stream()
+                    .filter(id -> id != null && id > 0)
+                    .toList();
+            if (safeRounds.isEmpty()) safeRounds = null;
+        }
+
+        List<Long> safeUnits = null;
+        if (unitIds != null) {
+            safeUnits = unitIds.stream()
+                    .filter(id -> id != null && id > 0)
+                    .toList();
+            if (safeUnits.isEmpty()) safeUnits = null;
+        }
+
+        long count = problemService.countByFilters(safeSubjectId, safeRounds, safeUnits);
+        return Map.of("count", count);
     }
 
+    /* =========================================================================
+       코드 API
+       ========================================================================= */
+    @GetMapping(value="/{id}/api", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CodesResponse> getCodes(@PathVariable Long id) {
+        return ResponseEntity.ok(problemService.getCodes(id));
+    }
+
+    @PostMapping(value="/{id}/codes", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateCodes(@PathVariable Long id,
+                                         @Valid @RequestBody UpdateCodesRequest req) {
+        problemService.updateCodes(id, req);
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
+
+    /* =========================================================================
+       공통 예외 처리
+       ========================================================================= */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleBadRequest(IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(Map.of("ok", false, "message", e.getMessage()));
+    }
+
+    /* =========================================================================
+       파일 저장 유틸
+       ========================================================================= */
     private String storeImageIfPresent(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) return null;
 
@@ -343,20 +419,14 @@ public class ProblemController {
         String stored = UUID.randomUUID() + "." + ext;
         Path target = UPLOAD_DIR.resolve(stored);
         Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-        log.info("이미지 업로드 완료: {} -> {}", original, stored);
         return stored;
     }
 
-    private static String extOf(String filename){
+    private static String extOf(String filename) {
         String name = Path.of(filename).getFileName().toString();
         int dot = name.lastIndexOf('.');
-        return (dot >= 0 && dot < name.length()-1) ? name.substring(dot+1).toLowerCase(Locale.ROOT) : "";
-    }
-
-    private static String safeLog(ProblemRequest r){
-        if (r == null) return "null";
-        return "ProblemRequest(title=%s, answer=%s, subjectId=%s, roundId=%s, unitId=%s)".formatted(
-                r.title(), r.answer(), r.subjectId(), r.roundId(), r.unitId()
-        );
+        return (dot >= 0 && dot < name.length() - 1)
+                ? name.substring(dot + 1).toLowerCase(Locale.ROOT)
+                : "";
     }
 }

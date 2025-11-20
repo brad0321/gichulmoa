@@ -12,4 +12,7 @@ public interface CalculationProblemRepository extends JpaRepository<CalculationP
 
     // ✅ Problem ID로 CalculationProblem 존재 여부 확인
     boolean existsByProblemId(Long problemId);
+
+    void deleteByProblemId(Long problemId);
+
 }

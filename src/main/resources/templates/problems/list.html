@@ -1,10 +1,14 @@
 <!-- src/main/resources/templates/problems/list.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko" th:inline="javascript">
 <head>
     <meta charset="UTF-8">
     <title>문제 목록 | 공인중개사 기출모아</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- CSRF (있으면 자동 사용) -->
+    <meta name="_csrf" th:content="${_csrf?.token}">
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}">
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -17,9 +21,12 @@
             --text-main:#2C3E3F; --text-sub:#7A746E; --bg:#F4F3F1; --white:#ffffff;
             --radius:18px; --shadow:0 10px 24px rgba(47,72,88,.15);
         }
-        body{ background:var(--bg); color:var(--text-main);
-            font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; letter-spacing:.1px; }
-        .page-wrap{ max-width: 1200px; margin: clamp(24px,5vh,72px) auto; padding: 0 14px; }
+        body{
+            background:var(--bg); color:var(--text-main);
+            font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+            letter-spacing:.1px;
+        }
+        .page-wrap{ max-width: 1300px; margin: clamp(24px,5vh,72px) auto; padding: 0 14px; }
 
         .top-actions{
             position: sticky; top: 8px; z-index: 20;
@@ -32,140 +39,975 @@
         .brand .title{ font-weight:900; font-size:18px; }
         .muted{ color:var(--text-sub); }
 
-        .card-box{ border:0; background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; }
-        .card-head{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:12px; }
+        .card-box{
+            border:0; background:var(--white); border-radius:var(--radius);
+            box-shadow:var(--shadow); padding:22px;
+        }
+        .card-head{
+            display:flex; flex-wrap:wrap; gap:12px;
+            align-items:center; justify-content:space-between; margin-bottom:12px;
+        }
         .card-title{ margin:0; color:var(--color-main); font-weight:800; font-size:18px; }
 
         .btn-uniform{ padding:10px 14px; min-height:44px; border-radius:12px; font-weight:700; font-size:1rem; }
         .btn-sub{ background:var(--color-sub); border-color:var(--color-sub); color:#fff; }
         .btn-sub:hover{ background:#426d96; border-color:#426d96; }
+        .btn-dashboard{ background:#6c757d; border-color:#6c757d; color:#fff; }
+        .btn-dashboard:hover{ background:#5a6268; border-color:#5a6268; }
 
         .table-scroll{ max-height: 68vh; overflow:auto; border-radius:12px; }
         .table-sticky thead th{ position: sticky; top: 0; z-index: 1; background: #f8f9fa; }
         .table thead th{ font-weight:800; }
-        .truncate{ max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .truncate-sm{ max-width: 96px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .truncate{ max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .actions{ display:flex; gap:8px; justify-content:center; align-items:center; white-space:nowrap; }
-        .btn-icon{ width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; }
-        .btn-icon.view{ border:1px solid #c9c4bd; background:#fff; color:#2F4858; }
+        .actions{
+            display:flex; gap:6px; justify-content:center; align-items:center;
+            flex-wrap:wrap; white-space:nowrap;
+        }
+        .btn-icon{
+            width:34px; height:34px; padding:0;
+            display:inline-flex; align-items:center; justify-content:center;
+            border-radius:8px; border:1px solid transparent;
+        }
+        .btn-icon.view{ border-color:#c9c4bd; background:#fff; color:#2F4858; }
         .btn-icon.view:hover{ background:#f0efec; }
-        .btn-icon.edit{ border:1px solid #c9c4bd; background:#fff; color:#4F7CAC; }
+        .btn-icon.edit{ border-color:#c9c4bd; background:#fff; color:#4F7CAC; }
         .btn-icon.edit:hover{ background:#eef3f9; }
-        .btn-icon.del{ border:1px solid #f3c9c9; background:#fff5f5; color:#a33a3a; }
+        .btn-icon.del{ border-color:#f3c9c9; background:#fff5f5; color:#a33a3a; }
         .btn-icon.del:hover{ background:#ffecec; }
+        .btn-icon.code{ border-color:#c9c4bd; background:#fff; color:#2F4858; }
+        .btn-icon.code:hover{ background:#f0efec; }
 
         .fab{
             position: fixed; right: 16px; bottom: 20px; z-index: 50;
             width:56px; height:56px; border-radius:50%;
             display:none; align-items:center; justify-content:center;
-            background: var(--color-sub); color:#fff; box-shadow:0 10px 24px rgba(47,72,88,.25);
+            background: var(--color-sub); color:#fff;
+            box-shadow:0 10px 24px rgba(47,72,88,.25);
             text-decoration:none;
         }
         .fab:hover{ background:#426d96; color:#fff; }
+
         @media (max-width: 768px){
             .top-actions{ display:none; }
             .fab{ display:flex; }
+            .truncate{ max-width: 180px; }
+        }
+
+        /* ===== 필터 영역 ===== */
+        .filter-form{
+            display:flex; flex-wrap:wrap;
+            gap:10px; margin-bottom:8px; align-items:flex-start;
+        }
+        .filter-group{
+            min-width: 220px;
+        }
+        .filter-label{
+            font-size:.85rem; color:var(--text-sub); margin-bottom:4px;
+            font-weight:600;
+        }
+
+        .chip-row{
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+            max-width:420px;
+        }
+        .chip-header{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:8px;
+        }
+        .chip-header .text-muted{
+            white-space:nowrap;
+        }
+        .chip-scroll{
+            display:flex;
+            flex-wrap:wrap;
+            gap:6px;
+            max-height:200px;
+            overflow:auto;
+            padding:4px 2px;
+            border-radius:10px;
+            background:#f8f9fa;
+        }
+        .filter-chip{
+            border-radius:999px;
+            padding:4px 10px;
+            font-size:.8rem;
+            border-color:#d0d4da;
+            color:var(--text-main);
+            background:#fff;
+            transition: all .15s ease-out;
+        }
+        .filter-chip:hover{
+            background:#eef3f9;
+            border-color:var(--color-sub);
+            color:var(--color-sub);
+        }
+
+        /* ✅ 칩 선택 상태 (라디오/체크박스 공통) */
+        .btn-check:checked + .filter-chip{
+            background: var(--color-sub);
+            border-color: var(--color-sub);
+            color:#fff;
+            box-shadow: 0 0 0 1px rgba(79,124,172,.25);
+        }
+        .btn-check:focus + .filter-chip{
+            box-shadow: 0 0 0 2px rgba(79,124,172,.35);
+        }
+
+        .filter-all-btn{
+            border-radius:999px;
+            padding:3px 10px;
+            font-size:.8rem;
+            border:1px dashed #d0d4da;
+            background:#fff;
+            color:var(--text-sub);
+            display:inline-flex;
+            align-items:center;
+            gap:4px;
+        }
+        .filter-all-btn:hover{
+            background:#fffef7;
+            border-color:var(--color-point);
+            color:#b07a1a;
+        }
+        /* 전체 회차/단원 ON 상태 */
+        .filter-all-btn.is-active{
+            background: var(--color-point);
+            border-color: var(--color-point);
+            color: var(--color-main);
+            font-weight: 600;
+            box-shadow: 0 0 0 1px rgba(245,205,144,.5);
+        }
+        .filter-all-btn.is-active:hover{
+            background:#f2bd63;
+            border-color:#f2bd63;
+            color:var(--color-main);
+        }
+
+        /* ✅ 단원 칩 순번 자동 부여 (01, 02, 03...) */
+        .units-scroll{
+            counter-reset: unit-counter;
+        }
+        .units-scroll .filter-chip{
+            position: relative;
+            padding-left: 32px;
+        }
+        .units-scroll .filter-chip::before{
+            counter-increment: unit-counter;
+            content: counter(unit-counter, decimal-leading-zero) ".";
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: 700;
+            font-size: .8rem;
+            color: var(--color-sub);
+        }
+
+        /* ✅ 필터 요약 바 */
+        .filter-summary{
+            margin-bottom: 14px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #f8f9fa;
+            color: var(--text-sub);
+            display:flex;
+            flex-wrap:wrap;
+            gap:4px 10px;
+            font-size:.85rem;
+        }
+        .filter-summary strong{
+            color: var(--color-main);
+        }
+        .filter-summary .dot{
+            opacity:.4;
+        }
+
+        .status-box{ padding:12px 0; text-align:center; color:var(--text-sub); }
+        .status-box .loading{ color:var(--color-sub); }
+        .status-box .done{ color:#6c757d; }
+        .status-box .empty{ color:#6c757d; }
+        .d-none{ display:none !important; }
+
+        /* 인라인 코드 에디터 */
+        .code-editor{ background:#fffdfa; }
+        .editor-wrap{
+            padding:14px; border:1px dashed #e8c27a; border-radius:12px;
+            background:#fff7e8;
+        }
+        .editor-wrap .form-control{
+            border-radius:10px; border:1px solid #d9d6d1; padding:8px 10px;
+        }
+        .editor-wrap .badge{ background:#f1efe9; color:#6a5a2d; }
+        .preview-pill{
+            background:#fff; border:1px dashed #e8c27a; color:#6a5a2d;
+            border-radius:10px; padding:6px 8px; font-weight:700;
+            font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+        }
+        .editor-actions{ display:flex; gap:8px; justify-content:flex-end; }
+        .btn-main{ background:var(--color-main); border-color:var(--color-main); color:#fff; }
+        .btn-main:hover{ background:#243946; border-color:#243946; }
+        .btn-ghost{ border:1px solid #c9c4bd; background:transparent; color: var(--text-main); }
+        .btn-ghost:hover{ background:#f0efec; }
+
+        .code-cell{
+            font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+            font-weight:700; letter-spacing:.5px;
         }
     </style>
 </head>
 <body>
 
 <main class="page-wrap">
-    <!-- 상단 문제등록 버튼 -->
     <div class="top-actions">
         <a class="btn btn-sub btn-uniform"
            th:if="${loginUser != null and loginUser.role == T(com.pro.project01.v2.domain.user.entity.Role).ADMIN}"
            th:href="@{/problems/new}">
             <i class="bi bi-plus-lg me-1"></i>문제등록
         </a>
+        <a class="btn btn-dashboard btn-uniform" th:href="@{/dashboard}">
+            <i class="bi bi-speedometer2 me-1"></i>대시보드
+        </a>
     </div>
 
-    <!-- 헤더 -->
     <div class="brand">
         <img src="/img/brandLogo.png" alt="로고">
         <div class="title">공인중개사 기출모아</div>
         <div class="muted">문제 목록</div>
     </div>
 
-    <!-- 목록 카드 -->
+    <!-- ▼ 필터 폼: 과목(칩/단일) / 회차(칩/복수) / 단원(칩/복수) -->
+    <form class="filter-form" th:action="@{/problems}" method="get">
+        <!-- 과목 (칩, 단일 선택) -->
+        <div class="filter-group">
+            <div class="filter-label">과목</div>
+            <div class="chip-row">
+                <div class="chip-scroll">
+                    <!-- 전체 과목 -->
+                    <input type="radio"
+                           class="btn-check"
+                           id="subject-0"
+                           name="subjectId"
+                           value="0"
+                           th:checked="${subjectId == null or subjectId == 0}"
+                           onclick="this.form.submit()">
+                    <label class="btn btn-outline-secondary btn-sm filter-chip"
+                           for="subject-0">전체</label>
+
+                    <!-- 개별 과목 -->
+                    <th:block th:each="s : ${subjects}">
+                        <input type="radio"
+                               class="btn-check"
+                               th:id="|subject-${s.id}|"
+                               name="subjectId"
+                               th:value="${s.id}"
+                               th:checked="${subjectId != null and subjectId == s.id}"
+                               onclick="this.form.submit()">
+                        <label class="btn btn-outline-secondary btn-sm filter-chip"
+                               th:for="|subject-${s.id}|"
+                               th:text="${s.name}"></label>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+
+        <!-- 회차 (복수 선택 칩) -->
+        <div class="filter-group">
+            <div class="filter-label">회차</div>
+            <div class="chip-row">
+                <div class="chip-header">
+                    <span class="text-muted small">여러 회차를 동시에 선택할 수 있습니다.</span>
+                    <button type="button"
+                            class="filter-all-btn btn btn-sm"
+                            th:classappend="${selectedRoundIds == null or #lists.isEmpty(selectedRoundIds)} ? ' is-active' : ''"
+                            onclick="selectAllRounds()">
+                        <i class="bi bi-layers"></i> 전체 회차
+                    </button>
+                </div>
+                <div class="chip-scroll">
+                    <th:block th:each="r : ${rounds}">
+                        <input type="checkbox"
+                               class="btn-check"
+                               th:id="|round-${r.id}|"
+                               name="roundIds"
+                               th:value="${r.id}"
+                               th:checked="${selectedRoundIds != null and selectedRoundIds.contains(r.id)}">
+                        <label class="btn btn-outline-secondary btn-sm filter-chip"
+                               th:for="|round-${r.id}|"
+                               th:text="${r.name}"></label>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+
+        <!-- 단원 (복수 선택 칩) -->
+        <div class="filter-group">
+            <div class="filter-label">단원</div>
+            <div class="chip-row">
+                <div class="chip-header">
+                    <span class="text-muted small">여러 단원을 동시에 선택할 수 있습니다.</span>
+                    <button type="button"
+                            class="filter-all-btn btn btn-sm"
+                            th:classappend="${selectedUnitIds == null or #lists.isEmpty(selectedUnitIds)} ? ' is-active' : ''"
+                            onclick="selectAllUnits()">
+                        <i class="bi bi-list-ol"></i> 전체 단원
+                    </button>
+                </div>
+                <!-- ✅ 순번 자동 부여용 units-scroll -->
+                <div class="chip-scroll units-scroll">
+                    <th:block th:each="u : ${units}">
+                        <input type="checkbox"
+                               class="btn-check"
+                               th:id="|unit-${u.id}|"
+                               name="unitIds"
+                               th:value="${u.id}"
+                               th:checked="${selectedUnitIds != null and selectedUnitIds.contains(u.id)}">
+                        <label class="btn btn-outline-secondary btn-sm filter-chip"
+                               th:for="|unit-${u.id}|"
+                               th:text="${u.name}"></label>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+
+        <!-- 필터 적용 버튼 -->
+        <div class="d-flex align-items-end">
+            <button type="submit" class="btn btn-sub btn-sm">
+                <i class="bi bi-funnel me-1"></i>필터 적용
+            </button>
+        </div>
+
+        <noscript><button type="submit" class="btn btn-sub btn-sm">조회</button></noscript>
+    </form>
+
+    <!-- ✅ 현재 필터 요약 -->
+    <div class="filter-summary small text-muted" id="filterSummary">
+        전체 문제를 보고 있습니다.
+    </div>
+
     <section class="card-box">
         <div class="card-head">
             <h2 class="card-title">
                 전체 문제
-                <span class="badge text-bg-light ms-2"
-                      th:text="${problems != null ? #lists.size(problems) + '건' : '0건'}">0건</span>
+                <span id="countBadge" class="badge text-bg-light ms-2">0건</span>
             </h2>
-
-            <a class="btn btn-sub btn-sm"
-               th:if="${loginUser != null and loginUser.role == T(com.pro.project01.v2.domain.user.entity.Role).ADMIN}"
-               th:href="@{/problems/new}">
-                <i class="bi bi-plus-lg me-1"></i>문제등록
-            </a>
+            <div class="d-flex gap-2">
+                <a class="btn btn-sub btn-sm"
+                   th:if="${loginUser != null and loginUser.role == T(com.pro.project01.v2.domain.user.entity.Role).ADMIN}"
+                   th:href="@{/problems/new}">
+                    <i class="bi bi-plus-lg me-1"></i>문제등록
+                </a>
+                <a class="btn btn-dashboard btn-sm" th:href="@{/dashboard}">
+                    <i class="bi bi-speedometer2 me-1"></i>대시보드
+                </a>
+            </div>
         </div>
 
-        <div class="table-scroll">
+        <div class="table-scroll" id="scrollRoot">
             <table class="table table-bordered table-sm align-middle text-center mb-0 table-sticky">
                 <thead class="table-light">
                 <tr>
-                    <th style="width:72px;">ID</th>
+                    <th style="width:50px;">번호</th>
+                    <th style="width:100px;">회차코드</th>
+                    <th style="width:100px;">단원코드</th>
                     <th>제목</th>
                     <th>지문</th>
-                    <th>선택1</th>
-                    <th>선택2</th>
-                    <th>선택3</th>
-                    <th>선택4</th>
-                    <th>선택5</th>
-                    <th style="width:140px;">작업</th>
+                    <th>과목</th>
+                    <th>회차</th>
+                    <th>단원</th>
+                    <th style="width:280px;">작업</th>
                 </tr>
                 </thead>
-                <tbody>
-                <tr th:each="problem : ${problems}">
-                    <td th:text="${problem.id}">1</td>
-                    <td class="truncate" th:title="${problem.title}" th:text="${problem.title ?: ''}">제목</td>
-                    <td class="truncate" th:title="${problem.viewContent}" th:text="${problem.viewContent ?: ''}">지문</td>
-                    <td class="truncate-sm" th:title="${problem.choice1}" th:text="${problem.choice1 ?: ''}">선택1</td>
-                    <td class="truncate-sm" th:title="${problem.choice2}" th:text="${problem.choice2 ?: ''}">선택2</td>
-                    <td class="truncate-sm" th:title="${problem.choice3}" th:text="${problem.choice3 ?: ''}">선택3</td>
-                    <td class="truncate-sm" th:title="${problem.choice4}" th:text="${problem.choice4 ?: ''}">선택4</td>
-                    <td class="truncate-sm" th:title="${problem.choice5}" th:text="${problem.choice5 ?: ''}">선택5</td>
-
-                    <td>
-                        <div class="actions">
-                            <a class="btn btn-icon view" th:href="@{|/problems/${problem.id}|}" title="상세">
-                                <i class="bi bi-box-arrow-up-right"></i>
-                            </a>
-                            <a class="btn btn-icon edit" th:href="@{|/problems/${problem.id}/edit|}" title="수정">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form th:action="@{|/problems/${problem.id}/delete|}" method="post"
-                                  th:id="'delForm-' + ${problem.id}" class="m-0 p-0">
-                                <!-- CSRF: Security 미적용이면 제거 -->
-                                <!--
-                                <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                -->
-                                <button type="submit" class="btn btn-icon del" title="삭제">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(problems)}">
-                    <td colspan="9" class="text-center muted py-4">등록된 문제가 없습니다.</td>
-                </tr>
-                </tbody>
+                <tbody id="listBody"></tbody>
             </table>
+            <div id="sentinel" style="height:24px;"></div>
+        </div>
+
+        <div class="status-box">
+            <span class="loading d-none">로딩 중…</span>
+            <span class="empty d-none">데이터가 없습니다.</span>
+            <span class="done d-none">마지막입니다.</span>
         </div>
     </section>
 </main>
 
-<!-- 모바일 FAB -->
 <a class="fab"
-   th:if="${loginUser != null and loginUser.role == T(com.pro.project01.v2.domain.user.entity.Role).ADMIN}"
+   th:if="${loginUser != null && loginUser.role == T(com.pro.project01.v2.domain.user.entity.Role).ADMIN}"
    th:href="@{/problems/new}" title="문제등록">
     <i class="bi bi-plus-lg"></i>
 </a>
 
+<script>
+    /* ===== 서버 파라미터 ===== */
+    const subjectId = /*[[${subjectId}]]*/ null;
+    const roundIds  = /*[[${selectedRoundIds}]]*/ [];
+    const unitIds   = /*[[${selectedUnitIds}]]*/ [];
+    const size      = /*[[${size}]]*/ 40;
+    const q         = /*[[${q}]]*/ null;
+
+    /* ===== CSRF ===== */
+    const CSRF_TOKEN  = document.querySelector('meta[name="_csrf"]')?.content || null;
+    const CSRF_HEADER = document.querySelector('meta[name="_csrf_header"]')?.content || null;
+    const CSRF_PARAM = '_csrf';
+
+    function withCsrf(init={}) {
+        init.headers = init.headers || {};
+        if (CSRF_TOKEN && CSRF_HEADER) init.headers[CSRF_HEADER]=CSRF_TOKEN;
+        return init;
+    }
+
+    /* ===== 상태 ===== */
+    let loading=false, hasNext=true, firstLoad=true;
+    let nextId=null; // 커서 ID
+    const listBody = document.getElementById('listBody');
+    const $count   = document.getElementById('countBadge');
+    const statusBox= document.querySelector('.status-box');
+    const $loading = statusBox.querySelector('.loading');
+    const $empty   = statusBox.querySelector('.empty');
+    const $done    = statusBox.querySelector('.done');
+
+    function show(which){
+        $loading.classList.add('d-none');
+        $empty.classList.add('d-none');
+        $done.classList.add('d-none');
+        if(which) which.classList.remove('d-none');
+    }
+
+    /* ===== 누적/중복 방지 ===== */
+    const allItems = [];
+    const seenIds  = new Set();
+
+    /* ===== 회차 숫자(RR) 추출 (코드 에디터/코드 표시용) ===== */
+    function rrNum(s){
+        const m = String(s||'').match(/(\d{1,3})/);
+        return m ? parseInt(m[1],10) : Number.MAX_SAFE_INTEGER;
+    }
+
+    /* ===== 전역 정렬 (과목 내 고유번호 기준) ===== */
+    function sortItems(items){
+        items.sort((a, b) => {
+            const na = (a.subjectProblemNo != null)
+                ? a.subjectProblemNo
+                : (a.roundProblemNo != null ? a.roundProblemNo : Number.POSITIVE_INFINITY);
+
+            const nb = (b.subjectProblemNo != null)
+                ? b.subjectProblemNo
+                : (b.roundProblemNo != null ? b.roundProblemNo : Number.POSITIVE_INFINITY);
+
+            if (na !== nb) return na - nb;
+
+            // 번호가 같으면 id로 안정 정렬
+            return (a.id ?? 0) - (b.id ?? 0);
+        });
+    }
+
+    /* ===== 전체 재렌더 ===== */
+    function renderAll(){
+        const scrollRoot = document.getElementById('scrollRoot');
+        const oldTop = scrollRoot.scrollTop;
+        listBody.innerHTML = allItems.map(rowTemplate).join('');
+        allItems.forEach(it => bindEditorBehavior(it.id));
+        scrollRoot.scrollTop = oldTop;
+        fillDetailsFor(allItems);
+    }
+
+    /* ===== 유틸 ===== */
+    function escapeHtml(str){ if(str==null) return ''; return String(str).replace(/[&<>"']/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
+    function pad2(n){ n=parseInt(n,10); if(isNaN(n)) return ''; return n<10?'0'+n:String(n); }
+    function pad3(s){ s=String(s??'').replace(/\D/g,''); if(!s) return ''; return s.padStart(3,'0').slice(-3); }
+    function onlyDigits(s,len){ s=String(s??'').replace(/\D/g,''); if(!s) return ''; return len?s.slice(0,len):s; }
+
+    /* ===== 인라인 코드 에디터 ===== */
+    function editorTemplate(item){
+        const rr = (String(item.roundName||'').match(/(\d{1,3})/)?.[1]) || '';
+        return `
+<tr class="code-editor d-none" id="code-editor-${item.id}">
+  <td colspan="9">
+    <div class="editor-wrap">
+      <div class="row g-2">
+        <div class="col-4 col-md-3">
+          <label class="form-label mb-1" for="sc-${item.id}">과목 코드 (SS)</label>
+          <input type="text" class="form-control" id="sc-${item.id}" maxlength="2" inputmode="numeric" placeholder="예: 01">
+        </div>
+        <div class="col-4 col-md-3">
+          <label class="form-label d-flex align-items-center justify-content-between mb-1">
+            회차 번호 (RR) <span class="badge">읽기전용</span>
+          </label>
+          <input type="text" class="form-control" value="${rr}" disabled>
+        </div>
+        <div class="col-4 col-md-3">
+          <label class="form-label mb-1" for="rp-${item.id}">회차 내 번호 (PP, 1~40)</label>
+          <input type="number" class="form-control" id="rp-${item.id}" min="1" max="40" placeholder="예: 1">
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label d-flex align-items-center justify-content-between mb-1">
+            회차 코드 미리보기 <span class="badge">SS_RR_PP</span>
+          </label>
+          <div class="preview-pill" id="round-prev-${item.id}">--</div>
+        </div>
+
+        <div class="col-4 col-md-3">
+          <label class="form-label mb-1" for="uc-${item.id}">단원 코드 (UUU)</label>
+          <input type="text" class="form-control" id="uc-${item.id}" maxlength="3" inputmode="numeric" placeholder="예: 001">
+        </div>
+        <div class="col-4 col-md-3">
+          <label class="form-label mb-1" for="up-${item.id}">단원 내 순번 (PP, 1~99)</label>
+          <input type="number" class="form-control" id="up-${item.id}" min="1" max="99" placeholder="예: 1">
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label d-flex align-items-center justify-content-between mb-1">
+            단원 코드 미리보기 <span class="badge">SS_UUU_PP</span>
+          </label>
+          <div class="preview-pill" id="unit-prev-${item.id}">--</div>
+        </div>
+      </div>
+
+      <div class="editor-actions mt-3">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="toggleEditor(${item.id}, false)">취소</button>
+        <button type="button" class="btn btn-main btn-sm" onclick="saveCodes(${item.id})">저장</button>
+      </div>
+    </div>
+  </td>
+</tr>`;
+    }
+
+    function bindEditorBehavior(id){
+        const rr = document.querySelector(`#code-editor-${id} input[disabled]`)?.value || '';
+        const rp = document.getElementById(`rp-${id}`);
+        const sc = document.getElementById(`sc-${id}`);
+        const uc = document.getElementById(`uc-${id}`);
+        const up = document.getElementById(`up-${id}`);
+        const roundPrev = document.getElementById(`round-prev-${id}`);
+        const unitPrev  = document.getElementById(`unit-prev-${id}`);
+
+        function renderRoundCode(){
+            const SS=(onlyDigits(sc.value,2)||'').padStart(2,'0').slice(-2);
+            const PP=pad2(rp.value);
+            roundPrev.textContent=(SS&&rr&&PP)?`${SS}_${rr}_${PP}`:'--';
+        }
+        function renderUnitCode(){
+            const SS=(onlyDigits(sc.value,2)||'').padStart(2,'0').slice(-2);
+            const UUU=pad3(uc.value);
+            const PP=pad2(up.value);
+            unitPrev.textContent=(SS&&UUU&&PP)?`${SS}_${UUU}_${PP}`:'--';
+        }
+
+        rp?.addEventListener('input', renderRoundCode);
+        sc?.addEventListener('input', e=>{
+            e.target.value=onlyDigits(e.target.value,2);
+            renderRoundCode(); renderUnitCode();
+        });
+        uc?.addEventListener('input', e=>{
+            e.target.value=onlyDigits(e.target.value,3);
+            renderUnitCode();
+        });
+        up?.addEventListener('input', renderUnitCode);
+        renderRoundCode(); renderUnitCode();
+    }
+
+    /* ===== 행 템플릿 ===== */
+    function rowTemplate(it){
+        const id = it.id;
+        const title = escapeHtml(it.title ?? '');
+        const subjectName = escapeHtml(it.subjectName ?? '');
+        const roundName = escapeHtml(it.roundName ?? '');
+        const unitName = escapeHtml(it.unitName ?? '');
+        const viewPreview = '—';
+
+        // ✅ 번호: subjectProblemNo → 없으면 roundProblemNo → 없으면 '—'
+        const numberCell =
+            (it.subjectProblemNo != null) ? it.subjectProblemNo :
+                (it.roundProblemNo != null ? it.roundProblemNo : '—');
+
+        return `
+<tr id="row-${id}">
+  <td id="num-${id}">${numberCell}</td>
+  <td class="code-cell" id="roundcode-${id}">—</td>
+  <td class="code-cell" id="unitcode-${id}">—</td>
+  <td class="truncate" title="${title}">
+    <a class="link-dark fw-semibold" href="/problems/${id}">${title || '(제목 없음)'}</a>
+  </td>
+  <td class="truncate" title="${viewPreview}">${viewPreview}</td>
+  <td>${subjectName}</td>
+  <td>${roundName}</td>
+  <td>${unitName}</td>
+  <td>
+    <div class="actions">
+      <a class="btn btn-icon view" href="/problems/${id}" title="상세">
+        <i class="bi bi-box-arrow-up-right"></i>
+      </a>
+      <a class="btn btn-icon edit" href="/problems/${id}/edit" title="수정">
+        <i class="bi bi-pencil"></i>
+      </a>
+
+      <button type="button"
+              class="btn btn-icon code"
+              title="코드수정"
+              onclick="toggleEditor(${id}, true)">
+        <i class="bi bi-braces-asterisk"></i>
+      </button>
+
+      <!-- 🔼 위로 -->
+      <form action="/problems/${id}/moveUp" method="post" class="m-0 p-0 d-inline">
+        ${CSRF_TOKEN ? `<input type="hidden" name="${CSRF_PARAM}" value="${CSRF_TOKEN}">` : ''}
+        <button type="submit" class="btn btn-icon" title="위로"
+                style="border-color:#c9c4bd;background:#fff;color:#2F4858;">
+          <i class="bi bi-arrow-up"></i>
+        </button>
+      </form>
+
+      <!-- 🔽 아래로 -->
+      <form action="/problems/${id}/moveDown" method="post" class="m-0 p-0 d-inline">
+        ${CSRF_TOKEN ? `<input type="hidden" name="${CSRF_PARAM}" value="${CSRF_TOKEN}">` : ''}
+        <button type="submit" class="btn btn-icon" title="아래로"
+                style="border-color:#c9c4bd;background:#fff;color:#2F4858;">
+          <i class="bi bi-arrow-down"></i>
+        </button>
+      </form>
+
+      <!-- 🗑 삭제 -->
+      <form action="/problems/${id}/delete"
+            method="post"
+            class="m-0 p-0 d-inline"
+            onsubmit="return confirm('정말 삭제하시겠습니까?');">
+        ${CSRF_TOKEN ? `<input type="hidden" name="${CSRF_PARAM}" value="${CSRF_TOKEN}">` : ''}
+        <button type="submit" class="btn btn-icon del" title="삭제">
+          <i class="bi bi-trash"></i>
+        </button>
+      </form>
+    </div>
+  </td>
+</tr>
+${editorTemplate(it)}`;
+    }
+
+    /* ===== 개수 조회 ===== */
+    async function fetchCount(){
+        try{
+            const params = new URLSearchParams();
+            if(subjectId && subjectId !== 0){
+                params.set('subjectId', subjectId);
+            }
+            if(Array.isArray(roundIds) && roundIds.length > 0){
+                roundIds.forEach(id => {
+                    if(id) params.append('roundIds', id);
+                });
+            }
+            if(Array.isArray(unitIds) && unitIds.length > 0){
+                unitIds.forEach(id => {
+                    if(id) params.append('unitIds', id);
+                });
+            }
+            const url = params.toString()
+                ? `/problems/api/problems/count?${params.toString()}`
+                : `/problems/api/problems/count`;
+
+            const res = await fetch(url);
+            if(!res.ok) return;
+            const data = await res.json();
+            if(data && typeof data.count === 'number'){
+                $count.textContent = data.count + '건';
+            }
+        }catch(e){}
+    }
+
+    /* ===== 상세 캐시 & 셀 채우기 ===== */
+    const detailsCache = new Map();
+    async function fetchDetails(id){
+        if(detailsCache.has(id)) return detailsCache.get(id);
+        try{
+            const res = await fetch(`/problems/${id}/api`, {method:'GET'});
+            if(!res.ok) return null;
+            const data = await res.json();
+            detailsCache.set(id,data);
+            return data;
+        }catch(e){ return null; }
+    }
+
+    function renderCellsFromDetails(item, data){
+        const id=item.id;
+        const elNum = document.getElementById(`num-${id}`);
+        // 번호는 처음 렌더 시 subjectProblemNo/roundProblemNo로 채워지므로,
+        // 여기서는 비어있는 경우에만 roundProblemNo로 보완
+        if(elNum && data && data.roundProblemNo != null && (elNum.textContent === '—' || elNum.textContent === '' )){
+            elNum.textContent = data.roundProblemNo;
+        }
+
+        const rr = (String(item.roundName||'').match(/(\d{1,3})/)?.[1]) || '';
+        const SS = (data?.subjectCode!=null) ? String(data.subjectCode).padStart(2,'0').slice(-2) : '';
+        const UUU= (data?.unitSeqCode!=null) ? String(data.unitSeqCode).padStart(3,'0').slice(-3) : '';
+        const PP1= (data?.roundProblemNo!=null) ? pad2(data.roundProblemNo) : '';
+        const PP2= (data?.unitProblemNo!=null) ? pad2(data.unitProblemNo) : '';
+
+        const roundCode = (SS && rr && PP1) ? `${SS}_${rr}_${PP1}` : '—';
+        const unitCode  = (SS && UUU && PP2) ? `${SS}_${UUU}_${PP2}` : '—';
+
+        const elRound = document.getElementById(`roundcode-${id}`);
+        const elUnit  = document.getElementById(`unitcode-${id}`);
+        if(elRound) elRound.textContent = roundCode;
+        if(elUnit)  elUnit.textContent  = unitCode;
+    }
+
+    async function fillDetailsFor(items){
+        const chunks = [];
+        for(let i=0;i<items.length;i+=8) chunks.push(items.slice(i,i+8));
+        for(const batch of chunks){
+            await Promise.allSettled(batch.map(async it=>{
+                const d = await fetchDetails(it.id);
+                renderCellsFromDetails(it, d);
+            }));
+        }
+    }
+
+    /* ===== 목록 로드 (복수 필터 + ID 커서) ===== */
+    async function loadMore(){
+        if (loading || !hasNext) return;
+        loading = true; show($loading);
+
+        const params = new URLSearchParams();
+        if(subjectId && subjectId !== 0){
+            params.set('subjectId', subjectId);
+        }
+        if(Array.isArray(roundIds) && roundIds.length > 0){
+            roundIds.forEach(id => {
+                if(id) params.append('roundIds', id);
+            });
+        }
+        if(Array.isArray(unitIds) && unitIds.length > 0){
+            unitIds.forEach(id => {
+                if(id) params.append('unitIds', id);
+            });
+        }
+        if(q) params.set('q', q);
+        if(nextId != null) params.set('cursorId', nextId);
+        params.set('size', size);
+
+        try{
+            const res = await fetch(`/problems/list/api?${params.toString()}`, { method:'GET' });
+            if(!res.ok) throw new Error('Network error');
+            const data = await res.json(); // {items, hasNext, nextCursorId, ...}
+
+            console.log('🔥 실제 서버 응답 구조:', data);
+
+            if(firstLoad && (!data.items || data.items.length===0)){
+                show($empty); hasNext=false; return;
+            }
+
+            const page = data.items || [];
+            const newly = page.filter(it => {
+                if (seenIds.has(it.id)) return false;
+                seenIds.add(it.id);
+                return true;
+            });
+
+            if (newly.length > 0) {
+                allItems.push(...newly);
+                sortItems(allItems);
+                renderAll();
+            }
+
+            console.log('🔥 [loadMore] response:', data);
+
+            // ✅ nextCursorId 먼저 반영
+            nextId = (typeof data.nextCursorId !== 'undefined' && data.nextCursorId !== null)
+                ? data.nextCursorId
+                : null;
+
+            let hasNextFromServer;
+            if (typeof data.hasNext === 'boolean') {
+                hasNextFromServer = data.hasNext;
+            } else {
+                hasNextFromServer = (nextId !== null);
+            }
+            hasNext = hasNextFromServer;
+
+            console.log('[loadMore] nextId:', nextId, 'hasNext:', hasNext);
+
+            show(hasNext ? null : $done);
+        } catch (e){
+            console.error(e);
+            show(null);
+        } finally {
+            loading = false;
+            firstLoad = false;
+
+            if (scrollRoot
+                && scrollRoot.scrollHeight <= scrollRoot.clientHeight
+                && hasNext) {
+                console.log('컨테이너에 스크롤이 없어서 추가 로딩 실행');
+                setTimeout(() => {
+                    if(!loading && hasNext) {
+                        loadMore();
+                    }
+                }, 0);
+            }
+        }
+    }
+
+    /* ===== 에디터 열기/닫기/저장 ===== */
+    function toggleEditor(id, open){
+        const row = document.getElementById(`code-editor-${id}`);
+        if(!row) return;
+        if(open){
+            row.classList.remove('d-none');
+            preloadCodes(id).catch(()=>{});
+        } else {
+            row.classList.add('d-none');
+        }
+    }
+
+    async function preloadCodes(id){
+        try{
+            const data = await fetchDetails(id);
+            if(data){
+                const rp = document.getElementById(`rp-${id}`);
+                const sc = document.getElementById(`sc-${id}`);
+                const uc = document.getElementById(`uc-${id}`);
+                const up = document.getElementById(`up-${id}`);
+                if(rp && data.roundProblemNo != null) rp.value = data.roundProblemNo;
+                if(sc && data.subjectCode != null) sc.value = String(data.subjectCode).padStart(2,'0').slice(-2);
+                if(uc && data.unitSeqCode != null) uc.value = String(data.unitSeqCode).padStart(3,'0').slice(-3);
+                if(up && data.unitProblemNo != null) up.value = data.unitProblemNo;
+
+                bindEditorBehavior(id);
+                ['rp','sc','uc','up'].forEach(k=>document.getElementById(`${k}-${id}`)?.dispatchEvent(new Event('input')));
+            }
+        }catch(e){}
+    }
+
+    async function saveCodes(id){
+        const rp = document.getElementById(`rp-${id}`);
+        const sc = document.getElementById(`sc-${id}`);
+        const uc = document.getElementById(`uc-${id}`);
+        const up = document.getElementById(`up-${id}`);
+
+        const roundProblemNo = parseInt(rp?.value ?? '', 10);
+        const subjectCode = (sc?.value ?? '').replace(/\D/g,'').padStart(2,'0').slice(-2);
+        const unitSeqCode = (uc?.value ?? '').replace(/\D/g,'').padStart(3,'0').slice(-3);
+        const unitProblemNo = parseInt(up?.value ?? '', 10);
+
+        if(!(roundProblemNo>=1 && roundProblemNo<=40)){ alert('회차 내 번호는 1~40 범위여야 합니다.'); return; }
+        if(!/^\d{2}$/.test(subjectCode)){ alert('과목코드는 2자리 숫자여야 합니다.'); return; }
+        if(!/^\d{3}$/.test(unitSeqCode)){ alert('단원코드는 3자리 숫자여야 합니다.'); return; }
+        if(!(unitProblemNo>=1 && unitProblemNo<=99)){ alert('단원 내 순번은 1~99 범위여야 합니다.'); return; }
+
+        try{
+            const res = await fetch(`/problems/${id}/codes`, withCsrf({
+                method:'POST', headers:{ 'Content-Type':'application/json' },
+                body: JSON.stringify({ roundProblemNo, subjectCode, unitSeqCode, unitProblemNo })
+            }));
+            if(!res.ok){
+                const msg = await res.text();
+                throw new Error(msg || '저장 실패');
+            }
+
+            alert('저장되었습니다.');
+            const old = detailsCache.get(id)||{};
+            const updated = { ...old, roundProblemNo, subjectCode, unitSeqCode, unitProblemNo };
+            detailsCache.set(id, updated);
+            renderCellsFromDetails(
+                { id, roundName: document.querySelector(`#row-${id} td:nth-child(7)`)?.textContent || '' },
+                updated
+            );
+            toggleEditor(id,false);
+        }catch(e){
+            console.error(e);
+            alert('저장 중 오류가 발생했습니다.');
+        }
+    }
+
+    /* ===== "전체 회차 / 전체 단원" 버튼 동작 ===== */
+    function selectAllRounds(){
+        document.querySelectorAll("input[name='roundIds']").forEach(cb => cb.checked = false);
+        document.querySelector("form.filter-form").submit();
+    }
+    function selectAllUnits(){
+        document.querySelectorAll("input[name='unitIds']").forEach(cb => cb.checked = false);
+        document.querySelector("form.filter-form").submit();
+    }
+
+    /* ✅ 현재 필터 요약 텍스트 갱신 */
+    function updateFilterSummary(){
+        const $summary = document.getElementById('filterSummary');
+        if(!$summary) return;
+
+        // 과목
+        let subjectText = '전체 과목';
+        const subjectChecked = document.querySelector("input[name='subjectId']:checked");
+        if(subjectChecked){
+            const label = document.querySelector(`label[for='${subjectChecked.id}']`);
+            if(label && label.textContent.trim() !== '전체'){
+                subjectText = label.textContent.trim();
+            }
+        }
+
+        // 회차 (복수)
+        const roundChecked = Array.from(document.querySelectorAll("input[name='roundIds']:checked"));
+        let roundText = '전체 회차';
+        if(roundChecked.length > 0){
+            const names = roundChecked
+                .map(cb => document.querySelector(`label[for='${cb.id}']`)?.textContent.trim())
+                .filter(Boolean);
+            if(names.length > 0){
+                roundText = names.slice(0,3).join(', ');
+                if(names.length > 3) roundText += ` 외 ${names.length - 3}개`;
+            }
+        }
+
+        // 단원 (복수)
+        const unitChecked = Array.from(document.querySelectorAll("input[name='unitIds']:checked"));
+        let unitText = '전체 단원';
+        if(unitChecked.length > 0){
+            const names = unitChecked
+                .map(cb => document.querySelector(`label[for='${cb.id}']`)?.textContent.trim())
+                .filter(Boolean);
+            if(names.length > 0){
+                unitText = names.slice(0,3).join(', ');
+                if(names.length > 3) unitText += ` 외 ${names.length - 3}개`;
+            }
+        }
+
+        $summary.innerHTML =
+            `<strong>과목</strong> ${subjectText}` +
+            `<span class="dot">·</span>` +
+            `<strong>회차</strong> ${roundText}` +
+            `<span class="dot">·</span>` +
+            `<strong>단원</strong> ${unitText}`;
+    }
+
+    /* ===== 옵저버 & 최초 로드 ===== */
+    const scrollRoot = document.getElementById('scrollRoot');
+    const sentinel   = document.getElementById('sentinel');
+
+    const io = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+            if(entry.isIntersecting){
+                loadMore();
+            }
+        });
+    }, {
+        root: null,
+        rootMargin: '0px 0px 400px 0px',
+        threshold: 0
+    });
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+        io.observe(sentinel);
+        fetchCount();
+        loadMore();
+        updateFilterSummary();
+
+        const filterForm = document.querySelector('form.filter-form');
+        if(filterForm){
+            filterForm.addEventListener('change', ()=>{
+                updateFilterSummary();
+            });
+        }
+    });
+</script>
 </body>
 </html>

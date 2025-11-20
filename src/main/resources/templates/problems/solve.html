@@ -1,3 +1,4 @@
+<!-- src/main/resources/templates/problems/solve.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
@@ -27,10 +28,6 @@
         .vh-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
         .vh-title{font-weight:900;letter-spacing:.3px;color:var(--color-main)}
         .select-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-        .panel-box{position:absolute;bottom:100%;left:0;width:280px;background:#fff;border:1px solid #e5e7ea;border-radius:14px;padding:14px;display:none;z-index:1000;box-shadow:var(--shadow-xs)}
-        .panel-box label{display:flex;align-items:center;gap:8px;font-size:.95rem;margin-bottom:8px;color:var(--text-main)}
-        .panel-box .btn{font-size:.9rem;padding:5px 12px}
-        .select-holder{position:relative}
         .dropdown-menu{border-radius:12px;box-shadow:var(--shadow-xs);border:1px solid #e5e7ea;max-height:260px;overflow-y:auto;}
         .counter-badge{border:1.5px solid var(--color-sub);color:var(--color-sub);background:#fff;font-weight:800}
         .container-wrap{max-width:var(--maxw);margin:18px auto;padding:0 12px}
@@ -47,13 +44,6 @@
         .choice-correct{border-color:#2e7d32!important;box-shadow:0 0 0 3px rgba(46,125,50,.08)}
         .choice-wrong{border-color:#c62828!important;box-shadow:0 0 0 3px rgba(198,40,40,.08)}
         #choices li.disabled-choice{color:#9aa1a6;background:linear-gradient(0deg,rgba(0,0,0,.02),rgba(0,0,0,.02))}
-        .mark-o{color:#2e7d32;font-weight:800;margin-left:8px}
-        .mark-x{color:#c62828;font-weight:800;margin-left:8px}
-        .clickable-word{position:relative;cursor:pointer;font-weight:900;color:var(--color-main);padding:2px 6px;border-radius:8px;border-bottom:2px dotted var(--color-sub)}
-        .clickable-word.selected-o{background:rgba(46,125,50,.08)}
-        .clickable-word.selected-o::after{content:"O";color:#2e7d32;font-size:18px;position:absolute;top:-10px;left:50%;transform:translateX(-50%)}
-        .clickable-word.selected-x{background:rgba(198,40,40,.08)}
-        .clickable-word.selected-x::after{content:"X";color:#c62828;font-size:18px;position:absolute;top:-10px;left:50%;transform:translateX(-50%)}
         #solution-area{background:#fff;border:1px solid #e5e7ea;border-radius:16px;padding:16px}
         #solution-area h5{color:var(--color-main);font-weight:900}
         .solution-pill{background:var(--color-point);color:#4d3a16;font-weight:900;padding:4px 10px;border-radius:999px;margin-left:8px}
@@ -61,59 +51,34 @@
 </head>
 <body>
 
-<!-- ===== 상단 헤더 ===== -->
 <header class="viewer-header">
     <div class="vh-wrap">
         <div class="vh-left">
             <span class="vh-title">기출문제 풀이</span>
             <span id="question-count-top" class="chip">0 / 0</span>
         </div>
-
         <div class="select-row">
             <!-- 과목 -->
             <div class="dropdown">
-                <button class="btn btn-ghost dropdown-toggle" type="button" id="subjectDropdown" data-bs-toggle="dropdown" aria-expanded="false">과목 선택</button>
-                <ul class="dropdown-menu" id="subject-menu" style="max-height:260px;overflow-y:auto;"></ul>
+                <button class="btn btn-ghost dropdown-toggle" type="button" id="subjectDropdown" data-bs-toggle="dropdown">과목 선택</button>
+                <ul class="dropdown-menu" id="subject-menu"></ul>
             </div>
-
             <!-- 회차 -->
             <div class="dropdown" data-bs-auto-close="false">
-                <button class="btn btn-ghost dropdown-toggle" type="button" id="roundDropdown" data-bs-toggle="dropdown" aria-expanded="false">회차 선택</button>
+                <button class="btn btn-ghost dropdown-toggle" type="button" id="roundDropdown" data-bs-toggle="dropdown">회차 선택</button>
                 <ul class="dropdown-menu" id="round-menu"></ul>
             </div>
-
             <!-- 단원 -->
-            <div class="dropdown" data-bs-auto-close="outside">
-                <button class="btn btn-ghost dropdown-toggle" type="button" id="unitDropdown" data-bs-toggle="dropdown" aria-expanded="false">단원 선택</button>
+            <div class="dropdown" data-bs-auto-close="false">
+                <button class="btn btn-ghost dropdown-toggle" type="button" id="unitDropdown" data-bs-toggle="dropdown">단원 선택</button>
                 <ul class="dropdown-menu" id="unit-menu"></ul>
             </div>
-
             <span id="question-count" class="btn counter-badge disabled">0 / 0</span>
             <button id="start-btn" class="btn btn-main">문제풀기</button>
-
-            <!-- 확대/축소 -->
-            <div class="btn-group" role="group" aria-label="zoom">
-                <button class="btn btn-ghost btn-sm" id="zoom-in-btn">+</button>
-                <button class="btn btn-ghost btn-sm" id="zoom-out-btn">-</button>
-            </div>
-
-            <!-- 설정 (회원 전용 링크는 userId>0일 때만 노출) -->
-            <div class="select-holder">
-                <button class="btn btn-ghost btn-sm" id="settings-btn">설정 ⚙</button>
-                <div id="settings-panel" class="panel-box" style="right:0;left:auto;">
-                    <a class="d-block mb-1 text-decoration-none" th:if="${userId > 0}" th:href="@{/wrong-notes(userId=${userId})}">오답노트</a>
-                    <a class="d-block mb-1 text-decoration-none" th:if="${userId > 0}" th:href="@{/score-stats/user(userId=${userId})}">점수통계</a>
-                    <a class="d-block mb-1 text-decoration-none" th:href="@{/guide}">사용설명</a>
-                    <a class="d-block mb-1 text-decoration-none" th:href="@{/exam-schedule}">시험일정</a>
-                    <a class="d-block mb-1 text-decoration-none" th:href="@{/members/mypage}">마이페이지</a>
-                    <a class="d-block mb-1 text-decoration-none" th:if="${userId == 0}" th:href="@{/login}">로그인</a>
-                </div>
-            </div>
         </div>
     </div>
 </header>
 
-<!-- 진행중 목록(필요시) -->
 <div class="container-wrap" id="main">
     <div class="cardx">
         <h3 class="mb-3" style="color:var(--color-main);font-weight:900;">진행중인 문제풀이</h3>
@@ -122,7 +87,6 @@
     </div>
 </div>
 
-<!-- 문제 풀이 영역 -->
 <div class="container-wrap" id="question-area" style="display:none;">
     <div class="cardx">
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -132,17 +96,11 @@
                 <button id="solution-btn" class="btn btn-ghost">해설</button>
                 <button id="next-btn" class="btn btn-sub">▶</button>
             </div>
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="wrong-checkbox">
-                <label class="form-check-label" for="wrong-checkbox">오답노트</label>
-            </div>
         </div>
-
         <div class="mb-2"><span class="chip">진행 <strong id="qc-top">0 / 0</strong></span></div>
         <p id="question-title" class="mb-2"></p>
         <div id="question-text" class="mb-3 question-box"></div>
         <ul id="choices" class="list-group mb-3"></ul>
-
         <div id="solution-area" class="mb-2" style="display:none;">
             <h5 class="mb-2">해설 <span class="solution-pill" id="sol-answer-pill">정답: -</span></h5>
             <p id="solution-text" class="mb-0"></p>
@@ -153,12 +111,12 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    /* ===== state ===== */
-    let items=[], currentIndex=0, selectedSubject=null, selectedRounds=[], selectedUnits=[];
-    let userAnswers=[], checkedStates=[], markMode=null, sessionId=null;
+    let items=[], currentIndex=0, selectedSubject=null, selectedRounds=[], selectedUnits=[], roundData=[];
+    let sessionId=null;
 
     document.addEventListener("DOMContentLoaded", () => {
         loadSubjects();
+        bindUI();
     });
 
     function syncCounts(current,total){
@@ -167,369 +125,199 @@
             const el=document.getElementById(id); if(el) el.textContent=a;
         });
     }
-    function makeYearByRound(r){ return 2024 - (35 - r); } // 필요시 조정
 
-    /* ===== subjects ===== */
+    /* ===== 과목 ===== */
     async function loadSubjects(){
         try{
             const res=await axios.get('/problems/api/subjects');
             const menu=document.getElementById('subject-menu'); menu.innerHTML='';
-
             res.data.forEach(it=>{
                 const li=document.createElement('li');
                 li.innerHTML=`<a class="dropdown-item" href="#" data-id="${it.id}">${it.name}</a>`;
                 menu.appendChild(li);
             });
-
-            document.querySelectorAll('#subject-menu .dropdown-item').forEach(a=>{
-                a.addEventListener('click', async (e)=>{
+            menu.querySelectorAll('.dropdown-item').forEach(a=>{
+                a.addEventListener('click',async e=>{
                     e.preventDefault();
-                    selectedSubject=e.target.dataset.id;
+                    selectedSubject=Number(e.target.dataset.id);
                     document.getElementById('subjectDropdown').textContent=e.target.textContent;
-                    await loadRounds(selectedSubject); await loadUnits(selectedSubject); updateQuestionCount();
+                    await loadRounds(selectedSubject);
+                    await loadUnits(selectedSubject);
+                    updateQuestionCount();
                 });
             });
         }catch(err){ console.error('과목 로딩 실패:',err); }
     }
 
-    /* ===== rounds ===== */
+    /* ===== 회차 ===== */
     async function loadRounds(subjectId){
-        selectedRounds=[];
+        selectedRounds=[]; roundData=[];
         const menu=document.getElementById('round-menu');
-        menu.innerHTML='';
-        let rounds=[];
+        menu.innerHTML=`
+            <li><div class="text-center py-2">
+                <button class="btn btn-sm btn-main w-100" id="round-confirm-btn">확인</button>
+            </div></li>
+            <li><label class="dropdown-item"><input type="checkbox" id="round-select-all"> 전체 선택</label></li>`;
         try{
             const res=await axios.get(`/problems/api/rounds?subjectId=${subjectId}`);
-            rounds=res.data.length>0 ? res.data.map(r=>({id:r.id, number:r.roundNumber}))
-                : Array.from({length:10},(_,i)=>({id:String(26+i), number:26+i}));
-        }catch(err){
-            console.error('회차 로딩 실패:',err);
-            rounds=Array.from({length:10},(_,i)=>({id:String(26+i), number:26+i}));
-        }
-        rounds.sort((a,b)=>a.number-b.number).forEach(r=>{
-            const year=makeYearByRound(r.number);
-            const li=document.createElement('li');
-            li.innerHTML=`<label class="dropdown-item"><input type="checkbox" value="${r.id}" data-number="${r.number}"> ${r.number}회차 (${year}년)</label>`;
-            menu.appendChild(li);
-        });
-
-        const liAll=document.createElement('li');
-        liAll.innerHTML=`<label class="dropdown-item"><input type="checkbox" id="round-all"> 전체회차</label>`;
-        menu.appendChild(liAll);
-
-        const liBtn=document.createElement('li');
-        liBtn.innerHTML=`<div class="d-flex justify-content-between px-3 py-2 border-top">
-                <button id="round-confirm" class="btn btn-sm btn-main">확인</button>
-                <button id="round-close" class="btn btn-sm btn-ghost">닫기</button>
-            </div>`;
-        menu.appendChild(liBtn);
-
-        menu.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
-            cb.addEventListener('change',()=>{
-                if(cb.id==='round-all'){
-                    const checked=cb.checked;
-                    menu.querySelectorAll('input[type="checkbox"]:not(#round-all)').forEach(x=>x.checked=checked);
-                }else{
-                    const all=document.getElementById('round-all');
-                    if(!cb.checked && all) all.checked=false;
-                }
+            roundData=res.data;
+            res.data.sort((a,b)=>a.roundNumber-b.roundNumber).forEach(r=>{
+                const li=document.createElement('li');
+                li.innerHTML=`<label class="dropdown-item"><input type="checkbox" class="round-cb" value="${r.id}"> ${r.name}</label>`;
+                menu.appendChild(li);
             });
-        });
 
-        document.getElementById('round-confirm').addEventListener('click',()=>{
-            const checked=[...menu.querySelectorAll('input[type="checkbox"]:not(#round-all)')].filter(cb=>cb.checked).map(cb=>cb.value);
-            selectedRounds=checked;
-            const total=menu.querySelectorAll('input[type="checkbox"]:not(#round-all)').length;
-            const all=document.getElementById('round-all');
-            if(all) all.checked=checked.length===total;
-            updateRoundText();
-            updateQuestionCount();
-            const dd=bootstrap.Dropdown.getInstance(document.getElementById('roundDropdown'));
-            dd && dd.hide();
-        });
-        document.getElementById('round-close').addEventListener('click',()=>{
-            menu.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
-                if(cb.id==='round-all'){
-                    const total=menu.querySelectorAll('input[type="checkbox"]:not(#round-all)').length;
-                    cb.checked=selectedRounds.length===total && total>0;
+            const allCb=document.getElementById("round-select-all");
+            const getCbs=()=>menu.querySelectorAll(".round-cb");
+
+            allCb.addEventListener("change",()=>{ getCbs().forEach(cb=>cb.checked=allCb.checked); });
+
+            document.getElementById("round-confirm-btn").addEventListener("click",()=>{
+                const list=[...getCbs()].filter(x=>x.checked).map(x=>Number(x.value));
+                if(allCb.checked || list.length===0){
+                    selectedRounds=[];
+                    document.getElementById("roundDropdown").textContent="전체 회차";
+                }else if(list.length===1){
+                    const r=roundData.find(x=>x.id===list[0]);
+                    document.getElementById("roundDropdown").textContent=r? r.name : "회차 선택";
+                    selectedRounds=list;
                 }else{
-                    cb.checked=selectedRounds.includes(cb.value);
+                    selectedRounds=list;
+                    document.getElementById("roundDropdown").textContent="다중 회차";
                 }
+                updateQuestionCount();
             });
-            const dd=bootstrap.Dropdown.getInstance(document.getElementById('roundDropdown'));
-            dd && dd.hide();
-        });
-
-        updateRoundText();
+        }catch(err){ console.error('회차 로딩 실패:',err); }
     }
 
-    function updateRoundText(){
-        const allChecked=document.getElementById('round-all')?.checked;
-        const checked=[...document.querySelectorAll('#round-menu input[type="checkbox"]:not(#round-all)')].filter(cb=>cb.checked);
-        let text='회차 선택';
-        if(allChecked) text='전체회차';
-        else if(checked.length>1) text='다중회차';
-        else if(checked.length===1) text=`${checked[0].dataset.number}회차`;
-        document.getElementById('roundDropdown').textContent=text;
-    }
-
-    /* ===== units ===== */
+    /* ===== 단원 ===== */
     async function loadUnits(subjectId){
         selectedUnits=[];
         const menu=document.getElementById('unit-menu');
-        menu.innerHTML='';
-        const units=[
-            {id:'1', name:'부동산의 개념과 분류'},
-            {id:'2', name:'부동산의 특성(속성)'},
-            {id:'3', name:'부동산 경제론'},
-            {id:'4', name:'부동산 시장론'},
-            {id:'5', name:'부동산입지론과 공간구조론'},
-            {id:'6', name:'부동산 정책론'},
-            {id:'7', name:'부동산 투자론'},
-            {id:'8', name:'부동산 금융론'},
-            {id:'9', name:'부동산 개발론'},
-            {id:'10', name:'부동산 관리론'},
-            {id:'11', name:'부동산 마케팅론'},
-            {id:'12', name:'감정평가의 기초이론'},
-            {id:'13', name:'감정평가 3방식 7방법'},
-            {id:'14', name:'부동산가격 공시제도'},
-            {id:'15', name:'법률사실'},
-            {id:'16', name:'법률행위'},
-            {id:'17', name:'의사표시'},
-            {id:'18', name:'대리행위'},
-            {id:'19', name:'무효와 취소'},
-            {id:'20', name:'조건과 기한'},
-            {id:'21', name:'물권법 일반'},
-            {id:'22', name:'물권의 변동'},
-            {id:'23', name:'점유권'},
-            {id:'24', name:'소유권'},
-            {id:'25', name:'용익물권'},
-            {id:'26', name:'담보물권'},
-            {id:'27', name:'계약법 총론'},
-            {id:'28', name:'매매'},
-            {id:'29', name:'임대차'},
-            {id:'30', name:'주택임대차보호법'},
-            {id:'31', name:'상가건물임대차보호법'},
-            {id:'32', name:'가등기담보'},
-            {id:'33', name:'집합건물법'},
-            {id:'34', name:'명의신탁'},
-
-        ];
-
-        const liAll=document.createElement('li');
-        liAll.innerHTML=`<label class="dropdown-item"><input type="checkbox" id="unit-all"> 전체 단원</label>`;
-        menu.appendChild(liAll);
-
-        units.forEach(u=>{
-            const li=document.createElement('li');
-            li.innerHTML=`<label class="dropdown-item"><input type="checkbox" value="${u.id}"> ${u.name}</label>`;
-            menu.appendChild(li);
-        });
-
-        const liBtn=document.createElement('li');
-        liBtn.innerHTML=`<div class="d-flex justify-content-between px-3 py-2 border-top">
-                <button id="unit-confirm" class="btn btn-sm btn-main">확인</button>
-                <button id="unit-close" class="btn btn-sm btn-ghost">닫기</button>
-            </div>`;
-        menu.appendChild(liBtn);
-
-        menu.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
-            cb.addEventListener('change',()=>{
-                if(cb.id==='unit-all'){
-                    const checked=cb.checked;
-                    menu.querySelectorAll('input[type="checkbox"]:not(#unit-all)').forEach(x=>x.checked=checked);
-                }else{
-                    const all=document.getElementById('unit-all');
-                    if(!cb.checked && all) all.checked=false;
-                }
+        menu.innerHTML=`
+            <li><div class="text-center py-2">
+                <button class="btn btn-sm btn-main w-100" id="unit-confirm-btn">확인</button>
+            </div></li>
+            <li><label class="dropdown-item"><input type="radio" name="unitRadio" value="all" checked> 전체 선택</label></li>`;
+        try{
+            const res=await axios.get(`/problems/api/units?subjectId=${subjectId}`);
+            res.data.forEach(u=>{
+                const li=document.createElement('li');
+                li.innerHTML=`<label class="dropdown-item"><input type="radio" name="unitRadio" value="${u.id}"> ${u.name}</label>`;
+                menu.appendChild(li);
             });
-        });
 
-        document.getElementById('unit-confirm').addEventListener('click',()=>{
-            const checked=[...menu.querySelectorAll('input[type="checkbox"]:not(#unit-all)')].filter(cb=>cb.checked).map(cb=>cb.value);
-            selectedUnits=checked;
-            const total=menu.querySelectorAll('input[type="checkbox"]:not(#unit-all)').length;
-            const all=document.getElementById('unit-all');
-            if(all) all.checked=checked.length===total;
-            updateUnitText();
-            updateQuestionCount();
-            const dd=bootstrap.Dropdown.getInstance(document.getElementById('unitDropdown'));
-            dd && dd.hide();
-        });
-        document.getElementById('unit-close').addEventListener('click',()=>{
-            menu.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
-                if(cb.id==='unit-all'){
-                    const total=menu.querySelectorAll('input[type="checkbox"]:not(#unit-all)').length;
-                    cb.checked=selectedUnits.length===total && total>0;
+            document.getElementById("unit-confirm-btn").addEventListener("click",()=>{
+                const checked=menu.querySelector("input[name=unitRadio]:checked");
+                if(!checked || checked.value==="all"){
+                    selectedUnits=[];
+                    document.getElementById("unitDropdown").textContent="전체 단원";
                 }else{
-                    cb.checked=selectedUnits.includes(cb.value);
+                    selectedUnits=[Number(checked.value)];
+                    document.getElementById("unitDropdown").textContent=checked.parentElement.textContent.trim();
                 }
+                updateQuestionCount();
             });
-            const dd=bootstrap.Dropdown.getInstance(document.getElementById('unitDropdown'));
-            dd && dd.hide();
-        });
-
-        updateUnitText();
+        }catch(err){ console.error('단원 로딩 실패:',err); }
     }
 
-    function updateUnitText(){
-        const allChecked=document.getElementById('unit-all')?.checked;
-        const checked=[...document.querySelectorAll('#unit-menu input[type="checkbox"]:not(#unit-all)')].filter(cb=>cb.checked);
-        let text='단원 선택';
-        if(allChecked) text='전체 단원';
-        else if(checked.length>1) text='다중 단원';
-        else if(checked.length===1) text=`${checked[0].parentElement.textContent.trim()}`;
-        document.getElementById('unitDropdown').textContent=text;
-    }
-
-    /* ===== count ===== */
+    /* ===== 문제 개수 카운트 ===== */
     async function updateQuestionCount(){
-        if(!selectedSubject){ syncCounts(0,0); return; }
-        const params={ subjectId:selectedSubject };
-        if(selectedRounds.length>0) params.roundIds=selectedRounds.join(',');
-        if(selectedUnits.length>0) params.unitIds=selectedUnits.join(',');
-        const res=await axios.get('/problems/api/problems',{params});
-        syncCounts(0,res.data.length);
+        if(!selectedSubject) return;
+        try{
+            const params={subjectId:selectedSubject};
+            if(selectedRounds.length>0) params.roundIds=selectedRounds;
+            if(selectedUnits.length>0) params.unitIds=selectedUnits;
+
+            const res=await axios.get("/problems/api/problems/count",{
+                params,
+                paramsSerializer: p=>{
+                    const usp=new URLSearchParams();
+                    Object.keys(p).forEach(k=>{
+                        const v=p[k];
+                        if(Array.isArray(v)){ v.forEach(val=>usp.append(k,val)); }
+                        else if(v!==undefined && v!==null){ usp.append(k,v); }
+                    });
+                    return usp.toString();
+                }
+            });
+            syncCounts(0,res.data.count);
+        }catch(err){ console.error("문제 개수 조회 실패:",err); }
     }
 
-    /* ===== start & render ===== */
-    async function startSolving(){
-        if(!selectedSubject){ alert('과목을 선택하세요.'); return; }
-        document.getElementById('main').style.display='none';
-        document.getElementById('question-area').style.display='block';
-
-        const payload={ subjectId:+selectedSubject,
-            roundIds:selectedRounds.map(Number) };
-        if(selectedUnits.length>0) payload.unitIds=selectedUnits.map(Number);
-
+    /* ===== 문제풀기 시작 ===== */
+    async function startPractice(){
+        if(!selectedSubject){ alert("과목을 선택하세요."); return; }
         try{
-            const res=await axios.post('/problems/practice/start', payload);
-            sessionId = res.data.sessionId;
-            items     = res.data.firstPage || [];
-            if(items.length===0){ alert('문항이 없습니다.'); return; }
+            const res=await axios.post("/problems/practice/start",{
+                subjectId:selectedSubject, roundIds:selectedRounds, unitIds:selectedUnits
+            });
+            items=res.data.firstPage; sessionId=res.data.sessionId;
             currentIndex=0;
-            showQuestion(currentIndex);
-        }catch(e){
-            console.error(e); alert('세션 시작 실패: 로그인 필요 또는 서버 오류');
-            document.getElementById('main').style.display='block';
-            document.getElementById('question-area').style.display='none';
-        }
+            if(items.length===0){ alert("문제가 없습니다."); return; }
+            document.getElementById("main").style.display="none";
+            document.getElementById("question-area").style.display="block";
+            renderQuestion();
+        }catch(err){ console.error("세션 시작 실패:",err); }
     }
-    document.getElementById('start-btn').addEventListener('click',startSolving);
 
-    function showQuestion(index){
-        const q=items[index]; markMode=null;
-        document.getElementById('question-title').innerHTML=`<strong>${q.title||''}</strong>`;
-        document.getElementById('question-text').innerHTML=`<div>${q.viewContent||''}</div>${q.imageUrl?`<img src="${q.imageUrl}" style="max-width:100%;margin-top:10px;border-radius:12px;">`:''}`;
-        markKeywords();
-
-        const ul=document.getElementById('choices'); ul.innerHTML='';
-        (q.choices||[]).forEach((content,idx)=>{
-            const li=document.createElement('li'); li.className='list-group-item';
-            const num=idx+1;
+    /* ===== 문제 렌더링 ===== */
+    function renderQuestion(){
+        const q=items[currentIndex]; if(!q) return;
+        document.getElementById("question-title").textContent=q.title;
+        document.getElementById("question-text").innerHTML=q.viewContent||"";
+        const ul=document.getElementById("choices"); ul.innerHTML="";
+        q.choices.forEach((c,i)=>{
+            if(!c) return;
+            const li=document.createElement("li");
+            li.className="list-group-item";
             li.innerHTML=`<div class="form-check custom-radio">
-          <input class="form-check-input" type="radio" name="choice" id="choice-${num}" value="${num}">
-          <label class="form-check-label" for="choice-${num}" data-number="${num}">
-              <span class="choice-text">${content||''}</span>
-          </label></div>`;
-            const input=li.querySelector('input');
-            input.addEventListener('change', ()=>submitImmediate(num));
-            li.querySelector('.choice-text').addEventListener('click',(ev)=>{ev.preventDefault();ev.stopPropagation(); if(!markMode)return; toggleChoiceMark(li, num);});
+                <input class="form-check-input" type="radio" name="choice" id="choice${i+1}">
+                <label class="form-check-label" for="choice${i+1}" data-number="${i+1}">${c}</label>
+            </div>`;
             ul.appendChild(li);
+            li.querySelector("input").addEventListener("change",()=>submitAnswer(q.itemId,i+1));
         });
-
-        document.getElementById('solution-area').style.display='none';
-        document.getElementById('solution-text').textContent='';
-        document.getElementById('sol-answer-pill').textContent=`정답: ${q.answer ?? '-'}`;
-
-        syncCounts(index+1, items.length);
-
-        const saved=userAnswers[index];
-        if(saved){
-            const radio=document.querySelector(`input[name="choice"][value="${saved}"]`);
-            if(radio) radio.checked=true;
-            if(checkedStates[index]) highlightAnswer(saved, q.answer);
-        }
+        document.getElementById("solution-area").style.display="none";
+        syncCounts(currentIndex+1,items.length);
     }
 
-    async function submitImmediate(choiceNo){
-        const cur = items[currentIndex];
+    /* ===== 정답 제출 ===== */
+    async function submitAnswer(itemId,choiceNo){
         try{
-            const r=await axios.post('/problems/practice/answer', {
-                sessionId, itemId: cur.itemId, selected: choiceNo
-            });
-            userAnswers[currentIndex] = choiceNo;
-            checkedStates[currentIndex] = true;
-
-            highlightAnswer(choiceNo, r.data.answer);
-            document.getElementById('solution-text').textContent =
-                r.data.explanation ? r.data.explanation : (r.data.correct ? '정답입니다.' : '오답입니다.');
-            document.getElementById('sol-answer-pill').textContent = `정답: ${r.data.answer ?? '-'}`;
-            document.getElementById('solution-area').style.display='block';
-        }catch(e){ console.error('채점 실패', e); }
+            const res=await axios.post("/problems/practice/answer",{ sessionId, itemId, selected:choiceNo });
+            const correct=res.data.correct;
+            showResult(choiceNo,correct,res.data.answer,res.data.explanation);
+        }catch(err){ console.error("정답 제출 실패:",err); }
+    }
+    function showResult(choiceNo,correct,answer,exp){
+        const list=document.querySelectorAll("#choices .list-group-item");
+        list.forEach((li,i)=>{
+            if(i+1===choiceNo){ li.classList.add(correct?"choice-correct":"choice-wrong"); }
+            if(i+1===answer){ li.classList.add("choice-correct"); }
+        });
+        document.getElementById("solution-area").style.display="block";
+        document.getElementById("sol-answer-pill").textContent=`정답: ${answer}`;
+        document.getElementById("solution-text").textContent=exp||"";
     }
 
-    function highlightAnswer(selected, answer){
-        document.querySelectorAll('#choices .list-group-item').forEach((li,idx)=>{
-            li.classList.remove('choice-correct','choice-wrong');
-            const num=idx+1;
-            if(num===selected){ li.classList.add(selected===answer?'choice-correct':'choice-wrong'); }
+    /* ===== 이전/다음 ===== */
+    function prevQuestion(){ if(currentIndex>0){ currentIndex--; renderQuestion(); } }
+    function nextQuestion(){ if(currentIndex<items.length-1){ currentIndex++; renderQuestion(); } }
+
+    /* ===== 바인딩 ===== */
+    function bindUI(){
+        document.getElementById("start-btn").addEventListener("click",startPractice);
+        document.getElementById("prev-btn").addEventListener("click",prevQuestion);
+        document.getElementById("next-btn").addEventListener("click",nextQuestion);
+        document.getElementById("problem-btn").addEventListener("click",()=>{
+            document.getElementById("question-text").style.display="block";
+            document.getElementById("solution-area").style.display="none";
+        });
+        document.getElementById("solution-btn").addEventListener("click",()=>{
+            document.getElementById("solution-area").style.display="block";
         });
     }
-
-    /* ===== keyword mark & elimination ===== */
-    function markKeywords(){
-        const reps=[{kw:'옳은',type:'o'},{kw:'모두 고른 것',type:'o'},{kw:'해야 하는 것',type:'o'},{kw:'해당하는 것',type:'o'},
-            {kw:'아닌',type:'x'},{kw:'틀린',type:'x'},{kw:'없는',type:'x'},{kw:'아닌 경우를 모두 고른 것',type:'x'}];
-        const titleEl=document.getElementById('question-title'), textEl=document.getElementById('question-text');
-        [titleEl,textEl].forEach(el=>{
-            let html=el.innerHTML; reps.forEach(({kw,type})=>{
-                const re=new RegExp(kw,'g'); html=html.replace(re, `<span class="clickable-word" data-type="${type}">${kw}</span>`);
-            }); el.innerHTML=html;
-        });
-        document.querySelectorAll('.clickable-word').forEach(span=>{
-            span.addEventListener('click',()=>{
-                if(span.classList.contains('selected-o')||span.classList.contains('selected-x')){ span.classList.remove('selected-o','selected-x'); markMode=null; }
-                else{ document.querySelectorAll('.clickable-word').forEach(s=>s.classList.remove('selected-o','selected-x')); markMode=span.dataset.type; span.classList.add(markMode==='o'?'selected-o':'selected-x'); }
-            });
-        });
-    }
-
-    async function toggleChoiceMark(li, choiceNo){
-        const ex=li.querySelector('.mark-o,.mark-x');
-        if(ex){ ex.remove(); li.classList.remove('disabled-choice'); }
-        else{
-            // 서버 소거 상태 반영(세션 범위 저장)
-            try{ await axios.patch('/problems/practice/eliminate', null, { params:{ itemId: items[currentIndex].itemId, choiceNo } }); }catch(e){}
-            li.classList.add('disabled-choice');
-            const symbol=markMode==='o'?'X':'O', cls=markMode==='o'?'mark-x':'mark-o';
-            li.querySelector('.choice-text').insertAdjacentHTML('beforeend', `<span class="${cls}">${symbol}</span>`);
-        }
-    }
-
-    /* ===== nav buttons ===== */
-    document.getElementById('next-btn').addEventListener('click',()=>{ if(currentIndex<items.length-1){ currentIndex++; showQuestion(currentIndex);} });
-    document.getElementById('prev-btn').addEventListener('click',()=>{ if(currentIndex>0){ currentIndex--; showQuestion(currentIndex);} });
-    document.getElementById('problem-btn').addEventListener('click',()=>{
-        document.getElementById('solution-area').style.display='none';
-        document.querySelectorAll('#choices .list-group-item').forEach(li=>li.classList.remove('choice-correct','choice-wrong'));
-    });
-    document.getElementById('solution-btn').addEventListener('click',()=>{
-        const q=items[currentIndex]; highlightAnswer(q.answer,q.answer);
-        document.getElementById('solution-text').textContent=`정답: ${q.answer ?? '-'}`;
-        document.getElementById('solution-area').style.display='block';
-    });
-
-    /* ===== zoom ===== */
-    let baseFontSize=16; function applyZoom(){ document.documentElement.style.fontSize=baseFontSize+'px'; }
-    document.getElementById('zoom-in-btn').addEventListener('click',()=>{ baseFontSize=Math.min(baseFontSize+1,32); applyZoom(); });
-    document.getElementById('zoom-out-btn').addEventListener('click',()=>{ baseFontSize=Math.max(baseFontSize-1,10); applyZoom(); });
-
-    /* ===== settings ===== */
-    const settingsBtn=document.getElementById('settings-btn'), settingsPanel=document.getElementById('settings-panel');
-    settingsBtn?.addEventListener('click',()=>{ settingsPanel.style.display=settingsPanel.style.display==='block'?'none':'block'; });
-
-    document.addEventListener('click',(e)=>{ if(!settingsPanel.contains(e.target)&&!settingsBtn.contains(e.target)) settingsPanel.style.display='none';});
 </script>
 </body>
 </html>

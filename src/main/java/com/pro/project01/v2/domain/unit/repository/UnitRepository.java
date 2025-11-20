@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface UnitRepository extends JpaRepository<Unit, Long> {
     List<Unit> findBySubject_Id(Long subjectId);
+    List<Unit> findByRoundId(Long roundId);
 }

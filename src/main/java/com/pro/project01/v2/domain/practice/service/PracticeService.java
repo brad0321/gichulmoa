@@ -33,8 +33,9 @@ public class PracticeService {
     private final SolutionHistoryRepository hRepo;
     private final ScoreStatService scoreService;
 
+    /** ✅ 연습 세션 시작 (다중 subjectId/roundIds/unitIds 지원) */
     @Transactional
-    public StartRes start(Long userId, Long subjectId, List<Long> roundIds, List<Long> unitIds){
+    public StartRes start(Long userId, Long subjectId, List<Long> roundIds, List<Long> unitIds) {
         var problems = pRepo.findByFilters(subjectId, roundIds, unitIds);
         if (problems.isEmpty()) return new StartRes(null, List.of());
 
@@ -49,7 +50,7 @@ public class PracticeService {
                 .build());
 
         int idx = 0;
-        for (Problem p: problems){
+        for (Problem p : problems) {
             iRepo.save(PracticeSessionItem.builder()
                     .session(session).problem(p)
                     .orderIndex(idx++)
@@ -59,18 +60,19 @@ public class PracticeService {
         return new StartRes(session.getId(), toDtos(session.getId(), problems));
     }
 
+    /** ✅ 정답 제출 */
     @Transactional
-    public AnswerRes answer(Long sessionId, Long itemId, int selected, Long userId){
+    public AnswerRes answer(Long sessionId, Long itemId, int selected, Long userId) {
         var item = iRepo.findById(itemId).orElseThrow();
         var p = item.getProblem();
-        boolean correct = (p.getAnswer()!=null && Objects.equals(p.getAnswer(), selected));
+        boolean correct = (p.getAnswer() != null && Objects.equals(p.getAnswer(), selected));
 
         item.setSelectedChoiceNo(selected);
         item.setIsCorrect(correct);
         item.getSession().setLastAccessedAt(LocalDateTime.now());
 
         if (userId != null) {
-            // 풀이 기록 (selectedChoiceNo 컬럼 존재해야 함)
+            // 풀이 기록
             hRepo.save(SolutionHistory.builder()
                     .user(User.builder().id(userId).build())
                     .problem(p)
@@ -82,26 +84,27 @@ public class PracticeService {
             scoreService.record(userId, p.getSubject().getId(), p.getRound().getId(), correct);
         }
 
-        // 보기별 해설 (정답이면 정답 보기에 대한 해설, 오답이면 사용자가 고른 보기에 대한 해설)
+        // 보기별 해설
         String exp = expRepo.findByProblem_IdAndChoiceNo(p.getId(), correct ? p.getAnswer() : selected)
                 .map(Explanation::getContent).orElse(null);
 
         return new AnswerRes(correct, p.getAnswer(), exp);
     }
 
+    /** ✅ 선택지 제거 토글 */
     @Transactional
-    public void toggleEliminate(Long itemId, int choiceNo){
+    public void toggleEliminate(Long itemId, int choiceNo) {
         var item = iRepo.findById(itemId).orElseThrow();
         int bit = 1 << (choiceNo - 1); // 1→1, 2→2, 3→4, 4→8, 5→16
         int mask = item.getEliminatedMask();
         item.setEliminatedMask((mask & bit) != 0 ? (mask ^ bit) : (mask | bit));
     }
 
-    private List<QuestionDto> toDtos(Long sessionId, List<Problem> problems){
+    private List<QuestionDto> toDtos(Long sessionId, List<Problem> problems) {
         List<QuestionDto> list = new ArrayList<>();
         var items = iRepo.findBySession_IdOrderByOrderIndexAsc(sessionId);
 
-        for (int idx = 0; idx < problems.size(); idx++){
+        for (int idx = 0; idx < problems.size(); idx++) {
             Problem p = problems.get(idx);
             PracticeSessionItem item = items.get(idx);
             list.add(new QuestionDto(

@@ -17,8 +17,11 @@
             --text-main:#2C3E3F; --text-sub:#7A746E; --bg:#F4F3F1; --white:#ffffff;
             --radius:18px; --shadow:0 10px 24px rgba(47,72,88,.15);
         }
-        body{ background:var(--bg); color:var(--text-main);
-            font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; letter-spacing:.1px; }
+        body{
+            background:var(--bg); color:var(--text-main);
+            font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+            letter-spacing:.1px;
+        }
         .page-wrap{ max-width: 960px; margin: clamp(24px,5vh,72px) auto; padding: 0 14px; }
 
         .brand{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
@@ -26,17 +29,33 @@
         .brand .title{ font-weight:900; font-size:18px; }
         .muted{ color:var(--text-sub); }
 
-        .card-box{ border:0; background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; }
-        .section-title{ color:var(--color-main); font-weight:800; font-size:18px; margin-bottom:12px; }
+        .card-box{
+            border:0; background:var(--white); border-radius:var(--radius);
+            box-shadow:var(--shadow); padding:22px;
+        }
+        .section-title{
+            color:var(--color-main); font-weight:800;
+            font-size:18px; margin-bottom:12px;
+        }
 
         .form-label{ font-weight:700; }
-        .form-control, .form-select{ border-radius:12px; border:1px solid #d9d6d1; padding:10px 12px; }
-        .form-control:focus, .form-select:focus{ border-color:var(--color-sub); box-shadow:0 0 0 .2rem rgba(79,124,172,.15); }
+        .form-control, .form-select{
+            border-radius:12px; border:1px solid #d9d6d1; padding:10px 12px;
+        }
+        .form-control:focus, .form-select:focus{
+            border-color:var(--color-sub); box-shadow:0 0 0 .2rem rgba(79,124,172,.15);
+        }
         .help{ font-size:12px; color:var(--text-sub); margin-top:6px; }
 
-        .img-wrap{ border:1px solid #e6e3df; background:#fff; border-radius:12px; padding:10px; display:inline-block; }
+        .img-wrap{
+            border:1px solid #e6e3df; background:#fff;
+            border-radius:12px; padding:10px; display:inline-block;
+        }
 
-        .btn-uniform{ padding:10px 14px; min-height:44px; border-radius:12px; font-weight:700; font-size:1rem; }
+        .btn-uniform{
+            padding:6px 10px; min-height:36px;
+            border-radius:8px; font-weight:600; font-size:.9rem;
+        }
         .btn-main{ background:var(--color-main); border-color:var(--color-main); color:#fff; }
         .btn-main:hover{ background:#243946; border-color:#243946; }
         .btn-sub{ background:var(--color-sub); border-color:var(--color-sub); color:#fff; }
@@ -44,8 +63,15 @@
         .btn-ghost{ border:1px solid #c9c4bd; background:transparent; color: var(--text-main); }
         .btn-ghost:hover{ background:#f0efec; }
 
-        .modal-header.primary{ background:var(--color-main); color:#fff; }
-        .modal-header.error{ background:#a33a3a; color:#fff; }
+        .toolbar{ margin-bottom:6px; display:flex; gap:6px; flex-wrap:wrap; }
+        .toolbar button{ flex:0 0 auto; }
+
+        .preview-pill{
+            background:#fff7e8; border:1px dashed #e8c27a; color:#6a5a2d;
+            border-radius:10px; padding:8px 10px; font-weight:700;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+        }
+        .grid-compact .col-md-2, .grid-compact .col-md-3 { margin-bottom: .5rem; }
     </style>
 </head>
 <body>
@@ -60,22 +86,123 @@
 
     <!-- 카드 -->
     <section class="card-box">
-        <h2 class="section-title">문항 기본정보</h2>
-
         <form th:action="@{/problems/new}" method="post" enctype="multipart/form-data" id="createForm" novalidate>
             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-            <!-- 질문 -->
+            <!-- 분류: 과목/회차/단원 -->
+            <h2 class="section-title">분류 정보</h2>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="subject-select" class="form-label">과목</label>
+                    <select class="form-select" name="subjectId" id="subject-select" required>
+                        <option value="">과목 선택</option>
+                        <option th:each="subject : ${subjects}"
+                                th:value="${subject.id}"
+                                th:text="${subject.name}"></option>
+                    </select>
+                    <div class="help">과목을 선택하면 관련 회차/단원을 불러옵니다.</div>
+                </div>
+                <div class="col-md-4">
+                    <label for="round-select" class="form-label">회차</label>
+                    <select class="form-select" name="roundId" id="round-select" required>
+                        <option value="">회차 선택</option>
+                    </select>
+                    <div class="help">예: 35회, 34회 … (옵션 텍스트에서 회차 숫자를 추출해 미리보기 생성)</div>
+                </div>
+                <div class="col-md-4">
+                    <label for="unit-select" class="form-label">단원</label>
+                    <select class="form-select" name="unitId" id="unit-select" required>
+                        <option value="">단원 선택</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 고유번호(구성요소) -->
+            <hr class="my-4">
+            <h2 class="section-title">고유번호</h2>
+
+            <div class="row g-3 grid-compact">
+                <!-- 회차 기준: RR_PP -->
+                <div class="col-md-3">
+                    <label class="form-label" for="roundProblemNo">회차 내 번호 (1~40)</label>
+                    <input type="number" class="form-control" id="roundProblemNo" name="roundProblemNo"
+                           min="1" max="40" placeholder="예: 1" required>
+                    <div class="help">문항 번호. 예: 1 → 01</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label d-flex align-items-center justify-content-between">
+                        회차 코드 미리보기
+                        <span class="badge text-bg-light">RR_PP</span>
+                    </label>
+                    <div class="preview-pill" id="roundCodePreview" aria-live="polite">--</div>
+                    <div class="help">저장 시 DB에서 자동 생성됩니다.</div>
+                </div>
+
+                <!-- 과목·단원 기준: SS_UUU_PP -->
+                <div class="col-md-2">
+                    <label class="form-label" for="subjectCode">과목 코드 (SS)</label>
+                    <input type="text" class="form-control" id="subjectCode" name="subjectCode"
+                           inputmode="numeric" maxlength="2" placeholder="예: 01"
+                           pattern="^\d{2}$" required>
+                    <div class="help">2자리 숫자. 예: 01=민법</div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" for="unitSeqCode">단원 코드 (UUU)</label>
+                    <input type="text" class="form-control" id="unitSeqCode" name="unitSeqCode"
+                           inputmode="numeric" maxlength="3" placeholder="예: 001"
+                           pattern="^\d{3}$" required>
+                    <div class="help">3자리 숫자. 예: 001=법률사실</div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" for="unitProblemNo">단원 내 순번 (1~99)</label>
+                    <input type="number" class="form-control" id="unitProblemNo" name="unitProblemNo"
+                           min="1" max="99" placeholder="예: 1" required>
+                    <div class="help">PP로 2자리 패딩. 예: 1 → 01</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label d-flex align-items-center justify-content-between">
+                        단원 코드 미리보기
+                        <span class="badge text-bg-light">SS_UUU_PP</span>
+                    </label>
+                    <div class="preview-pill" id="unitCodePreview" aria-live="polite">--</div>
+                    <div class="help">저장 시 DB에서 자동 생성됩니다.</div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- 질문 (HTML 지원) -->
             <div class="mb-3">
                 <label for="title" class="form-label">문제 질문</label>
-                <input type="text" id="title" name="title" class="form-control" placeholder="문제 질문 입력" required>
+
+                <!-- 질문용 HTML 툴바 -->
+                <div class="toolbar" data-target="title">
+                    <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<p></p>">&lt;p&gt;&lt;/p&gt;</button>
+                    <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<p style='margin-left: 20px;'></p>">&lt;p style='margin-left: 20px;'&gt;&lt;/p&gt;</button>
+                    <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<br>">&lt;br&gt;</button>
+                    <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<strong></strong>">&lt;strong&gt;&lt;/strong&gt;</button>
+                    <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<u></u>">&lt;u&gt;&lt;/u&gt;</button>
+                    <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<span style='color:red;'></span>">&lt;span style='color:red;'&gt;&lt;/span&gt;</button>
+                </div>
+
+                <textarea id="title" name="title" class="form-control" rows="2"
+                          placeholder="문제 질문 입력" required></textarea>
+                <div class="help">질문도 HTML 태그 사용 가능 (굵게, 밑줄, 줄바꿈 등)</div>
             </div>
 
             <!-- 지문 -->
             <div class="mb-3">
                 <label for="viewContent" class="form-label">문제 지문</label>
-                <textarea id="viewContent" name="viewContent" class="form-control" rows="5" placeholder="<p>문제 지문을 입력하세요.</p>"></textarea>
-                <div class="help">HTML 입력 가능. 위험한 스크립트는 백엔드에서 필터링하세요.</div>
+                <div class="toolbar" data-target="viewContent">
+                    <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<p></p>">&lt;p&gt;&lt;/p&gt;</button>
+                    <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<p style='margin-left: 20px;'></p>">&lt;p style='margin-left: 20px;'&gt;&lt;/p&gt;</button>
+                    <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<br>">&lt;br&gt;</button>
+                    <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<strong></strong>">&lt;strong&gt;&lt;/strong&gt;</button>
+                    <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<u></u>">&lt;u&gt;&lt;/u&gt;</button>
+                    <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<span style='color:red;'></span>">&lt;span style='color:red;'&gt;&lt;/span&gt;</button>
+                </div>
+                <textarea id="viewContent" name="viewContent" class="form-control" rows="5"></textarea>
+                <div class="help">HTML 입력 가능. 툴바 버튼으로 태그를 빠르게 추가할 수 있습니다.</div>
             </div>
 
             <!-- 이미지 업로드 -->
@@ -91,28 +218,84 @@
 
             <!-- 보기 -->
             <h2 class="section-title">선택 문항</h2>
-            <div class="row g-3">
-                <div class="col-md-6">
+            <div>
+                <!-- 보기 1 -->
+                <div class="mb-3">
                     <label class="form-label" for="choice1">보기 1</label>
-                    <input id="choice1" type="text" class="form-control" name="choice1">
+                    <div class="toolbar" data-target="choice1">
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<p></p>">&lt;p&gt;&lt;/p&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<p style='margin-left: 20px;'></p>">&lt;p style='margin-left: 20px;'&gt;&lt;/p&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<br>">&lt;br&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<strong></strong>">&lt;strong&gt;&lt;/strong&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<u></u>">&lt;u&gt;&lt;/u&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<span style='color:red;'></span>">&lt;span style='color:red;'&gt;&lt;/span&gt;</button>
+                    </div>
+                    <textarea id="choice1" name="choice1" class="form-control" rows="2"
+                              placeholder="보기 1 내용을 입력하세요 (HTML 태그 사용 가능)"></textarea>
                 </div>
-                <div class="col-md-6">
+
+                <!-- 보기 2 -->
+                <div class="mb-3">
                     <label class="form-label" for="choice2">보기 2</label>
-                    <input id="choice2" type="text" class="form-control" name="choice2">
+                    <div class="toolbar" data-target="choice2">
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<p></p>">&lt;p&gt;&lt;/p&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<p style='margin-left: 20px;'></p>">&lt;p style='margin-left: 20px;'&gt;&lt;/p&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<br>">&lt;br&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<strong></strong>">&lt;strong&gt;&lt;/strong&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<u></u>">&lt;u&gt;&lt;/u&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<span style='color:red;'></span>">&lt;span style='color:red;'&gt;&lt;/span&gt;</button>
+                    </div>
+                    <textarea id="choice2" name="choice2" class="form-control" rows="2"
+                              placeholder="보기 2 내용을 입력하세요 (HTML 태그 사용 가능)"></textarea>
                 </div>
-                <div class="col-md-6">
+
+                <!-- 보기 3 -->
+                <div class="mb-3">
                     <label class="form-label" for="choice3">보기 3</label>
-                    <input id="choice3" type="text" class="form-control" name="choice3">
+                    <div class="toolbar" data-target="choice3">
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<p></p>">&lt;p&gt;&lt;/p&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<p style='margin-left: 20px;'></p>">&lt;p style='margin-left: 20px;'&gt;&lt;/p&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<br>">&lt;br&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<strong></strong>">&lt;strong&gt;&lt;/strong&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<u></u>">&lt;u&gt;&lt;/u&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<span style='color:red;'></span>">&lt;span style='color:red;'&gt;&lt;/span&gt;</button>
+                    </div>
+                    <textarea id="choice3" name="choice3" class="form-control" rows="2"
+                              placeholder="보기 3 내용을 입력하세요 (HTML 태그 사용 가능)"></textarea>
                 </div>
-                <div class="col-md-6">
+
+                <!-- 보기 4 -->
+                <div class="mb-3">
                     <label class="form-label" for="choice4">보기 4</label>
-                    <input id="choice4" type="text" class="form-control" name="choice4">
+                    <div class="toolbar" data-target="choice4">
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<p></p>">&lt;p&gt;&lt;/p&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<p style='margin-left: 20px;'></p>">&lt;p style='margin-left: 20px;'&gt;&lt;/p&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<br>">&lt;br&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<strong></strong>">&lt;strong&gt;&lt;/strong&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<u></u>">&lt;u&gt;&lt;/u&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<span style='color:red;'></span>">&lt;span style='color:red;'&gt;&lt;/span&gt;</button>
+                    </div>
+                    <textarea id="choice4" name="choice4" class="form-control" rows="2"
+                              placeholder="보기 4 내용을 입력하세요 (HTML 태그 사용 가능)"></textarea>
                 </div>
-                <div class="col-md-6">
+
+                <!-- 보기 5 -->
+                <div class="mb-3">
                     <label class="form-label" for="choice5">보기 5</label>
-                    <input id="choice5" type="text" class="form-control" name="choice5">
+                    <div class="toolbar" data-target="choice5">
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<p></p>">&lt;p&gt;&lt;/p&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<p style='margin-left: 20px;'></p>">&lt;p style='margin-left: 20px;'&gt;&lt;/p&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<br>">&lt;br&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<strong></strong>">&lt;strong&gt;&lt;/strong&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<u></u>">&lt;u&gt;&lt;/u&gt;</button>
+                        <button type="button" class="btn btn-ghost btn-uniform insert-tag" data-tag="<span style='color:red;'></span>">&lt;span style='color:red;'&gt;&lt;/span&gt;</button>
+                    </div>
+                    <textarea id="choice5" name="choice5" class="form-control" rows="2"
+                              placeholder="보기 5 내용을 입력하세요 (HTML 태그 사용 가능)"></textarea>
                 </div>
-                <div class="col-md-6">
+
+                <!-- 정답 선택 -->
+                <div class="col-md-12">
                     <label for="answer" class="form-label">정답</label>
                     <select id="answer" class="form-select" name="answer" required>
                         <option value="">정답 선택</option>
@@ -127,227 +310,216 @@
 
             <hr class="my-4">
 
-            <!-- 분류: 과목/회차/단원 -->
-            <h2 class="section-title">분류 정보</h2>
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label for="subject-select" class="form-label">과목</label>
-                    <select class="form-select" name="subjectId" id="subject-select" required>
-                        <option value="">과목 선택</option>
-                        <option th:each="subject : ${subjects}" th:value="${subject.id}" th:text="${subject.name}"></option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label for="round-select" class="form-label">회차</label>
-                    <select class="form-select" name="roundId" id="round-select" required>
-                        <option value="">회차 선택</option>
-                        <option th:each="r : ${rounds}"
-                                th:value="${r.id}"
-                                th:text="${r.name}"></option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label for="unit-select" class="form-label">단원</label>
-                    <select class="form-select" name="unitId" id="unit-select" required>
-                        <option value="">단원 선택</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- (옵션) 문제 유형: types 전달 시 렌더 -->
-            <div class="row g-3 mt-1" th:if="${types != null}">
-                <div class="col-md-4">
-                    <label for="type" class="form-label">문제 유형</label>
-                    <select id="type" name="type" class="form-select">
-                        <option value="">문제 유형 선택</option>
-                        <option th:each="t : ${types}" th:value="${t.name()}" th:text="${t.description}"></option>
-                    </select>
-                </div>
-            </div>
-
             <div class="d-flex flex-wrap gap-2 justify-content-end mt-4">
-                <!-- 폼 외부 이동 시에도 정상 동작하도록 제출 버튼만 폼에 연결 -->
                 <button type="button" th:onclick="|location.href='@{/problems}'|" class="btn btn-ghost btn-uniform">목록</button>
                 <button type="button" th:onclick="|location.href='@{/dashboard}'|" class="btn btn-sub btn-uniform">대시보드</button>
+                <button type="submit" class="btn btn-main btn-uniform" id="submitBtn">등록하기</button>
             </div>
         </form>
-        <div class="d-flex flex-wrap gap-2 justify-content-end mt-4">
-            <button type="submit" form="createForm" class="btn btn-main btn-uniform" id="submitBtn">등록하기</button>
-        </div>
     </section>
 
     <p class="text-center mt-3 muted" style="font-size:12px">© 공인중개사 기출모아</p>
 </main>
-
-<!-- ===== 모달들 ===== -->
-
-<!-- 알림 모달 -->
-<div class="modal fade" id="modalMsg" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius:16px;">
-            <div class="modal-header primary">
-                <h5 class="modal-title">알림</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="modalMsgText">처리가 완료되었습니다.</div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-main btn-uniform" data-bs-dismiss="modal">확인</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 에러 모달 -->
-<div class="modal fade" id="modalError" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius:16px;">
-            <div class="modal-header error">
-                <h5 class="modal-title">입력 오류</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="modalErrorText">필수 항목을 확인해주세요.</div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-ghost btn-uniform" data-bs-dismiss="modal">닫기</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- 페이지 스크립트 -->
 <script th:inline="javascript">
-    const SERVER_MSG   = /*[[${msg}   ?: '']]*/ '';
-    const SERVER_ERROR = /*[[${error} ?: '']]*/ '';
-
     const $  = (s, p=document) => p.querySelector(s);
 
-    function openModal(id, textSel, text){
-        const el = $(id);
-        if (!el) return;
-        if (textSel && text){
-            const t = $(textSel);
-            if (t) t.textContent = text;
-        }
-        bootstrap.Modal.getOrCreateInstance(el).show();
-    }
+    // HTML 태그 툴바 (질문 + 지문 공통)
+    (function(){
+        function setupToolbar(toolbar){
+            const targetId = toolbar.getAttribute('data-target');
+            const textarea = document.getElementById(targetId);
+            if (!textarea) return;
 
-    if (SERVER_MSG)   openModal('#modalMsg',   '#modalMsgText',   SERVER_MSG);
-    if (SERVER_ERROR) openModal('#modalError', '#modalErrorText', SERVER_ERROR);
+            const buttons = toolbar.querySelectorAll('.insert-tag');
+
+            function insertAtCursor(tag){
+                const start = textarea.selectionStart ?? textarea.value.length;
+                const end   = textarea.selectionEnd ?? textarea.value.length;
+                const text  = textarea.value ?? '';
+
+                textarea.value = text.substring(0, start) + tag + text.substring(end);
+
+                if(tag.includes("</")){
+                    const openTagLen = tag.indexOf("</");
+                    textarea.selectionStart = textarea.selectionEnd = start + openTagLen;
+                }else{
+                    textarea.selectionStart = textarea.selectionEnd = start + tag.length;
+                }
+                textarea.focus();
+            }
+
+            buttons.forEach(btn=>{
+                btn.addEventListener('click', ()=> insertAtCursor(btn.getAttribute('data-tag')));
+            });
+        }
+
+        document.querySelectorAll('.toolbar[data-target]').forEach(setupToolbar);
+    })();
 
     // 이미지 미리보기
     (function(){
-        const input = $('#imageFile');
-        const wrap  = $('#previewWrap');
-        const img   = $('#previewImg');
+        const input = $('#imageFile'), wrap  = $('#previewWrap'), img   = $('#previewImg');
         if (input) {
             input.addEventListener('change', e => {
                 const file = e.target.files && e.target.files[0];
-                if (!file) { if (wrap) wrap.style.display = 'none'; return; }
+                if (!file) { wrap.style.display = 'none'; return; }
                 const reader = new FileReader();
-                reader.onload = ev => {
-                    if (img) img.src = ev.target.result;
-                    if (wrap) wrap.style.display = 'inline-block';
-                };
+                reader.onload = ev => { img.src = ev.target.result; wrap.style.display = 'inline-block'; };
                 reader.readAsDataURL(file);
             });
         }
     })();
 
-    // 과목 선택 → 단원 로딩
+    // 분류: 과목 → 회차 & 단원
     (function(){
-        const subj = $('#subject-select');
-        const unit = $('#unit-select');
+        const subj  = $('#subject-select');
+        const round = $('#round-select');
+        const unit  = $('#unit-select');
 
         function resetSelect(sel, label){
-            if (!sel) return;
             sel.innerHTML = '<option value="">' + label + ' 선택</option>';
             sel.disabled = false;
         }
 
-        if (subj) {
-            const defaultUnits = [
-                {id:1, name:'부동산의 개념과 분류'},
-                {id:2, name:'부동산의 특성(속성)'},
-                {id:3, name:'부동산 경제론'},
-                {id:4, name:'부동산 시장론'},
-                {id:5, name:'부동산입지론과 공간구조론'},
-                {id:6, name:'부동산 정책론'},
-                {id:7, name:'부동산 투자론'},
-                {id:8, name:'부동산 금융론'},
-                {id:9, name:'부동산 개발론'},
-                {id:10, name:'부동산 관리론'},
-                {id:11, name:'부동산 마케팅론'},
-                {id:12, name:'감정평가의 기초이론'},
-                {id:13, name:'감정평가 3방식 7방법'},
-                {id:14, name:'부동산가격 공시제도'}
-            ];
+        async function loadRoundsAndUnits(subjectId){
+            resetSelect(round, '회차');
+            resetSelect(unit, '단원');
+            if (!subjectId) return;
 
-            async function loadUnits(subjectId){
-                resetSelect(unit, '단원');
-                if (!subjectId) return;
-                try{
-                    const u = await axios.get('/problems/api/units', { params: { subjectId }});
-                    resetSelect(unit, '단원');
-                    const units = (u.data && u.data.length ? u.data : defaultUnits);
-                    units.forEach(it => {
-                        const opt = document.createElement('option');
-                        opt.value = it.id;
-                        opt.textContent = (it.name !== undefined && it.name !== null) ? it.name : it.id;
-                        unit.appendChild(opt);
-                    });
-                }catch(e){
-                    resetSelect(unit, '단원');
-                    defaultUnits.forEach(it => {
-                        const opt = document.createElement('option');
-                        opt.value = it.id;
-                        opt.textContent = it.name;
-                        unit.appendChild(opt);
-                    });
-                }
-            }
+            try{
+                const res = await axios.get('/problems/api/rounds', { params: { subjectId }});
+                (res.data || []).forEach(it=>{
+                    const opt = document.createElement('option');
+                    opt.value = it.id;
+                    opt.textContent = it.name; // 예: "35회"
+                    round.appendChild(opt);
+                });
+            }catch(e){ resetSelect(round, '회차'); }
 
-            subj.addEventListener('change', function(){
-                loadUnits(this.value);
-            });
+            try{
+                const res2 = await axios.get('/problems/api/units', { params: { subjectId }});
+                (res2.data || []).forEach(it=>{
+                    const opt = document.createElement('option');
+                    opt.value = it.id;
+                    opt.textContent = it.name;
+                    unit.appendChild(opt);
+                });
+            }catch(e){ resetSelect(unit, '단원'); }
+        }
 
-            // 페이지 로드시 기본 과목이 선택되어 있다면 단원 목록을 미리 로드
-            if (subj.value) {
-                loadUnits(subj.value);
-            }
+        subj && subj.addEventListener('change', ()=> loadRoundsAndUnits(subj.value));
+
+        // 페이지 로딩 시 과목 선택값이 있으면 자동 로딩
+        if(subj && subj.value){
+            loadRoundsAndUnits(subj.value);
         }
     })();
 
-    // 간단 검증 & 제출 중 버튼 잠금
+    // ===== 고유번호 미리보기 로직 =====
     (function(){
-        const form = $('#createForm');
-        const btn  = $('#submitBtn');
+        const roundSel = $('#round-select');
+        const roundNo  = $('#roundProblemNo');
+        const roundPrev = $('#roundCodePreview');
 
+        const subjectCode = $('#subjectCode');
+        const unitSeqCode = $('#unitSeqCode');
+        const unitProbNo  = $('#unitProblemNo');
+        const unitPrev    = $('#unitCodePreview');
+
+        function pad2(n){
+            n = parseInt(n,10);
+            if(isNaN(n)) return '';
+            return n < 10 ? '0'+n : String(n);
+        }
+        function pad3(s){
+            s = String(s ?? '').replace(/\D/g,'');
+            if(!s) return '';
+            return s.padStart(3,'0').slice(-3);
+        }
+        function onlyDigits(s,len){
+            s = String(s ?? '').replace(/\D/g,'');
+            if(!s) return '';
+            return len ? s.slice(0,len) : s;
+        }
+
+        function extractRoundNumberFromOption(){
+            const opt = roundSel && roundSel.options[roundSel.selectedIndex];
+            if(!opt) return '';
+            const m = String(opt.textContent || '').match(/(\d{1,3})/);
+            return m ? m[1] : '';
+        }
+
+        function renderRoundCode(){
+            const RR = extractRoundNumberFromOption();
+            const PP = pad2(roundNo.value);
+            if(RR && PP){ roundPrev.textContent = `${RR}_${PP}`; }
+            else { roundPrev.textContent = '--'; }
+        }
+
+        function renderUnitCode(){
+            const SS  = onlyDigits(subjectCode.value,2).padStart(2,'0').slice(-2);
+            const UUU = pad3(unitSeqCode.value);
+            const PP  = pad2(unitProbNo.value);
+            if(SS && UUU && PP){ unitPrev.textContent = `${SS}_${UUU}_${PP}`; }
+            else { unitPrev.textContent = '--'; }
+        }
+
+        roundSel && roundSel.addEventListener('change', renderRoundCode);
+        roundNo  && roundNo .addEventListener('input', renderRoundCode);
+
+        subjectCode && subjectCode.addEventListener('input', (e)=>{
+            e.target.value = onlyDigits(e.target.value,2);
+            renderUnitCode();
+        });
+        unitSeqCode && unitSeqCode.addEventListener('input', (e)=>{
+            e.target.value = onlyDigits(e.target.value,3);
+            renderUnitCode();
+        });
+        unitProbNo && unitProbNo.addEventListener('input', renderUnitCode);
+
+        // 초기 렌더
+        renderRoundCode();
+        renderUnitCode();
+    })();
+
+    // 제출 시 필수 검증 & 버튼 잠금
+    (function(){
+        const form = $('#createForm'), btn  = $('#submitBtn');
         if (form) {
             form.addEventListener('submit', (e) => {
-                const titleEl   = $('#title');
-                const answerEl  = $('#answer');
-                const subjectEl = $('#subject-select');
-                const roundEl   = $('#round-select');
-                const unitEl    = $('#unit-select');
-
-                const title   = titleEl ? titleEl.value.trim() : '';
-                const answer  = answerEl ? answerEl.value : '';
-                const subject = subjectEl ? subjectEl.value : '';
-                const round   = roundEl ? roundEl.value : '';
-                const unit    = unitEl ? unitEl.value : '';
-
-                if (!title || !answer || !subject || !round || !unit) {
+                const required = [
+                    '#subject-select','#round-select','#unit-select',
+                    '#roundProblemNo','#subjectCode','#unitSeqCode','#unitProblemNo',
+                    '#title','#answer'
+                ];
+                for(const sel of required){
+                    const el = $(sel);
+                    if(!el || !el.value || String(el.value).trim()===''){
+                        e.preventDefault();
+                        alert('필수 항목을 모두 입력/선택해주세요.');
+                        return;
+                    }
+                }
+                // 추가 패턴 체크
+                const sc = $('#subjectCode').value, uc = $('#unitSeqCode').value;
+                if(!/^\d{2}$/.test(sc) || !/^\d{3}$/.test(uc)){
                     e.preventDefault();
-                    openModal('#modalError', '#modalErrorText', '필수 항목을 모두 입력/선택해주세요.');
+                    alert('과목코드는 2자리, 단원코드는 3자리 숫자로 입력해주세요.');
                     return;
                 }
-
-                if (btn) {
-                    btn.setAttribute('disabled','disabled');
-                    btn.textContent = '등록 중…';
+                const rp = parseInt($('#roundProblemNo').value,10);
+                const up = parseInt($('#unitProblemNo').value,10);
+                if(!(rp>=1 && rp<=40) || !(up>=1 && up<=99)){
+                    e.preventDefault();
+                    alert('회차 내 번호는 1~40, 단원 내 순번은 1~99 범위여야 합니다.');
+                    return;
                 }
+                btn.disabled = true; btn.textContent = '등록 중…';
             });
         }
     })();
